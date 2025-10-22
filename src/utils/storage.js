@@ -4,16 +4,19 @@
 // using the browser's local storage. This ensures the app remains private and serverless.
 
 export const LocalDataStore = {
-    KEYS: { 
-        SOBRIETY: 'recovery_sobriety_date', 
-        JOURNAL: 'recovery_journal_entries', 
-        GOALS: 'recovery_goals', 
-        WORKBOOK: 'recovery_workbook_responses', 
+    KEYS: {
+        SOBRIETY: 'recovery_sobriety_date',
+        JOURNAL: 'recovery_journal_entries',
+        GOALS: 'recovery_goals',
+        WORKBOOK: 'recovery_workbook_responses',
         WELCOME_TIP: 'recovery_welcome_tip_dismissed',
         PIN: 'recovery_app_pin',
         NINETY_IN_NINETY: 'recovery_90_in_90_challenge',
-        MEETINGS: 'recovery_user_meetings', // CORRECTED: Added comma
-        HOMEGROUP_TRACKER: 'recovery_homegroup_tracker'
+        MEETINGS: 'recovery_user_meetings',
+        HOMEGROUP_TRACKER: 'recovery_homegroup_tracker',
+        // CORRECTED: Added the missing key for homegroup members
+        HOMEGROUP_MEMBERS: 'recovery_homegroup_members',
+        JOURNAL_TAGS: 'recovery_journal_tags' // Assuming this key might be used elsewhere
     },
 
     /**
@@ -31,12 +34,12 @@ export const LocalDataStore = {
                 if (key === LocalDataStore.KEYS.WELCOME_TIP) return false; // Default: show tip
                 if (key === LocalDataStore.KEYS.PIN) return null;
                 if (key === LocalDataStore.KEYS.NINETY_IN_NINETY) return null;
-                return []; // Default for arrays (Journal/Goals/Meetings)
+                return []; // Default for arrays (Journal/Goals/Meetings/Members)
             }
-            
+
             // Sobriety date is stored as a raw ISO string
             if (key === LocalDataStore.KEYS.SOBRIETY) {
-                return serializedData; 
+                return serializedData;
             }
             // Welcome tip is stored as the string 'true' or 'false'
             if (key === LocalDataStore.KEYS.WELCOME_TIP) {
@@ -69,7 +72,7 @@ export const LocalDataStore = {
     save: (key, data) => {
         try {
             let dataToStore;
-            
+
             if (key === LocalDataStore.KEYS.SOBRIETY || key === LocalDataStore.KEYS.PIN) {
                 dataToStore = data;
             } else if (key === LocalDataStore.KEYS.WELCOME_TIP) {
@@ -77,7 +80,7 @@ export const LocalDataStore = {
             } else {
                 dataToStore = JSON.stringify(data);
             }
-            
+
             localStorage.setItem(key, dataToStore);
         } catch (error) {
             console.error(`Error saving data to localStorage for key ${key}:`, error);
@@ -91,11 +94,12 @@ export const LocalDataStore = {
     loadAll: () => {
         const allData = {};
         for (const key in LocalDataStore.KEYS) {
-            if (LocalDataStore.KEYS[key] !== LocalDataStore.KEYS.WELCOME_TIP) {
+            if (Object.prototype.hasOwnProperty.call(LocalDataStore.KEYS, key)) {
                  const storageKey = LocalDataStore.KEYS[key];
                  const rawData = localStorage.getItem(storageKey);
                  if (rawData) {
                      try {
+                         // Attempt to parse JSON, fall back to raw string if it fails
                          allData[storageKey] = JSON.parse(rawData);
                      } catch {
                          allData[storageKey] = rawData;
@@ -105,6 +109,7 @@ export const LocalDataStore = {
         }
         return allData;
     },
+
 
     /**
      * Generates a simple, unique ID.
