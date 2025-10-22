@@ -24,16 +24,18 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
         setTimeout(() => setSaveDateStatus(''), 2000);
     };
     
-    // --- PIN Management State & Logic (NEW) ---
-    // NOTE: This initial load must be outside the handlers/effects for state initialization
+    // --- PIN Management State & Logic (UPDATED) ---
     const initialStoredPin = LocalDataStore.load(LocalDataStore.KEYS.PIN);
 
-    // If the PIN has been set before, we use its presence to determine the initial state.
     const [isPinSet, setIsPinSet] = useState(!!initialStoredPin);
     
     const [pin, setPin] = useState('');
     const [confirmPin, setConfirmPin] = useState('');
     const [pinMessage, setPinMessage] = useState('');
+    
+    // New state for handling the removal flow
+    const [isRemovingPin, setIsRemovingPin] = useState(false); 
+    const [removalPinAttempt, setRemovalPinAttempt] = useState(''); 
 
     const handleSetPin = () => {
         setPinMessage('');
@@ -47,29 +49,34 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
             return;
         }
         
-        // Save logic
         LocalDataStore.save(LocalDataStore.KEYS.PIN, pin);
         setIsPinSet(true);
         setPin('');
         setConfirmPin('');
         setPinMessage('Application lock PIN saved! It will be required on next launch.');
-        // Notify App.jsx to potentially lock/re-check pin state if it wasn't already loaded
+        setTimeout(() => setPinMessage(''), 3000);
+    };
+
+    const handleConfirmRemovePin = () => {
+        setPinMessage('');
+        const storedPinValue = LocalDataStore.load(LocalDataStore.KEYS.PIN);
         
+        if (removalPinAttempt === storedPinValue) {
+            // PIN confirmed, proceed with removal
+            LocalDataStore.save(LocalDataStore.KEYS.PIN, null);
+            setIsPinSet(false);
+            setIsRemovingPin(false); // Reset removal flow
+            setRemovalPinAttempt('');
+            setPinMessage('PIN lock successfully removed.');
+        } else {
+            setPinMessage('Incorrect PIN. Removal canceled.');
+            setRemovalPinAttempt('');
+        }
         setTimeout(() => setPinMessage(''), 3000);
     };
 
-    const handleRemovePin = () => {
-        // Save null to remove the key in storage util (which reads null as 'no pin')
-        LocalDataStore.save(LocalDataStore.KEYS.PIN, null);
-        setIsPinSet(false);
-        setPin('');
-        setConfirmPin('');
-        setPinMessage('PIN lock removed.');
-        setTimeout(() => setPinMessage(''), 3000);
-    };
 
-
-    // --- Data Export Handler ---
+    // --- Data Export Handler (omitted for brevity, assume unchanged) ---
     const handleExportData = () => {
         setExporting(true);
         const data = LocalDataStore.loadAll();
@@ -88,6 +95,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
         setExporting(false);
     };
 
+
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
             <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
@@ -99,7 +107,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
 
             <div className="space-y-8">
                 
-                {/* PIN Lock Management (NEW) */}
+                {/* PIN Lock Management */}
                 <div className="p-4 bg-teal-50 rounded-lg border border-teal-100">
                     <h3 className="flex items-center gap-2 text-lg font-bold text-teal-700 mb-2">
                         {isPinSet ? <LockIcon className="w-5 h-5"/> : <UnlockIcon className="w-5 h-5"/>} 
@@ -110,16 +118,53 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
                     </p>
                     
                     {isPinSet ? (
+                        /* PIN IS SET VIEW */
                         <div className="space-y-2">
-                            <p className="font-semibold text-teal-600">PIN lock is currently active. Access is required on app launch.</p>
-                            <button
-                                onClick={handleRemovePin}
-                                className="w-full mt-2 bg-red-500 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-red-600 transition-colors"
-                            >
-                                Remove PIN Lock
-                            </button>
+                            <p className="font-semibold text-teal-600">PIN lock is currently active.</p>
+
+                            {isRemovingPin ? (
+                                /* CONFIRM REMOVAL STEP */
+                                <form onSubmit={(e) => { e.preventDefault(); handleConfirmRemovePin(); }} className="space-y-3 p-3 bg-red-50 rounded-lg">
+                                    <p className="text-sm font-bold text-red-700">Confirm PIN to Remove Lock:</p>
+                                    <input
+                                        type="password"
+                                        inputMode="numeric"
+                                        placeholder="Enter current PIN"
+                                        value={removalPinAttempt}
+                                        onChange={(e) => setRemovalPinAttempt(e.target.value.replace(/\D/g, ''))}
+                                        className="w-full p-3 border border-red-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500"
+                                        maxLength={6}
+                                        autoFocus
+                                    />
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsRemovingPin(false); setRemovalPinAttempt(''); setPinMessage(''); }}
+                                            className="flex-grow bg-gray-500 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-gray-600 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={removalPinAttempt.length < 4}
+                                            className="flex-grow bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-red-700 transition-colors disabled:bg-gray-400"
+                                        >
+                                            Confirm Removal
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                /* INITIAL REMOVAL BUTTON */
+                                <button
+                                    onClick={() => setIsRemovingPin(true)}
+                                    className="w-full mt-2 bg-red-500 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-red-600 transition-colors"
+                                >
+                                    Remove PIN Lock
+                                </button>
+                            )}
                         </div>
                     ) : (
+                        /* PIN IS NOT SET VIEW */
                         <div className="space-y-3">
                             <input
                                 type="password"
@@ -150,10 +195,10 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
                             </button>
                         </div>
                     )}
-                    {pinMessage && <p className={`mt-3 text-sm text-center ${isPinSet ? 'text-green-600' : 'text-red-500'}`}>{pinMessage}</p>}
+                    {pinMessage && <p className={`mt-3 text-sm text-center ${pinMessage.includes('successfully') || pinMessage.includes('saved') ? 'text-green-600' : 'text-red-500'}`}>{pinMessage}</p>}
                 </div>
 
-                {/* Sobriety Date Picker */}
+                {/* Sobriety Date Picker (omitted for brevity) */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                     <label className="block text-sm font-bold text-gray-700 mb-2">Change Sobriety Start Date</label>
                     <input
@@ -186,7 +231,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
                     {saveDateStatus && <p className="mt-3 text-sm text-center text-green-600">{saveDateStatus}</p>}
                 </div>
                 
-                {/* Data Export Section */}
+                {/* Data Export Section (omitted for brevity) */}
                 <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                     <h3 className="flex items-center gap-2 text-lg font-bold text-yellow-800 mb-2"><FileTextIcon className="w-5 h-5"/> Data Management</h3>
                     <p className="text-sm text-gray-700 mb-4">

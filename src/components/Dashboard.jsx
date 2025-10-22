@@ -27,18 +27,18 @@ const SobrietyTracker = ({ startDate }) => {
     const [timeSober, setTimeSober] = useState(calculateTimeSober());
     useEffect(() => { const timer = setInterval(() => setTimeSober(calculateTimeSober()), 1000); return () => clearInterval(timer); }, [startDate]);
     const timeUnits = [ { label: 'Days', value: timeSober.days }, { label: 'Hours', value: timeSober.hours }, { label: 'Minutes', value: timeSober.minutes }, { label: 'Seconds', value: timeSober.seconds } ];
-    return ( 
+    return (
         <div className="bg-white p-6 rounded-xl shadow-lg text-center">
             <h3 className="text-lg font-semibold text-gray-500 mb-4">You are on your path</h3>
             <div className="grid grid-cols-4 gap-2 sm:gap-4">
-                {timeUnits.map(unit => ( 
+                {timeUnits.map(unit => (
                     <div key={unit.label} className="flex flex-col items-center bg-gray-100 p-2 sm:p-3 rounded-lg">
                         <span className="text-3xl sm:text-4xl font-bold text-teal-600">{String(unit.value).padStart(2, '0')}</span>
                         <span className="text-xs sm:text-sm text-gray-600 uppercase tracking-wider">{unit.label}</span>
-                    </div> 
+                    </div>
                 ))}
             </div>
-        </div> 
+        </div>
     );
 };
 
@@ -51,8 +51,8 @@ const WelcomeTip = ({ onDismiss }) => {
                     You'll see terms like **HALT** (Hungry, Angry, Lonely, Tired) and **Inventory** (self-reflection). Don't worry if they're new—the Workbook and Journal are here to guide you.
                 </p>
             </div>
-            <button 
-                onClick={onDismiss} 
+            <button
+                onClick={onDismiss}
                 className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-200 transition-colors flex-shrink-0"
                 aria-label="Dismiss welcome tip"
             >
@@ -86,10 +86,10 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
         { view: 'workbook', label: 'Recovery Workbook', icon: <ClipboardListIcon /> },
         { view: 'literature', label: 'Recovery Literature', icon: <LibraryIcon /> },
         { view: 'finder', label: 'Meeting Finder', icon: <MapPinIcon /> },
-        { view: 'resources', label: 'S.O.S. Resources', icon: <LifeBuoyIcon /> },
+        { view: 'challenge', label: '90 Day Challenge', icon: <ClipboardListIcon /> },
     ];
 
-    return ( 
+    return (
         <div className="animate-fade-in space-y-6">
             {/* Display Welcome Tip if not dismissed */}
             {!isTipDismissed && <WelcomeTip onDismiss={handleDismissTip} />}
@@ -101,19 +101,19 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
 
             <SobrietyTracker startDate={sobrietyStartDate} />
             {/* UPDATED: Change grid layout to 2 columns on all devices */}
-            <div className="grid grid-cols-2 gap-4"> 
-                {menuItems.map(item => ( 
-                    <button 
-                        key={item.view} 
-                        onClick={() => onNavigate(item.view)} 
+            <div className="grid grid-cols-2 gap-4">
+                {menuItems.map(item => (
+                    <button
+                        key={item.view}
+                        onClick={() => onNavigate(item.view)}
                         className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg hover:shadow-xl hover:bg-teal-50 transition-all transform hover:-translate-y-1 text-center h-full"
                     >
                         <div className="text-teal-500 mb-2">{item.icon}</div>
                         <span className="text-sm font-semibold text-gray-700">{item.label}</span>
-                    </button> 
+                    </button>
                 ))}
             </div>
-        </div> 
+        </div>
     );
 };
 
@@ -125,22 +125,22 @@ export const SobrietyDataSetup = ({ onDateSet }) => {
         LocalDataStore.save(LocalDataStore.KEYS.WELCOME_TIP, 'false');
         onDateSet(newStartDate);
     };
-    return ( 
+    return (
         <div className="flex flex-col items-center justify-center h-full p-6 bg-gray-50 rounded-xl shadow-lg animate-fade-in">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome</h2>
             <p className="text-gray-600 mb-6 text-center">Let's start your journey. Please select your sobriety start date.</p>
-            <input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)} 
-                className="w-full max-w-xs p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500" 
+            <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full max-w-xs p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             />
-            <button 
-                onClick={handleSave} 
+            <button
+                onClick={handleSave}
                 className="mt-6 bg-teal-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-700 transition-transform transform hover:scale-105"
             >
                 Begin Journey
             </button>
-        </div> 
+        </div>
     );
 };

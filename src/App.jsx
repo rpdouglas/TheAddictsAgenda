@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // Changed imports to root-level assumption (dropping the './' or '../' prefix)
 import { LocalDataStore, useAuth } from 'utils/storage.js';
 import { APP_VERSIONS, copingStrategies } from 'utils/data.js';
-import { SettingsIcon, ArrowLeftIcon, MapPinIcon, PhoneIcon, ShieldIcon, LockIcon } from 'utils/icons.jsx';
+import { SettingsIcon, ArrowLeftIcon, MapPinIcon, PhoneIcon, ShieldIcon, LockIcon, LifeBuoyIcon } from 'utils/icons.jsx';
 import { Spinner } from 'components/common.jsx';
 
 // Import all view components
@@ -14,7 +14,8 @@ import { RecoveryWorkbook } from 'components/RecoveryWorkbook.jsx';
 import { RecoveryLiterature } from 'components/RecoveryLiterature.jsx';
 import { Resources, MeetingFinder } from 'components/Resources.jsx';
 import { Settings } from 'components/Settings.jsx';
-import { DailyReflection } from 'components/DailyReflection.jsx'; 
+import { DailyReflection } from 'components/DailyReflection.jsx';
+import { NinetyDayChallenge } from 'components/NinetyDayChallenge.jsx';
 
 // Map string icon names to imported JSX components (Needed here to pass to child components if they expect icons)
 const iconMap = {
@@ -172,7 +173,8 @@ const App = () => {
                 onBack={() => setActiveView('dashboard')}
             />;
             case 'finder': return <MeetingFinder />;
-            case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />; 
+            case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />;
+            case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} />;
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
         }
     };
@@ -188,7 +190,8 @@ const App = () => {
             resources: "S.O.S. Resources", 
             settings: "Settings", 
             finder: "Meeting Finder",
-            reflection: "Daily Reflection" 
+            reflection: "Daily Reflection",
+            challenge: "90 Day Challenge"
         };
         return titles[activeView] || "Recovery";
     }, [activeView]);
@@ -231,8 +234,12 @@ const App = () => {
             
             <div className="flex-shrink-0 w-full max-w-2xl mx-auto">
                 <header className={`flex items-center justify-between p-4 ${isLocked ? 'hidden' : ''}`}>
-                    {/* 1. Left Side: Back Button or Spacer */}
-                    {activeView !== 'dashboard' && activeView !== 'settings' && sobrietyStartDate ? (
+                    {/* 1. Left Side: Back Button or SOS Icon */}
+                    {activeView === 'dashboard' && sobrietyStartDate ? (
+                        <button onClick={() => setActiveView('resources')} className="text-red-500 hover:text-red-700 p-1">
+                            <LifeBuoyIcon className="w-6 h-6" />
+                        </button>
+                    ) : activeView !== 'settings' && sobrietyStartDate ? (
                         <button onClick={() => setActiveView('dashboard')} className="text-teal-600 hover:text-teal-800 p-2 -ml-2"><ArrowLeftIcon className="w-6 h-6" /></button>
                     ) : <div className="w-10"></div>}
                     

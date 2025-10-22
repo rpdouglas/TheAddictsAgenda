@@ -1,0 +1,5 @@
+## Commit Changes ##
+
+git add .
+git commit -m "Added Pin Lock"
+git push -u origin main
