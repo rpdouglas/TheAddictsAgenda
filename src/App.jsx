@@ -17,6 +17,7 @@ import { Settings } from 'components/Settings.jsx';
 import { DailyReflection } from 'components/DailyReflection.jsx'; 
 import { NinetyDayChallenge } from 'components/NinetyDayChallenge.jsx';
 import { Homegroup } from 'components/Homegroup.jsx';
+import MeetingTracker from 'components/MeetingTracker.jsx';
 
 // Map string icon names to imported JSX components (Needed here to pass to child components if they expect icons)
 const iconMap = {
@@ -163,7 +164,6 @@ const App = () => {
             case 'dashboard': return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
             case 'journal': return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} />;
             case 'goals': return <Goals />;
-            // Note: CopingCards needs the resolved icon map, passed here or handled internally
             case 'coping': return <CopingCards onJournal={handleJournalFromCopingCard} />;
             case 'workbook': return <RecoveryWorkbook />;
             case 'literature': return <RecoveryLiterature />;
@@ -175,8 +175,9 @@ const App = () => {
             />;
             case 'finder': return <MeetingManagement onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
             case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />;
-            case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} />;
-            case 'homegroup': return <Homegroup onBack={() => setActiveView('finder')} />;
+            case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
+            case 'homegroup': return <Homegroup onBack={() => setActiveView('finder')} onNavigate={setActiveView} />;
+            case 'meetingTracker': return <MeetingTracker onBack={() => setActiveView('homegroup')} />;
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
         }
     };
@@ -194,7 +195,8 @@ const App = () => {
             finder: "Meeting Management",
             reflection: "Daily Reflection",
             challenge: "90 Day Challenge",
-            homegroup: "Homegroup"
+            homegroup: "Homegroup",
+            meetingTracker: "Meeting Tracker"
         };
         return titles[activeView] || "Recovery";
     }, [activeView]);
@@ -265,4 +267,4 @@ const App = () => {
     );
 };
 
-export default App; // Must be default export for main.jsx
+export default App;

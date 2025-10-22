@@ -124,7 +124,7 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
     );
 
     const renderCalendarView = () => (
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {daysOfWeek.map(day => (
                 <div key={day} className="border rounded-lg p-2 bg-gray-50 min-h-[100px]">
                     <p className="font-bold text-center text-sm mb-2">{day}</p>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { LocalDataStore } from '../utils/storage.js';
 import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
-import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, PenIcon } from '../utils/icons.jsx';
 
 // --- Mood Graph Component ---
 const MoodGraphView = ({ items, onBack }) => {
@@ -134,25 +134,32 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         setIsLoading(false);
     }, []);
     
+    // CORRECTED: This effect now properly handles incoming templates
     useEffect(() => {
         if (journalTemplate && setJournalTemplate) {
-            setNewItemText(journalTemplate);
-            setJournalTemplate('');
-            handleShowNewForm();
+            // Reset form state for a new entry, but use the template text
+            setIsEditing(false);
+            setEditItemId(null);
+            setNewItemText(journalTemplate); // Set the text from the template
+            setCurrentEntryTags([]);
+            setCurrentMood(5);
+            
+            // Switch to the form view
+            setViewMode('form');
+            
+            // Clear the template in the parent so this effect doesn't run again
+            setJournalTemplate(''); 
         }
     }, [journalTemplate, setJournalTemplate]);
 
     // --- Form Handlers ---
-    const resetFormState = () => {
+    // This handler is for when the user clicks the "Add New Entry" button
+    const handleShowNewForm = () => {
         setIsEditing(false);
         setEditItemId(null);
-        setNewItemText('');
+        setNewItemText(''); // Start with blank text
         setCurrentEntryTags([]);
         setCurrentMood(5);
-    };
-
-    const handleShowNewForm = () => {
-        resetFormState();
         setViewMode('form');
     };
 
@@ -166,7 +173,11 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     };
 
     const handleCancelEdit = () => {
-        resetFormState();
+        setIsEditing(false);
+        setEditItemId(null);
+        setNewItemText('');
+        setCurrentEntryTags([]);
+        setCurrentMood(5);
         setViewMode('list'); 
     };
 

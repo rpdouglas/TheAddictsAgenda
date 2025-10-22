@@ -1,41 +1,49 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { LocalDataStore } from '../utils/storage.js';
 import { Spinner } from './common.jsx';
-import { CalendarIcon, CheckIcon, RefreshIcon, XIcon, ArrowLeftIcon } from '../utils/icons.jsx';
+import { CalendarIcon, CheckIcon, RefreshIcon, XIcon, ArrowLeftIcon, PenIcon } from '../utils/icons.jsx'; // Added PenIcon
 
 // Data storage key
 const STORAGE_KEY = LocalDataStore.KEYS.NINETY_IN_NINETY;
 const DAYS_IN_CHALLENGE = 90;
 
-// --- Custom Confirmation Modal Component ---
+// --- Custom Confirmation Modals ---
 const ResetModal = ({ onConfirm, onCancel }) => (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md space-y-4">
             <h3 className="text-xl font-bold text-gray-800">Confirm Reset</h3>
             <p className="text-gray-600">Are you sure you want to start a new 90 in 90 challenge? Your current progress will be permanently reset.</p>
             <div className="flex justify-end gap-3">
-                <button
-                    onClick={onCancel}
-                    className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                    Cancel
-                </button>
-                <button
-                    onClick={onConfirm}
-                    className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
-                >
-                    Reset Challenge
+                <button onClick={onCancel} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+                <button onClick={onConfirm} className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">Reset Challenge</button>
+            </div>
+        </div>
+    </div>
+);
+
+// NEW: Modal to ask about journaling
+const JournalPromptModal = ({ dateString, onConfirm, onCancel }) => (
+     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md space-y-4">
+            <h3 className="text-xl font-bold text-gray-800">Journal About Meeting?</h3>
+            <p className="text-gray-600">Would you like to create a journal entry for the meeting on {new Date(dateString + 'T00:00:00').toLocaleDateString()}?</p>
+            <div className="flex justify-end gap-3">
+                <button onClick={onCancel} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">No Thanks</button>
+                <button onClick={onConfirm} className="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2">
+                    <PenIcon className="w-4 h-4" /> Yes, Journal
                 </button>
             </div>
         </div>
     </div>
 );
 
-export const NinetyDayChallenge = ({ onBack }) => {
-    // State stores the start date of the current challenge (if active) and the array of attended dates.
-    const [challengeData, setChallengeData] = useState(null); // { startDate: Date, attendance: { [dateString]: boolean } }
+
+export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) => { // Added props
+    const [challengeData, setChallengeData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showResetModal, setShowResetModal] = useState(false);
+    const [showJournalPrompt, setShowJournalPrompt] = useState(false); // State for journal modal
+    const [journalDate, setJournalDate] = useState(null); // Date for the journal entry
 
     const loadChallengeData = useCallback(() => {
         const stored = LocalDataStore.load(STORAGE_KEY);
@@ -60,45 +68,24 @@ export const NinetyDayChallenge = ({ onBack }) => {
         });
     }, []);
 
-    // Derived State Calculation
-    const {
-        progress,
-        attendanceCount,
-        currentDay
-    } = useMemo(() => {
+    const { currentDay, attendanceCount } = useMemo(() => {
         if (!challengeData || !challengeData.startDate) {
-            return { progress: 0, attendanceCount: 0, currentDay: 0 };
+            return { currentDay: 0, attendanceCount: 0 };
         }
-
         const msInDay = 86400000;
         const start = challengeData.startDate.getTime();
         const now = new Date().getTime();
-        
         let dayDiff = Math.floor((now - start) / msInDay) + 1;
-        dayDiff = Math.min(dayDiff, DAYS_IN_CHALLENGE);
-        
+        dayDiff = Math.max(1, Math.min(dayDiff, DAYS_IN_CHALLENGE)); // Ensure day is at least 1
         const count = Object.values(challengeData.attendance).filter(Boolean).length;
-        
-        // Progress is percentage of days passed (used for the total bar length)
-        const progressPercent = Math.min(Math.round((dayDiff / DAYS_IN_CHALLENGE) * 100), 100);
-
-        return {
-            progress: progressPercent,
-            attendanceCount: count,
-            currentDay: dayDiff
-        };
+        return { currentDay: dayDiff, attendanceCount: count };
     }, [challengeData]);
 
-
     const handleStartNewChallenge = () => {
-        setShowResetModal(false); // Close modal if open
+        setShowResetModal(false);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to start of day
-        const newChallenge = {
-            startDate: today,
-            attendance: {}
-        };
-        saveChallengeData(newChallenge);
+        today.setHours(0, 0, 0, 0);
+        saveChallengeData({ startDate: today, attendance: {} });
     };
 
     const handleToggleAttendance = (dayIndex) => {
@@ -106,18 +93,29 @@ export const NinetyDayChallenge = ({ onBack }) => {
         
         const targetDate = new Date(challengeData.startDate);
         targetDate.setDate(targetDate.getDate() + dayIndex);
-
         const dateKey = targetDate.toISOString().split('T')[0];
         
-        const updatedAttendance = {
-            ...challengeData.attendance,
-            [dateKey]: !challengeData.attendance[dateKey]
-        };
+        const currentAttendance = challengeData.attendance[dateKey] || false;
+        const newAttendanceState = !currentAttendance;
 
-        saveChallengeData({
-            ...challengeData,
-            attendance: updatedAttendance
-        });
+        const updatedAttendance = { ...challengeData.attendance, [dateKey]: newAttendanceState };
+        saveChallengeData({ ...challengeData, attendance: updatedAttendance });
+
+        // If attendance was marked *true*, prompt for journal
+        if (newAttendanceState) {
+            setJournalDate(dateKey); // Set the date for the prompt
+            setShowJournalPrompt(true);
+        }
+    };
+    
+     // NEW: Function to handle journaling confirmation
+    const handleConfirmJournal = () => {
+        const meetingDate = new Date(journalDate + 'T00:00:00'); // Ensure correct date object
+        const template = `Meeting Reflection - ${meetingDate.toLocaleDateString()}:\n\nMeeting Name/Topic: \nTime: \n\nOne Big Takeaway:\n\n`;
+        setJournalTemplate(template);
+        onNavigate('journal'); // Navigate using the passed function
+        setShowJournalPrompt(false);
+        setJournalDate(null);
     };
 
     const isDayPastOrToday = (dayIndex) => dayIndex < currentDay;
@@ -130,8 +128,8 @@ export const NinetyDayChallenge = ({ onBack }) => {
     };
 
     // --- RENDER FUNCTIONS ---
-
     const renderChallengeGrid = () => {
+        // ... (Grid rendering logic remains the same, uses handleToggleAttendance)
         const days = Array.from({ length: DAYS_IN_CHALLENGE }, (_, i) => {
             const dayIndex = i; // 0 to 89
             const isAttended = challengeData.attendance[getFormattedDate(dayIndex)] || false;
@@ -167,8 +165,9 @@ export const NinetyDayChallenge = ({ onBack }) => {
 
     if (isLoading) return <Spinner />;
 
+    // Initial Start Screen
     if (!challengeData || !challengeData.startDate) {
-        return (
+         return (
             <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col items-center justify-center text-center">
                  <button onClick={onBack} className="absolute top-6 left-6 flex items-center text-teal-600 hover:text-teal-800 font-semibold">
                     <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back</span>
@@ -190,6 +189,13 @@ export const NinetyDayChallenge = ({ onBack }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col space-y-6">
             {showResetModal && <ResetModal onConfirm={handleStartNewChallenge} onCancel={() => setShowResetModal(false)} />}
+            {showJournalPrompt && journalDate && (
+                <JournalPromptModal 
+                    dateString={journalDate} 
+                    onConfirm={handleConfirmJournal} 
+                    onCancel={() => { setShowJournalPrompt(false); setJournalDate(null); }} 
+                />
+            )}
             
              <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 font-semibold flex-shrink-0 -ml-2">
                 <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Dashboard</span>
@@ -224,7 +230,7 @@ export const NinetyDayChallenge = ({ onBack }) => {
                          {attendanceCount > 0 && `${Math.round(attendanceCount / DAYS_IN_CHALLENGE * 100)}%`}
                     </div>
                 </div> 
-                <p className="text-sm text-gray-600 italic pt-2">Tap any past day to mark your attendance.</p>
+                <p className="text-sm text-gray-600 italic pt-2">Tap any past day to mark attendance. You'll be asked if you want to journal about it.</p>
             </div>
 
             {/* Grid Visualization */}
