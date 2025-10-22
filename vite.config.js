@@ -6,5 +6,5 @@ export default defineConfig({
   plugins: [react()],
   // FIX: Set the base path for GitHub Pages deployment.
   // The value should be the repository name, including leading and trailing slashes.
-  base: '/aa/', 
+  base: './', 
 })
