@@ -4,7 +4,7 @@
 // using the browser's local storage. This ensures the app remains private and serverless.
 
 export const LocalDataStore = {
-   KEYS: { 
+    KEYS: { 
         SOBRIETY: 'recovery_sobriety_date', 
         JOURNAL: 'recovery_journal_entries', 
         GOALS: 'recovery_goals', 
@@ -12,7 +12,8 @@ export const LocalDataStore = {
         WELCOME_TIP: 'recovery_welcome_tip_dismissed',
         PIN: 'recovery_app_pin',
         NINETY_IN_NINETY: 'recovery_90_in_90_challenge',
-        MEETINGS: 'recovery_user_meetings' // NEW: Key for user's meetings
+        MEETINGS: 'recovery_user_meetings', // CORRECTED: Added comma
+        HOMEGROUP_TRACKER: 'recovery_homegroup_tracker'
     },
 
     /**
@@ -28,8 +29,9 @@ export const LocalDataStore = {
                 // Return default values if item doesn't exist
                 if (key === LocalDataStore.KEYS.SOBRIETY) return null;
                 if (key === LocalDataStore.KEYS.WELCOME_TIP) return false; // Default: show tip
-                if (key === LocalDataStore.KEYS.PIN) return null; // NEW: Default: no PIN set
-                return []; // Default for arrays (Journal/Goals/Tags)
+                if (key === LocalDataStore.KEYS.PIN) return null;
+                if (key === LocalDataStore.KEYS.NINETY_IN_NINETY) return null;
+                return []; // Default for arrays (Journal/Goals/Meetings)
             }
             
             // Sobriety date is stored as a raw ISO string
@@ -40,12 +42,12 @@ export const LocalDataStore = {
             if (key === LocalDataStore.KEYS.WELCOME_TIP) {
                 return serializedData === 'true';
             }
-            // NEW: PIN is stored as a raw string
+            // PIN is stored as a raw string
             if (key === LocalDataStore.KEYS.PIN) {
                 return serializedData;
             }
 
-            // For JSON data (Arrays/Objects like Journal/Goals/Workbook)
+            // For JSON data
             return JSON.parse(serializedData);
 
         } catch (error) {
@@ -54,6 +56,7 @@ export const LocalDataStore = {
             if (key === LocalDataStore.KEYS.SOBRIETY) return null;
             if (key === LocalDataStore.KEYS.WELCOME_TIP) return false;
             if (key === LocalDataStore.KEYS.PIN) return null;
+            if (key === LocalDataStore.KEYS.NINETY_IN_NINETY) return null;
             return [];
         }
     },
@@ -67,15 +70,11 @@ export const LocalDataStore = {
         try {
             let dataToStore;
             
-            // Sobriety date, PIN, and welcome tip are stored as primitive strings/booleans
-            if (key === LocalDataStore.KEYS.SOBRIETY) {
+            if (key === LocalDataStore.KEYS.SOBRIETY || key === LocalDataStore.KEYS.PIN) {
                 dataToStore = data;
             } else if (key === LocalDataStore.KEYS.WELCOME_TIP) {
                 dataToStore = data ? 'true' : 'false';
-            } else if (key === LocalDataStore.KEYS.PIN) { // NEW: PIN
-                dataToStore = data;
             } else {
-                // All other complex data structures (Arrays/Objects) are serialized
                 dataToStore = JSON.stringify(data);
             }
             
@@ -86,22 +85,19 @@ export const LocalDataStore = {
     },
 
     /**
-     * Collects all user data (excluding the welcome tip) for export purposes.
+     * Collects all user data for export.
      * @returns {Object} An object containing all stored user data.
      */
     loadAll: () => {
         const allData = {};
         for (const key in LocalDataStore.KEYS) {
-            // Exclude the WELCOME_TIP flag
             if (LocalDataStore.KEYS[key] !== LocalDataStore.KEYS.WELCOME_TIP) {
                  const storageKey = LocalDataStore.KEYS[key];
                  const rawData = localStorage.getItem(storageKey);
                  if (rawData) {
                      try {
-                         // Try to parse if it's JSON data
                          allData[storageKey] = JSON.parse(rawData);
                      } catch {
-                         // Fallback for raw strings (like the sobriety date, or PIN)
                          allData[storageKey] = rawData;
                      }
                  }
@@ -111,20 +107,17 @@ export const LocalDataStore = {
     },
 
     /**
-     * Generates a simple, unique ID for journal/goal entries.
+     * Generates a simple, unique ID.
      * @returns {string} A unique ID string.
      */
     generateId: () => Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
 };
 
 /**
- * Simplified Auth Hook (Placeholder for modularity).
- * This mimics the structure but uses a hardcoded local user ID.
+ * Simplified Auth Hook
  * @returns {{user: {uid: string}, isAuthLoading: boolean}}
  */
 export const useAuth = () => {
-    // In a real application, this would use Firebase Auth to get the user's UID.
-    // Since this is a local-only app, we use a fixed, generic ID.
     const user = { uid: 'local_user_id' };
     return { user, isAuthLoading: false };
 };

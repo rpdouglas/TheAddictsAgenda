@@ -14,7 +14,7 @@ import { RecoveryWorkbook } from 'components/RecoveryWorkbook.jsx';
 import { RecoveryLiterature } from 'components/RecoveryLiterature.jsx';
 import { Resources, MeetingManagement } from 'components/Resources.jsx';
 import { Settings } from 'components/Settings.jsx';
-import { DailyReflection } from 'components/DailyReflection.jsx'; 
+import { DailyReflection } from 'components/DailyReflection.jsx';
 import { NinetyDayChallenge } from 'components/NinetyDayChallenge.jsx';
 import { Homegroup } from 'components/Homegroup.jsx';
 import MeetingTracker from 'components/MeetingTracker.jsx';
