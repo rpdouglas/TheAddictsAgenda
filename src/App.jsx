@@ -16,6 +16,7 @@ import { Resources, MeetingManagement } from 'components/Resources.jsx';
 import { Settings } from 'components/Settings.jsx';
 import { DailyReflection } from 'components/DailyReflection.jsx'; 
 import { NinetyDayChallenge } from 'components/NinetyDayChallenge.jsx';
+import { Homegroup } from 'components/Homegroup.jsx';
 
 // Map string icon names to imported JSX components (Needed here to pass to child components if they expect icons)
 const iconMap = {
@@ -172,9 +173,10 @@ const App = () => {
                 handleSobrietyDateUpdate={handleSobrietyDateUpdate}
                 onBack={() => setActiveView('dashboard')}
             />;
-            case 'finder': return <MeetingManagement onBack={() => setActiveView('dashboard')} />;
+            case 'finder': return <MeetingManagement onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
             case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />;
             case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} />;
+            case 'homegroup': return <Homegroup onBack={() => setActiveView('finder')} />;
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
         }
     };
@@ -191,7 +193,8 @@ const App = () => {
             settings: "Settings", 
             finder: "Meeting Management",
             reflection: "Daily Reflection",
-            challenge: "90 Day Challenge"
+            challenge: "90 Day Challenge",
+            homegroup: "Homegroup"
         };
         return titles[activeView] || "Recovery";
     }, [activeView]);
