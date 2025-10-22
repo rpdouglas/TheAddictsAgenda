@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { LocalDataStore, useAuth } from './utils/storage.js';
-import { APP_VERSIONS, copingStrategies } from './utils/data.js';
-import { SettingsIcon, ArrowLeftIcon, MapPinIcon, PhoneIcon, ShieldIcon } from './utils/icons.jsx';
-import { Spinner } from './components/common.jsx';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+// Changed imports to root-level assumption (dropping the './' or '../' prefix)
+import { LocalDataStore, useAuth } from 'utils/storage.js';
+import { APP_VERSIONS, copingStrategies } from 'utils/data.js';
+import { SettingsIcon, ArrowLeftIcon, MapPinIcon, PhoneIcon, ShieldIcon, LockIcon } from 'utils/icons.jsx';
+import { Spinner } from 'components/common.jsx';
 
 // Import all view components
-import { Dashboard, SobrietyDataSetup } from './components/Dashboard.jsx';
-import { DailyJournal } from './components/DailyJournal.jsx';
-import { Goals } from './components/Goals.jsx';
-import { CopingCards } from './components/CopingCards.jsx';
-import { RecoveryWorkbook } from './components/RecoveryWorkbook.jsx';
-import { RecoveryLiterature } from './components/RecoveryLiterature.jsx';
-import { Resources, MeetingFinder } from './components/Resources.jsx';
-import { Settings } from './components/Settings.jsx';
-import { DailyReflection } from './components/DailyReflection.jsx'; // NEW IMPORT
+import { Dashboard, SobrietyDataSetup } from 'components/Dashboard.jsx';
+import { DailyJournal } from 'components/DailyJournal.jsx';
+import { Goals } from 'components/Goals.jsx';
+import { CopingCards } from 'components/CopingCards.jsx';
+import { RecoveryWorkbook } from 'components/RecoveryWorkbook.jsx';
+import { RecoveryLiterature } from 'components/RecoveryLiterature.jsx';
+import { Resources, MeetingFinder } from 'components/Resources.jsx';
+import { Settings } from 'components/Settings.jsx';
+import { DailyReflection } from 'components/DailyReflection.jsx'; 
 
 // Map string icon names to imported JSX components (Needed here to pass to child components if they expect icons)
 const iconMap = {
@@ -26,6 +27,61 @@ const allCopingCards = copingStrategies.map(card => ({
     icon: iconMap[card.icon] || ShieldIcon
 }));
 
+// --- PIN Lock Screen Component ---
+
+const PinLockScreen = ({ storedPin, onUnlock }) => {
+    const [pinAttempt, setPinAttempt] = useState('');
+    const [message, setMessage] = useState('');
+
+    const handlePinChange = (e) => {
+        const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+        setPinAttempt(value);
+        setMessage('');
+    };
+
+    const handleUnlock = (e) => {
+        e.preventDefault();
+        if (pinAttempt === storedPin) {
+            setMessage('Unlocked!');
+            setTimeout(onUnlock, 50); // Small delay for effect
+        } else {
+            setMessage('Incorrect PIN. Please try again.');
+            setPinAttempt('');
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-center space-y-6">
+                <LockIcon className="w-10 h-10 mx-auto text-teal-600" />
+                <h2 className="text-2xl font-bold text-gray-800">Application Locked</h2>
+                <p className="text-gray-600">Enter your PIN to access your recovery tools.</p>
+                
+                <form onSubmit={handleUnlock} className="space-y-4">
+                    <input
+                        type="password"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="Enter PIN"
+                        value={pinAttempt}
+                        onChange={handlePinChange}
+                        className="w-full p-4 text-center text-xl tracking-widest border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500"
+                        maxLength={6}
+                        autoFocus
+                    />
+                    <button
+                        type="submit"
+                        disabled={pinAttempt.length < 4}
+                        className="w-full bg-teal-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-700 transition-colors disabled:bg-gray-400"
+                    >
+                        Unlock
+                    </button>
+                </form>
+                {message && <p className={`text-sm font-medium ${message === 'Unlocked!' ? 'text-green-600' : 'text-red-500'}`}>{message}</p>}
+            </div>
+        </div>
+    );
+};
 
 // --- Main Component ---
 const App = () => {
@@ -34,9 +90,21 @@ const App = () => {
     const [sobrietyStartDate, setSobrietyStartDate] = useState(null);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [journalTemplate, setJournalTemplate] = useState('');
+    
+    // --- PIN Lock State (NEW) ---
+    const [storedPin, setStoredPin] = useState(null);
+    const [isLocked, setIsLocked] = useState(false);
 
-    // Load sobriety date from localStorage on mount
+    // Load initial data and check for PIN on mount
     useEffect(() => {
+        const loadedPin = LocalDataStore.load(LocalDataStore.KEYS.PIN);
+        setStoredPin(loadedPin);
+        
+        // Lock the app if a PIN is set
+        if (loadedPin && loadedPin.trim().length >= 4) {
+            setIsLocked(true);
+        }
+
         const storedDate = LocalDataStore.load(LocalDataStore.KEYS.SOBRIETY);
         if (storedDate && storedDate !== 'null') { 
             try {
@@ -52,6 +120,13 @@ const App = () => {
             }
         }
         setIsDataLoading(false);
+    }, []);
+    
+    // Function to handle successful unlock
+    const handleUnlock = useCallback(() => {
+        setIsLocked(false);
+        // Reload pin just in case it was changed while locked (though unlikely)
+        setStoredPin(LocalDataStore.load(LocalDataStore.KEYS.PIN)); 
     }, []);
 
     const handleJournalFromCopingCard = (card) => {
@@ -77,6 +152,9 @@ const App = () => {
     const renderContent = () => {
         if (isAuthLoading || isDataLoading) return <div className="h-full flex items-center justify-center"><Spinner /></div>;
         
+        // If locked, render nothing but the lock screen.
+        if (isLocked) return null;
+
         if (!sobrietyStartDate || isNaN(sobrietyStartDate.getTime())) return <SobrietyDataSetup onDateSet={setSobrietyStartDate} />;
         
         switch (activeView) {
@@ -94,7 +172,7 @@ const App = () => {
                 onBack={() => setActiveView('dashboard')}
             />;
             case 'finder': return <MeetingFinder />;
-            case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />; // NEW ROUTE
+            case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />; 
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
         }
     };
@@ -110,7 +188,7 @@ const App = () => {
             resources: "S.O.S. Resources", 
             settings: "Settings", 
             finder: "Meeting Finder",
-            reflection: "Daily Reflection" // UPDATED
+            reflection: "Daily Reflection" 
         };
         return titles[activeView] || "Recovery";
     }, [activeView]);
@@ -126,7 +204,7 @@ const App = () => {
             if (key === 'WORKBOOK') componentName = "Workbook";
             if (key === 'LITERATURE') componentName = "Literature";
             if (key === 'SETTINGS') componentName = "Settings";
-            if (key === 'DAILYREFLECTION') componentName = "Daily Reflection"; // ADDED
+            if (key === 'DAILYREFLECTION') componentName = "Daily Reflection"; 
     
             return { componentName, version };
         };
@@ -143,8 +221,16 @@ const App = () => {
 
     return (
         <div className="bg-gray-100 h-screen w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4">
+            {/* NEW: Lock Screen Render */}
+            {isLocked && storedPin && (
+                <PinLockScreen 
+                    storedPin={storedPin} 
+                    onUnlock={handleUnlock} 
+                />
+            )}
+            
             <div className="flex-shrink-0 w-full max-w-2xl mx-auto">
-                <header className="flex items-center justify-between p-4">
+                <header className={`flex items-center justify-between p-4 ${isLocked ? 'hidden' : ''}`}>
                     {/* 1. Left Side: Back Button or Spacer */}
                     {activeView !== 'dashboard' && activeView !== 'settings' && sobrietyStartDate ? (
                         <button onClick={() => setActiveView('dashboard')} className="text-teal-600 hover:text-teal-800 p-2 -ml-2"><ArrowLeftIcon className="w-6 h-6" /></button>
@@ -161,10 +247,10 @@ const App = () => {
                     
                 </header>
             </div>
-            <main className="flex-grow w-full max-w-2xl mx-auto overflow-y-auto pb-4">
+            <main className={`flex-grow w-full max-w-2xl mx-auto overflow-y-auto pb-4 ${isLocked ? 'hidden' : ''}`}>
                 {renderContent()}
             </main>
-            {sobrietyStartDate && <PageFooter activeView={activeView} />}
+            {sobrietyStartDate && !isLocked && <PageFooter activeView={activeView} />}
         </div>
     );
 };

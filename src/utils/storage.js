@@ -9,7 +9,8 @@ export const LocalDataStore = {
         JOURNAL: 'recovery_journal_entries', 
         GOALS: 'recovery_goals', 
         WORKBOOK: 'recovery_workbook_responses', 
-        WELCOME_TIP: 'recovery_welcome_tip_dismissed' // Flag to show onboarding tip once
+        WELCOME_TIP: 'recovery_welcome_tip_dismissed',
+        PIN: 'recovery_app_pin' // NEW: Key for application lock PIN
     },
 
     /**
@@ -25,6 +26,7 @@ export const LocalDataStore = {
                 // Return default values if item doesn't exist
                 if (key === LocalDataStore.KEYS.SOBRIETY) return null;
                 if (key === LocalDataStore.KEYS.WELCOME_TIP) return false; // Default: show tip
+                if (key === LocalDataStore.KEYS.PIN) return null; // NEW: Default: no PIN set
                 return []; // Default for arrays (Journal/Goals)
             }
             
@@ -36,6 +38,10 @@ export const LocalDataStore = {
             if (key === LocalDataStore.KEYS.WELCOME_TIP) {
                 return serializedData === 'true';
             }
+            // NEW: PIN is stored as a raw string
+            if (key === LocalDataStore.KEYS.PIN) {
+                return serializedData;
+            }
 
             // For JSON data (Arrays/Objects like Journal/Goals/Workbook)
             return JSON.parse(serializedData);
@@ -45,6 +51,7 @@ export const LocalDataStore = {
             // Ensure runtime stability by returning safe defaults on error
             if (key === LocalDataStore.KEYS.SOBRIETY) return null;
             if (key === LocalDataStore.KEYS.WELCOME_TIP) return false;
+            if (key === LocalDataStore.KEYS.PIN) return null;
             return [];
         }
     },
@@ -58,11 +65,13 @@ export const LocalDataStore = {
         try {
             let dataToStore;
             
-            // Sobriety date and welcome tip are stored as primitive strings/booleans
+            // Sobriety date, PIN, and welcome tip are stored as primitive strings/booleans
             if (key === LocalDataStore.KEYS.SOBRIETY) {
                 dataToStore = data;
             } else if (key === LocalDataStore.KEYS.WELCOME_TIP) {
                 dataToStore = data ? 'true' : 'false';
+            } else if (key === LocalDataStore.KEYS.PIN) { // NEW: PIN
+                dataToStore = data;
             } else {
                 // All other complex data structures (Arrays/Objects) are serialized
                 dataToStore = JSON.stringify(data);
@@ -90,7 +99,7 @@ export const LocalDataStore = {
                          // Try to parse if it's JSON data
                          allData[storageKey] = JSON.parse(rawData);
                      } catch {
-                         // Fallback for raw strings (like the sobriety date)
+                         // Fallback for raw strings (like the sobriety date, or PIN)
                          allData[storageKey] = rawData;
                      }
                  }
