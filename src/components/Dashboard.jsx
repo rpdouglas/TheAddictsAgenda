@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { LocalDataStore } from '../utils/storage.js';
 import { Spinner } from './common.jsx';
 import { RECOVERY_FACTS, copingStrategies } from '../utils/data.js';
-import { BookOpenIcon, TargetIcon, LifeBuoyIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, SettingsIcon, MapPinIcon, PhoneIcon, XIcon } from '../utils/icons.jsx';
+import { BookOpenIcon, TargetIcon, LifeBuoyIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, SettingsIcon, MapPinIcon, PhoneIcon, XIcon, CalendarIcon } from '../utils/icons.jsx';
 
 // Map string icon names to imported JSX components
 const iconMap = {
@@ -80,6 +80,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
 
     const menuItems = [
         { view: 'journal', label: 'Daily Journal', icon: <BookOpenIcon /> },
+        { view: 'reflection', label: 'Daily Reflection', icon: <CalendarIcon /> }, // ADDED
         { view: 'goals', label: 'My Goals', icon: <TargetIcon /> },
         { view: 'coping', label: 'Coping Cards', icon: <ShieldIcon /> },
         { view: 'workbook', label: 'Recovery Workbook', icon: <ClipboardListIcon /> },

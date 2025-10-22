@@ -118,4 +118,5 @@ export const APP_VERSIONS = {
     RESOURCES: '1.0.0',
     SETTINGS: '1.0.1',
     MEETINGFINDER: '1.0.0',
+    DAILYREFLECTION: '1.0.0', // ADDED
 };

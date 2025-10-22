@@ -13,6 +13,7 @@ import { RecoveryWorkbook } from './components/RecoveryWorkbook.jsx';
 import { RecoveryLiterature } from './components/RecoveryLiterature.jsx';
 import { Resources, MeetingFinder } from './components/Resources.jsx';
 import { Settings } from './components/Settings.jsx';
+import { DailyReflection } from './components/DailyReflection.jsx'; // NEW IMPORT
 
 // Map string icon names to imported JSX components (Needed here to pass to child components if they expect icons)
 const iconMap = {
@@ -93,12 +94,24 @@ const App = () => {
                 onBack={() => setActiveView('dashboard')}
             />;
             case 'finder': return <MeetingFinder />;
+            case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />; // NEW ROUTE
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
         }
     };
     
     const headerTitle = useMemo(() => {
-        const titles = { dashboard: "The Addict's Agenda", coping: "Coping Cards", literature: "Recovery Literature", journal: "Daily Journal", goals: "My Goals", workbook: "Recovery Workbook", resources: "S.O.S. Resources", settings: "Settings", finder: "Meeting Finder" };
+        const titles = { 
+            dashboard: "The Addict's Agenda", 
+            coping: "Coping Cards", 
+            literature: "Recovery Literature", 
+            journal: "Daily Journal", 
+            goals: "My Goals", 
+            workbook: "Recovery Workbook", 
+            resources: "S.O.S. Resources", 
+            settings: "Settings", 
+            finder: "Meeting Finder",
+            reflection: "Daily Reflection" // UPDATED
+        };
         return titles[activeView] || "Recovery";
     }, [activeView]);
 
@@ -113,6 +126,7 @@ const App = () => {
             if (key === 'WORKBOOK') componentName = "Workbook";
             if (key === 'LITERATURE') componentName = "Literature";
             if (key === 'SETTINGS') componentName = "Settings";
+            if (key === 'DAILYREFLECTION') componentName = "Daily Reflection"; // ADDED
     
             return { componentName, version };
         };
