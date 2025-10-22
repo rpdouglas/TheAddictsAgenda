@@ -1,0 +1,60 @@
+import React, { useState } from 'react';
+import { allCopingCards } from '../utils/data.js'; // Note: allCopingCards must be imported from data.js
+import { ArrowLeftIcon } from '../utils/icons.jsx';
+
+export const CopingCards = ({ onJournal }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const card = allCopingCards[currentIndex];
+    
+    // Note: The original code mapped icons in app.js. For modularity, 
+    // the main data.js needs to export the pre-mapped cards, or we map them here.
+    // For this example, we assume `allCopingCards` is now imported fully resolved from data.js or App.jsx.
+    // I will adjust the structure slightly here, assuming the App.jsx handles the final icon mapping
+    
+    // For now, use a fallback if the icon isn't a component (which it should be in a modular app)
+    const CardIconComponent = card.icon || (() => <svg />);
+
+
+    const showNextCard = () => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % allCopingCards.length);
+    };
+
+    const showPreviousCard = () => {
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + allCopingCards.length) % allCopingCards.length);
+    };
+
+
+    return ( 
+        <div className="flex flex-col items-center justify-center h-full p-4 animate-fade-in"> 
+            <div 
+                className={`p-8 rounded-xl shadow-xl w-full max-w-md text-center flex-grow flex flex-col justify-between 
+                           bg-gradient-to-br ${card.color} text-gray-900 border border-gray-100`}
+            >
+                <div className="flex justify-between items-start mb-4">
+                    <button onClick={showPreviousCard} className="text-gray-700 hover:text-black p-1 rounded-full bg-white/70 shadow-md">
+                        <ArrowLeftIcon className="w-6 h-6"/>
+                    </button>
+                    <div className="flex flex-col items-center">
+                        <CardIconComponent className="w-8 h-8 text-teal-800 mb-2" />
+                        <p className="text-xs font-semibold uppercase tracking-wider text-teal-800">{card.category}</p>
+                    </div>
+                    <button onClick={showNextCard} className="text-gray-700 hover:text-black p-1 rounded-full bg-white/70 shadow-md">
+                        <ArrowLeftIcon className="w-6 h-6" style={{ transform: 'rotate(180deg)' }} />
+                    </button>
+                </div>
+                
+                <div className="flex flex-col justify-center flex-grow">
+                    <h2 className="text-3xl font-bold text-teal-900 mb-4">{card.title}</h2>
+                    <p className="text-gray-800 text-lg">{card.description}</p>
+                </div>
+
+                <p className="text-xs text-gray-600 mt-4">Card {currentIndex + 1} of {allCopingCards.length}</p>
+
+            </div> 
+            
+            <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full max-w-md"> 
+                <button onClick={() => onJournal(card)} className="w-full bg-white text-teal-600 border-2 border-teal-600 font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-50 transition-colors">Journal on This</button>
+            </div> 
+        </div> 
+    );
+};

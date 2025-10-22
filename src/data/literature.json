@@ -1,0 +1,34 @@
+{
+  "aa_big_book": {
+    "title": "The Big Book (Alcoholics Anonymous)",
+    "pdfLink": "https://www.aa.org/sites/default/files/2021-11/en_bigbook_personalstories_1st.pdf",
+    "chapters": [
+      {
+        "title": "The Doctor's Opinion",
+        "content": "WE of Alcoholics Anonymous believe that the reader will be interested in the medical estimate of the plan of recovery described in this book. Convinced medical men realize that faith, and spiritual life, are the greatest bulwarks against all foes, and they have proved conclusively that of all diseases the most baffling is that of alcoholism. In the following chapter, there is a medical statement which may be regarded as an introduction to this book."
+      },
+      {
+        "title": "Chapter 1: Bill's Story",
+        "content": "WAR FEVER ran high in the New England town to which we new, young officers from Plattsburg were assigned, and we were flattered. Our social life was a dizzy round of receptions, dinners, and dances. The most coveted invitation was to the home of a lovely girl, who was soon to become my wife. How well I remember just before the wedding how concerned I was that my drinking should not interfere with the ceremony. I had a few drinks before the reception, none at the dinner, and none at the reception. I was very proud of my self-control, and fully convinced I could stop any time I wanted to."
+      },
+      {
+        "title": "Chapter 5: How It Works",
+        "content": "RARELY HAVE we seen a person fail who has thoroughly followed our path. Those who do not recover are people who cannot or will not completely give themselves to this simple program, usually men and women who are constitutionally incapable of being honest with themselves. There are such unfortunates. They are not at fault; they seem to have been born that way. They are too ill to recover permanently. There are those, too, who suffer from grave emotional and mental disorders, but many of them do recover if they have the capacity to be honest."
+      }
+    ]
+  },
+  "na_basic_text": {
+    "title": "The Basic Text (Narcotics Anonymous)",
+    "pdfLink": "https://www.na.org/admin/include/spaw2/uploads/pdf/litfiles/us_english/Book/Sixth%20Edition%20Basic%20Text.pdf",
+    "chapters": [
+      {
+        "title": "Who is an Addict?",
+        "content": "Most of us do not have to think twice about this question. We know! Our whole life and thinking was centered in drugs in one form or another—the getting and using and finding ways and means to get more. We lived to use and used to live. Very simply, an addict is a person whose life is controlled by drugs."
+      },
+      {
+        "title": "What is the Narcotics Anonymous Program?",
+        "content": "N.A. is a nonprofit fellowship or society of men and women for whom drugs had become a major problem. We are recovering addicts who meet regularly to help each other stay clean. There are no dues or fees. The only requirement for membership is a desire to stop using. You don’t have to be clean to come to meetings. You only have to want to stop. We are not interested in what or how much you used or who your connections were, what you have done in the past, how much or how little you have, or whether you have been in trouble with the law. We are interested only in what you want to do about your problem and how we can help."
+      }
+    ]
+  }
+}
