@@ -10,8 +10,8 @@ export const LocalDataStore = {
         GOALS: 'recovery_goals', 
         WORKBOOK: 'recovery_workbook_responses', 
         WELCOME_TIP: 'recovery_welcome_tip_dismissed',
-        PIN: 'recovery_app_pin',
-        NINETY_IN_NINETY: 'recovery_90_in_90_challenge' // NEW: Key for the challenge
+        PIN: 'recovery_app_pin', // NEW: Key for application lock PIN
+        JOURNAL_TAGS: 'recovery_journal_tags' // NEW: Key for all journal tags
     },
 
     /**
@@ -27,9 +27,8 @@ export const LocalDataStore = {
                 // Return default values if item doesn't exist
                 if (key === LocalDataStore.KEYS.SOBRIETY) return null;
                 if (key === LocalDataStore.KEYS.WELCOME_TIP) return false; // Default: show tip
-                if (key === LocalDataStore.KEYS.PIN) return null;
-                if (key === LocalDataStore.KEYS.NINETY_IN_NINETY) return null; // NEW: Default to null
-                return []; // Default for arrays (Journal/Goals)
+                if (key === LocalDataStore.KEYS.PIN) return null; // NEW: Default: no PIN set
+                return []; // Default for arrays (Journal/Goals/Tags)
             }
             
             // Sobriety date is stored as a raw ISO string
@@ -40,12 +39,12 @@ export const LocalDataStore = {
             if (key === LocalDataStore.KEYS.WELCOME_TIP) {
                 return serializedData === 'true';
             }
-            // PIN is stored as a raw string
+            // NEW: PIN is stored as a raw string
             if (key === LocalDataStore.KEYS.PIN) {
                 return serializedData;
             }
 
-            // For JSON data (Arrays/Objects like Journal/Goals/Workbook/Challenge)
+            // For JSON data (Arrays/Objects like Journal/Goals/Workbook)
             return JSON.parse(serializedData);
 
         } catch (error) {
@@ -54,7 +53,6 @@ export const LocalDataStore = {
             if (key === LocalDataStore.KEYS.SOBRIETY) return null;
             if (key === LocalDataStore.KEYS.WELCOME_TIP) return false;
             if (key === LocalDataStore.KEYS.PIN) return null;
-            if (key === LocalDataStore.KEYS.NINETY_IN_NINETY) return null;
             return [];
         }
     },
@@ -69,10 +67,12 @@ export const LocalDataStore = {
             let dataToStore;
             
             // Sobriety date, PIN, and welcome tip are stored as primitive strings/booleans
-            if (key === LocalDataStore.KEYS.SOBRIETY || key === LocalDataStore.KEYS.PIN) {
+            if (key === LocalDataStore.KEYS.SOBRIETY) {
                 dataToStore = data;
             } else if (key === LocalDataStore.KEYS.WELCOME_TIP) {
                 dataToStore = data ? 'true' : 'false';
+            } else if (key === LocalDataStore.KEYS.PIN) { // NEW: PIN
+                dataToStore = data;
             } else {
                 // All other complex data structures (Arrays/Objects) are serialized
                 dataToStore = JSON.stringify(data);
