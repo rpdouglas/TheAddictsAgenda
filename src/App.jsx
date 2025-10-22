@@ -18,6 +18,7 @@ import { DailyReflection } from 'components/DailyReflection.jsx';
 import { NinetyDayChallenge } from 'components/NinetyDayChallenge.jsx';
 import { Homegroup } from 'components/Homegroup.jsx';
 import MeetingTracker from 'components/MeetingTracker.jsx';
+import GroupMembers from 'components/GroupMembers.jsx'; // Make sure this is imported
 
 // Map string icon names to imported JSX components (Needed here to pass to child components if they expect icons)
 const iconMap = {
@@ -155,7 +156,6 @@ const App = () => {
     const renderContent = () => {
         if (isAuthLoading || isDataLoading) return <div className="h-full flex items-center justify-center"><Spinner /></div>;
         
-        // If locked, render nothing but the lock screen.
         if (isLocked) return null;
 
         if (!sobrietyStartDate || isNaN(sobrietyStartDate.getTime())) return <SobrietyDataSetup onDateSet={setSobrietyStartDate} />;
@@ -178,6 +178,7 @@ const App = () => {
             case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
             case 'homegroup': return <Homegroup onBack={() => setActiveView('finder')} onNavigate={setActiveView} />;
             case 'meetingTracker': return <MeetingTracker onBack={() => setActiveView('homegroup')} />;
+            case 'groupMembers': return <GroupMembers onBack={() => setActiveView('homegroup')} />;
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
         }
     };
@@ -196,7 +197,8 @@ const App = () => {
             reflection: "Daily Reflection",
             challenge: "90 Day Challenge",
             homegroup: "Homegroup",
-            meetingTracker: "Meeting Tracker"
+            meetingTracker: "Meeting Tracker",
+            groupMembers: "Group Members"
         };
         return titles[activeView] || "Recovery";
     }, [activeView]);
@@ -229,7 +231,6 @@ const App = () => {
 
     return (
         <div className="bg-gray-100 h-screen w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4">
-            {/* NEW: Lock Screen Render */}
             {isLocked && storedPin && (
                 <PinLockScreen 
                     storedPin={storedPin} 
