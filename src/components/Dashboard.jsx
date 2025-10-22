@@ -80,7 +80,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
 
     const menuItems = [
         { view: 'journal', label: 'Daily Journal', icon: <BookOpenIcon /> },
-        { view: 'reflection', label: 'Daily Reflection', icon: <CalendarIcon /> }, // ADDED
+        { view: 'reflection', label: 'Daily Reflection', icon: <CalendarIcon /> },
         { view: 'goals', label: 'My Goals', icon: <TargetIcon /> },
         { view: 'coping', label: 'Coping Cards', icon: <ShieldIcon /> },
         { view: 'workbook', label: 'Recovery Workbook', icon: <ClipboardListIcon /> },
@@ -100,10 +100,16 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
             </div>
 
             <SobrietyTracker startDate={sobrietyStartDate} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* UPDATED: Change grid layout to 2 columns on all devices */}
+            <div className="grid grid-cols-2 gap-4"> 
                 {menuItems.map(item => ( 
-                    <button key={item.view} onClick={() => onNavigate(item.view)} className="flex items-center p-6 bg-white rounded-xl shadow-lg hover:shadow-xl hover:bg-teal-50 transition-all transform hover:-translate-y-1">
-                        <div className="text-teal-500 mr-4">{item.icon}</div><span className="text-lg font-semibold text-gray-700">{item.label}</span>
+                    <button 
+                        key={item.view} 
+                        onClick={() => onNavigate(item.view)} 
+                        className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg hover:shadow-xl hover:bg-teal-50 transition-all transform hover:-translate-y-1 text-center h-full"
+                    >
+                        <div className="text-teal-500 mb-2">{item.icon}</div>
+                        <span className="text-sm font-semibold text-gray-700">{item.label}</span>
                     </button> 
                 ))}
             </div>
