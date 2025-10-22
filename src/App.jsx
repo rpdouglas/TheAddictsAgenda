@@ -12,9 +12,9 @@ import { Goals } from 'components/Goals.jsx';
 import { CopingCards } from 'components/CopingCards.jsx';
 import { RecoveryWorkbook } from 'components/RecoveryWorkbook.jsx';
 import { RecoveryLiterature } from 'components/RecoveryLiterature.jsx';
-import { Resources, MeetingFinder } from 'components/Resources.jsx';
+import { Resources, MeetingManagement } from 'components/Resources.jsx';
 import { Settings } from 'components/Settings.jsx';
-import { DailyReflection } from 'components/DailyReflection.jsx';
+import { DailyReflection } from 'components/DailyReflection.jsx'; 
 import { NinetyDayChallenge } from 'components/NinetyDayChallenge.jsx';
 
 // Map string icon names to imported JSX components (Needed here to pass to child components if they expect icons)
@@ -163,7 +163,7 @@ const App = () => {
             case 'journal': return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} />;
             case 'goals': return <Goals />;
             // Note: CopingCards needs the resolved icon map, passed here or handled internally
-            case 'coping': return <CopingCards onJournal={handleJournalFromCopingCard} allCopingCards={allCopingCards} />;
+            case 'coping': return <CopingCards onJournal={handleJournalFromCopingCard} />;
             case 'workbook': return <RecoveryWorkbook />;
             case 'literature': return <RecoveryLiterature />;
             case 'resources': return <Resources />;
@@ -172,7 +172,7 @@ const App = () => {
                 handleSobrietyDateUpdate={handleSobrietyDateUpdate}
                 onBack={() => setActiveView('dashboard')}
             />;
-            case 'finder': return <MeetingFinder />;
+            case 'finder': return <MeetingManagement onBack={() => setActiveView('dashboard')} />;
             case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />;
             case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} />;
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
@@ -189,7 +189,7 @@ const App = () => {
             workbook: "Recovery Workbook", 
             resources: "S.O.S. Resources", 
             settings: "Settings", 
-            finder: "Meeting Finder",
+            finder: "Meeting Management",
             reflection: "Daily Reflection",
             challenge: "90 Day Challenge"
         };

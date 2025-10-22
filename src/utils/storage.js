@@ -4,14 +4,15 @@
 // using the browser's local storage. This ensures the app remains private and serverless.
 
 export const LocalDataStore = {
-    KEYS: { 
+   KEYS: { 
         SOBRIETY: 'recovery_sobriety_date', 
         JOURNAL: 'recovery_journal_entries', 
         GOALS: 'recovery_goals', 
         WORKBOOK: 'recovery_workbook_responses', 
         WELCOME_TIP: 'recovery_welcome_tip_dismissed',
-        PIN: 'recovery_app_pin', // NEW: Key for application lock PIN
-        JOURNAL_TAGS: 'recovery_journal_tags' // NEW: Key for all journal tags
+        PIN: 'recovery_app_pin',
+        NINETY_IN_NINETY: 'recovery_90_in_90_challenge',
+        MEETINGS: 'recovery_user_meetings' // NEW: Key for user's meetings
     },
 
     /**
