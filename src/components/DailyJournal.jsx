@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
+import DataStore from '../utils/dataStore.js';
 import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
 import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, PenIcon } from '../utils/icons.jsx';
@@ -9,7 +9,7 @@ const MoodGraphView = ({ items, onBack }) => {
     const moodData = useMemo(() => {
         return items
             .filter(item => typeof item.mood === 'number')
-            .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     }, [items]);
 
     if (moodData.length < 2) {
@@ -33,15 +33,15 @@ const MoodGraphView = ({ items, onBack }) => {
     const chartWidth = SVG_WIDTH - PADDING * 2;
     const chartHeight = SVG_HEIGHT - PADDING * 2;
 
-    const minTime = moodData[0].timestamp.getTime();
-    const maxTime = moodData[moodData.length - 1].timestamp.getTime();
-    const timeRange = maxTime - minTime || 1; // Avoid division by zero
+    const minTime = new Date(moodData[0].timestamp).getTime();
+    const maxTime = new Date(moodData[moodData.length - 1].timestamp).getTime();
+    const timeRange = maxTime - minTime || 1;
 
     const points = moodData.map(item => ({
-        x: PADDING + ((item.timestamp.getTime() - minTime) / timeRange) * chartWidth,
+        x: PADDING + ((new Date(item.timestamp).getTime() - minTime) / timeRange) * chartWidth,
         y: PADDING + chartHeight - ((item.mood - 1) / 9) * chartHeight, // Mood 1-10
         mood: item.mood,
-        date: item.timestamp.toLocaleDateString()
+        date: new Date(item.timestamp).toLocaleDateString()
     }));
 
     const pathData = points.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x} ${p.y}`).join(' ');
@@ -54,19 +54,12 @@ const MoodGraphView = ({ items, onBack }) => {
             <h3 className="text-xl font-bold text-gray-800 mb-4">Mood Over Time</h3>
             <div className="w-full overflow-x-auto">
                  <svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} className="min-w-[500px]">
-                    {/* Y-Axis Labels */}
                     <text x="15" y={PADDING} dy="5" textAnchor="middle" className="text-xs fill-gray-500">10</text>
                     <text x="15" y={PADDING + chartHeight / 2} dy="5" textAnchor="middle" className="text-xs fill-gray-500">5</text>
                     <text x="15" y={PADDING + chartHeight} dy="5" textAnchor="middle" className="text-xs fill-gray-500">1</text>
-                    
-                    {/* X-Axis Labels */}
-                    <text x={PADDING} y={SVG_HEIGHT - 10} textAnchor="start" className="text-xs fill-gray-500">{moodData[0].timestamp.toLocaleDateString()}</text>
-                    <text x={SVG_WIDTH - PADDING} y={SVG_HEIGHT - 10} textAnchor="end" className="text-xs fill-gray-500">{moodData[moodData.length - 1].timestamp.toLocaleDateString()}</text>
-
-                    {/* Chart Path */}
+                    <text x={PADDING} y={SVG_HEIGHT - 10} textAnchor="start" className="text-xs fill-gray-500">{new Date(moodData[0].timestamp).toLocaleDateString()}</text>
+                    <text x={SVG_WIDTH - PADDING} y={SVG_HEIGHT - 10} textAnchor="end" className="text-xs fill-gray-500">{new Date(moodData[moodData.length - 1].timestamp).toLocaleDateString()}</text>
                     <path d={pathData} fill="none" stroke="#14b8a6" strokeWidth="2" />
-
-                    {/* Data Points with Tooltip */}
                     {points.map((p, i) => (
                         <g key={i}>
                             <circle cx={p.x} cy={p.y} r="8" fill="#14b8a6" fillOpacity="0.2" />
@@ -85,32 +78,24 @@ const MoodGraphView = ({ items, onBack }) => {
 export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('list'); // 'list', 'form', 'graph'
+    const [viewMode, setViewMode] = useState('list');
 
-    // --- Form State ---
     const [newItemText, setNewItemText] = useState('');
-    const [currentMood, setCurrentMood] = useState(5); // Mood slider value 1-10
+    const [currentMood, setCurrentMood] = useState(5);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
     
-    // --- Editing State ---
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
 
-    // --- Tag Management State ---
     const [allTags, setAllTags] = useState([]);
     const [currentEntryTags, setCurrentEntryTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
 
-    // --- Persistence & Loading (UPDATED FOR DATASTORE) ---
     const saveItemsToStore = useCallback(async (updatedItems) => {
-        const sortedItems = updatedItems.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        const sortedItems = updatedItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setItems(sortedItems);
-        const serializableItems = sortedItems.map(item => ({
-            ...item,
-            timestamp: item.timestamp.toISOString()
-        }));
-        await DataStore.save(DataStore.KEYS.JOURNAL, serializableItems);
+        await DataStore.save(DataStore.KEYS.JOURNAL, sortedItems);
     }, []);
 
     const saveAllTagsToStore = useCallback(async (updatedTags) => {
@@ -122,18 +107,10 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     useEffect(() => {
         const loadJournalData = async () => {
             setIsLoading(true);
-            const loadedItems = await DataStore.load(DataStore.KEYS.JOURNAL);
-            const loadedTags = await DataStore.load(DataStore.KEYS.JOURNAL_TAGS);
-
-            const formattedItems = (loadedItems || []).map(item => ({
-                ...item,
-                tags: item.tags || [],
-                mood: typeof item.mood === 'number' ? item.mood : null,
-                timestamp: item.timestamp ? new Date(item.timestamp) : new Date(0)
-            })).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-            setItems(formattedItems);
-            setAllTags((loadedTags || []).sort());
+            const loadedItems = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
+            const loadedTags = await DataStore.load(DataStore.KEYS.JOURNAL_TAGS) || [];
+            setItems(loadedItems);
+            setAllTags(loadedTags.sort());
             setIsLoading(false);
         };
         
@@ -152,7 +129,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
     }, [journalTemplate, setJournalTemplate]);
 
-    // --- Form Handlers ---
     const handleShowNewForm = () => {
         setIsEditing(false);
         setEditItemId(null);
@@ -190,7 +166,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         setSelectedTemplateId('');
     };
 
-    // --- Tag Handlers (UPDATED FOR DATASTORE) ---
     const handleAddTag = async () => {
         const newTag = tagInput.trim().toLowerCase();
         if (newTag && !currentEntryTags.includes(newTag)) {
@@ -213,7 +188,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
     };
 
-    // --- Save Handler (UPDATED FOR DATASTORE) ---
     const handleSaveEntry = async (e) => {
         e.preventDefault();
         if (newItemText.trim() === '') return;
@@ -222,7 +196,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
             text: newItemText, 
             tags: currentEntryTags,
             mood: currentMood,
-            timestamp: new Date()
+            timestamp: new Date().toISOString()
         };
 
         if (isEditing && editItemId) {
@@ -234,7 +208,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         handleCancelEdit();
     };
 
-    // --- Main Render Logic ---
     const renderContent = () => {
         switch (viewMode) {
             case 'form':
@@ -247,8 +220,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
     };
     
-    // --- Sub-Components (Views) ---
-
     const JournalListView = () => (
         <div className="flex-grow overflow-y-auto pr-2 -mr-2 mt-4">
             <div className="flex gap-2 mb-6">
@@ -325,7 +296,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
                 {isEditing && (
                     <div className="bg-teal-50 p-3 rounded-lg">
                         <p className="text-sm font-semibold text-teal-700">
-                            Editing Entry from: {items.find(i => i.id === editItemId)?.timestamp.toLocaleString()}
+                            Editing Entry from: {new Date(items.find(i => i.id === editItemId)?.timestamp).toLocaleString()}
                         </p>
                     </div>
                 )}
@@ -349,7 +320,13 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
                     </div>
                 )}
 
-                <DebouncedTextarea value={newItemText} onChange={setNewItemText} placeholder="Write your entry..." rows="10" />
+                <DebouncedTextarea 
+                    value={newItemText} 
+                    onChange={setNewItemText} 
+                    placeholder="Write your entry..." 
+                    rows="10" 
+                    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 resize-y min-h-[150px]"
+                />
 
                 <div className="p-3 border border-gray-200 rounded-lg space-y-2">
                      <label htmlFor="mood-slider" className="block text-sm font-semibold text-gray-700">
