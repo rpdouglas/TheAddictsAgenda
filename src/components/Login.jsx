@@ -1,26 +1,9 @@
-import React, { useEffect } from 'react';
-import { signInWithRedirect, getRedirectResult } from "firebase/auth";
+import React from 'react';
+import { signInWithRedirect } from "firebase/auth";
 import { auth, googleProvider, facebookProvider } from '../firebase.jsx';
 import { BookOpenIcon } from '../utils/icons.jsx';
 
 const Login = () => {
-    useEffect(() => {
-        const handleRedirectResult = async () => {
-            try {
-                const result = await getRedirectResult(auth);
-                if (result) {
-                    // User is signed in.
-                    // You can access the user info from result.user
-                }
-            } catch (error) {
-                console.error("Error handling redirect result:", error.message);
-                alert(`Sign-In Error: ${error.message}`);
-            }
-        };
-
-        handleRedirectResult();
-    }, []);
-
     const handleGoogleSignIn = async () => {
         try {
             await signInWithRedirect(auth, googleProvider);

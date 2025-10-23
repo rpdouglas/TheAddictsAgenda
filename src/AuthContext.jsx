@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from './firebase.jsx'; // Use relative path
+import { onAuthStateChanged, signOut, getRedirectResult } from "firebase/auth";
+import { auth } from './firebase.jsx';
 
 const AuthContext = createContext();
 
@@ -17,9 +17,22 @@ export function AuthProvider({ children }) {
     }
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, user => {
-            setCurrentUser(user);
-            setLoading(false);
+        const unsubscribe = onAuthStateChanged(auth, async user => {
+            if (user) {
+                setCurrentUser(user);
+                setLoading(false);
+            } else {
+                try {
+                    const result = await getRedirectResult(auth);
+                    if (result) {
+                        setCurrentUser(result.user);
+                    }
+                } catch (error) {
+                    console.error("Error handling redirect result:", error.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
         });
         return unsubscribe;
     }, []);
