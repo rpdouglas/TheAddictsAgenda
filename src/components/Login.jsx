@@ -1,14 +1,29 @@
-import React from 'react';
-import { signInWithPopup } from "firebase/auth";
-// UPDATED: Use a direct relative path instead of an alias
+import React, { useEffect } from 'react';
+import { signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { auth, googleProvider, facebookProvider } from '../firebase.jsx';
 import { BookOpenIcon } from '../utils/icons.jsx';
 
 const Login = () => {
-    // ... rest of the component
+    useEffect(() => {
+        const handleRedirectResult = async () => {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result) {
+                    // User is signed in.
+                    // You can access the user info from result.user
+                }
+            } catch (error) {
+                console.error("Error handling redirect result:", error.message);
+                alert(`Sign-In Error: ${error.message}`);
+            }
+        };
+
+        handleRedirectResult();
+    }, []);
+
     const handleGoogleSignIn = async () => {
         try {
-            await signInWithPopup(auth, googleProvider);
+            await signInWithRedirect(auth, googleProvider);
         } catch (error) {
             console.error("Error signing in with Google:", error.message);
             alert(`Google Sign-In Error: ${error.message}`);
@@ -17,7 +32,7 @@ const Login = () => {
 
     const handleFacebookSignIn = async () => {
         try {
-            await signInWithPopup(auth, facebookProvider);
+            await signInWithRedirect(auth, facebookProvider);
         } catch (error) {
             console.error("Error signing in with Facebook:", error.message);
             alert(`Facebook Sign-In Error: ${error.message}`);
