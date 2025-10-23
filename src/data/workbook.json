@@ -466,5 +466,119 @@
         ]
       }
     ]
+  },
+  "recoveryDharma": {
+    "title": "Recovery Dharma",
+    "description": "A workbook for personal inquiry based on Buddhist teachings.",
+    "topics": [
+      {
+        "id": "rd-truth-1",
+        "title": "First Noble Truth: There is Suffering",
+        "quote": "We acknowledge the reality of our suffering without judgment.",
+        "sections": [
+          {
+            "title": "Inquiry & Reflection",
+            "questions": [
+              "In what specific ways has addiction caused suffering in my life? (Consider relationships, finances, physical health, mental health, and spiritual well-being.)",
+              "Describe a moment when you felt the full weight of your addiction. What was happening? What did it feel like in your body and mind?",
+              "List three ways your life has become unmanageable due to addiction."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rd-truth-2",
+        "title": "Second Noble Truth: The Cause is Craving",
+        "quote": "We investigate the cycle of craving, aversion, and ignorance that fuels our addiction.",
+        "sections": [
+          {
+            "title": "Inquiry & Reflection",
+            "questions": [
+              "What are my primary cravings? (These can be for substances, but also for validation, control, distraction, or specific feelings.)",
+              "What are the triggers for these cravings? (Think about people, places, situations, feelings, and thoughts.)",
+              "What am I trying to avoid or escape from when I engage in my addictive behavior?"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rd-truth-3",
+        "title": "Third Noble Truth: There is an End",
+        "quote": "We embrace the hope that freedom from the cycle of craving is possible.",
+        "sections": [
+          {
+            "title": "Inquiry & Reflection",
+            "questions": [
+              "What would freedom from the obsession of addiction look and feel like for me? Describe a day in that life.",
+              "What do my deepest intentions for recovery look like? (e.g., cultivating compassion, connection, stability, joy)."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rd-truth-4",
+        "title": "Fourth Noble Truth: The Path",
+        "quote": "We commit to the Eightfold Path as our program for recovery.",
+        "sections": [
+          {
+            "title": "Inquiry & Reflection",
+            "questions": [
+              "Looking at the Eightfold Path, which area feels most challenging for me right now? Which feels most accessible?",
+              "What is one small, actionable step I can take on this path today?"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rd-path-1",
+        "title": "Wise Understanding",
+        "prompt": "Seeing things as they are. Understanding the Four Noble Truths from our own experience. \n\nInquiry: What old beliefs about myself or my addiction am I ready to let go of?"
+      },
+      {
+        "id": "rd-path-2",
+        "title": "Wise Intention",
+        "prompt": "Cultivating motivations of compassion, letting go, and kindness. \n\nInquiry: What is my core intention for my recovery today?"
+      },
+      {
+        "id": "rd-path-3",
+        "title": "Wise Speech",
+        "prompt": "Abstaining from lying, divisive speech, harsh speech, and idle chatter. \n\nInquiry: Reflect on a recent conversation. Was my speech truthful and kind? How can I practice pausing before I speak?"
+      },
+      {
+        "id": "rd-path-4",
+        "title": "Wise Action",
+        "prompt": "Acting in ways that do not cause harm to myself or others. \n\nInquiry: What is one wholesome action I will take today? What is one unwholesome action I will abstain from?"
+      },
+      {
+        "id": "rd-path-5",
+        "title": "Wise Livelihood",
+        "prompt": "Engaging in work or activity that is ethical and does not cause harm. \n\nInquiry: How can I bring more mindfulness and ethical conduct into my work or daily activities?"
+      },
+      {
+        "id": "rd-path-6",
+        "title": "Wise Effort",
+        "prompt": "Gently applying energy to cultivate wholesome states and release unwholesome ones. \n\nInquiry: Where is my energy going today? Am I feeding thoughts of anger and resentment, or thoughts of kindness and forgiveness?"
+      },
+      {
+        "id": "rd-path-7",
+        "title": "Wise Mindfulness",
+        "prompt": "Developing present-moment awareness of our body, feelings, and mind. \n\nInquiry: Take three mindful breaths right now. What do I notice in my body and my direct environment in this present moment?"
+      },
+      {
+        "id": "rd-path-8",
+        "title": "Wise Concentration",
+        "prompt": "Training the mind to be steady and focused, primarily through meditation. \n\nInquiry: What is my biggest obstacle to a consistent meditation practice, and how can I address it with kindness?"
+      },
+      {
+        "id": "rd-tools-meditation",
+        "title": "Tools: Meditation (Bhāvanā)",
+        "prompt": "Inquiry: What benefits have I noticed from meditating, even for just a few minutes? \n\nPractice Loving-Kindness (Metta): \nTake a few moments to offer these phrases to yourself, then to someone you care about, and finally to all beings. \nMay you be happy. \nMay you be healthy. \nMay you be safe. \nMay you live with ease."
+      },
+      {
+        "id": "rd-tools-community",
+        "title": "Tools: Community (Saṅgha)",
+        "prompt": "Inquiry: Who is in my support network (Saṅgha)? List them here. \n\nInquiry: What is one way I can reach out for support this week? \n\nInquiry: What is one way I can offer support to my community this week?"
+      }
+    ]
   }
 }
