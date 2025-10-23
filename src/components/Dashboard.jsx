@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FirestoreDataStore } from '../utils/storage.js';
+import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { Spinner } from './common.jsx';
 import { RECOVERY_FACTS } from '../utils/data.js';
 import { BookOpenIcon, TargetIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, MapPinIcon, XIcon, CalendarIcon } from '../utils/icons.jsx';
@@ -77,7 +77,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
     useEffect(() => {
         const loadTipStatus = async () => {
             setIsLoadingTip(true);
-            const dismissed = await FirestoreDataStore.load(FirestoreDataStore.KEYS.WELCOME_TIP);
+            const dismissed = await DataStore.load(DataStore.KEYS.WELCOME_TIP); // UPDATED
             setIsTipDismissed(dismissed);
             setIsLoadingTip(false);
         };
@@ -85,7 +85,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
     }, []);
 
     const handleDismissTip = async () => {
-        await FirestoreDataStore.save(FirestoreDataStore.KEYS.WELCOME_TIP, true);
+        await DataStore.save(DataStore.KEYS.WELCOME_TIP, true); // UPDATED
         setIsTipDismissed(true);
     };
 
@@ -132,7 +132,7 @@ export const SobrietyDataSetup = ({ onDateSet }) => {
     const handleSave = async () => {
         const newStartDate = new Date(date);
         await onDateSet(newStartDate); 
-        await FirestoreDataStore.save(FirestoreDataStore.KEYS.WELCOME_TIP, false);
+        await DataStore.save(DataStore.KEYS.WELCOME_TIP, false); // UPDATED
     };
 
     return (

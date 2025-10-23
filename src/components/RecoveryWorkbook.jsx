@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { FirestoreDataStore } from '../utils/storage.js';
+import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, ChevronDown, ChevronUp, CheckCircleIcon } from '../utils/icons.jsx';
@@ -17,7 +17,7 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
         isInitialLoad.current = true; // Reset initial load flag on key change
     }, [questionKey, initialResponses]);
 
-    // Debounced save to Firestore
+    // Debounced save to the data store
     useEffect(() => {
         if (isInitialLoad.current) {
             isInitialLoad.current = false;
@@ -35,9 +35,9 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
             try {
                 // To save a single field without overwriting the whole workbook,
                 // we load the workbook, update the one field, and save it back.
-                const currentWorkbookData = await FirestoreDataStore.load(FirestoreDataStore.KEYS.WORKBOOK) || {};
+                const currentWorkbookData = await DataStore.load(DataStore.KEYS.WORKBOOK) || {}; // UPDATED
                 const updatedData = { ...currentWorkbookData, [questionKey]: response };
-                await FirestoreDataStore.save(FirestoreDataStore.KEYS.WORKBOOK, updatedData);
+                await DataStore.save(DataStore.KEYS.WORKBOOK, updatedData); // UPDATED
                 setSaveStatus('Saved');
             } catch (error) {
                 console.error("Error saving workbook response:", error);
@@ -171,7 +171,7 @@ export const RecoveryWorkbook = () => {
     useEffect(() => {
         const loadWorkbookData = async () => {
             setIsLoading(true);
-            const loadedData = await FirestoreDataStore.load(FirestoreDataStore.KEYS.WORKBOOK) || {};
+            const loadedData = await DataStore.load(DataStore.KEYS.WORKBOOK) || {}; // UPDATED
             setWorkbookResponses(loadedData);
             setIsLoading(false);
         };

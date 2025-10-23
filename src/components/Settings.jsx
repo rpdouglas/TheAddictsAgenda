@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FirestoreDataStore } from '../utils/storage.js';
+import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { Spinner } from './common.jsx';
-import { ArrowLeftIcon, DownloadIcon, FileTextIcon, LockIcon, UnlockIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, DownloadIcon, FileTextIcon, LockIcon, UnlockIcon, LogOutIcon } from '../utils/icons.jsx';
 
-export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack }) => {
+export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout }) => {
     // --- Sobriety Date State ---
     const initialDateString = useMemo(() => {
         if (currentStartDate instanceof Date && !isNaN(currentStartDate)) {
@@ -19,12 +19,12 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
 
     const handleSaveDate = () => {
         const updatedDate = new Date(newDate);
-        handleSobrietyDateUpdate(updatedDate, journalChecked); // This prop is async in App.jsx
+        handleSobrietyDateUpdate(updatedDate, journalChecked);
         setSaveDateStatus('Date Updated!');
         setTimeout(() => setSaveDateStatus(''), 2000);
     };
 
-    // --- PIN Management State & Logic (UPDATED FOR FIREBASE) ---
+    // --- PIN Management State & Logic ---
     const [isPinSet, setIsPinSet] = useState(false);
     const [isLoadingPin, setIsLoadingPin] = useState(true);
     const [pin, setPin] = useState('');
@@ -36,7 +36,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
     useEffect(() => {
         const checkPinStatus = async () => {
             setIsLoadingPin(true);
-            const storedPin = await FirestoreDataStore.load(FirestoreDataStore.KEYS.PIN);
+            const storedPin = await DataStore.load(DataStore.KEYS.PIN); // UPDATED
             setIsPinSet(!!storedPin);
             setIsLoadingPin(false);
         };
@@ -54,7 +54,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
             return;
         }
 
-        await FirestoreDataStore.save(FirestoreDataStore.KEYS.PIN, pin);
+        await DataStore.save(DataStore.KEYS.PIN, pin); // UPDATED
         setIsPinSet(true);
         setPin('');
         setConfirmPin('');
@@ -64,10 +64,10 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
 
     const handleConfirmRemovePin = async () => {
         setPinMessage('');
-        const storedPinValue = await FirestoreDataStore.load(FirestoreDataStore.KEYS.PIN);
+        const storedPinValue = await DataStore.load(DataStore.KEYS.PIN); // UPDATED
 
         if (removalPinAttempt === storedPinValue) {
-            await FirestoreDataStore.save(FirestoreDataStore.KEYS.PIN, null);
+            await DataStore.save(DataStore.KEYS.PIN, null); // UPDATED
             setIsPinSet(false);
             setIsRemovingPin(false);
             setRemovalPinAttempt('');
@@ -81,7 +81,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
 
     const handleExportData = async () => {
         setExporting(true);
-        const data = await FirestoreDataStore.loadAll();
+        const data = await DataStore.loadAll(); // UPDATED
         const jsonString = JSON.stringify(data, null, 2);
         const blob = new Blob([jsonString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -95,6 +95,15 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
 
         URL.revokeObjectURL(url);
         setExporting(false);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await onLogout();
+        } catch (error) {
+            console.error("Error during logout:", error);
+            alert("There was an issue logging out. Please try again.");
+        }
     };
 
     return (
@@ -215,6 +224,22 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack })
                     >
                         {exporting ? <Spinner small /> : <DownloadIcon className="w-5 h-5"/>}
                         {exporting ? 'Preparing Data...' : 'Export All Data (.json)'}
+                    </button>
+                </div>
+
+                {/* Logout Section */}
+                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <h3 className="flex items-center gap-2 text-lg font-bold text-red-800 mb-2">
+                        <LogOutIcon className="w-5 h-5"/> Account Actions
+                    </h3>
+                    <p className="text-sm text-gray-700 mb-4">
+                        Logging out will require you to sign in again to access your data.
+                    </p>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-red-700"
+                    >
+                        Log Out
                     </button>
                 </div>
 

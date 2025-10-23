@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from './AuthContext.jsx';
-import { FirestoreDataStore } from './utils/storage.js';
+import { useAuth } from './AuthContext.jsx'; // THIS LINE WAS MISSING
+import DataStore from './utils/dataStore.js';
 import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from './utils/icons.jsx';
 import { Spinner } from './components/common.jsx';
 import Login from './components/Login.jsx';
 
-// Import all view components using corrected relative paths
+// Import all view components
 import { Dashboard, SobrietyDataSetup } from './components/Dashboard.jsx';
 import { DailyJournal } from './components/DailyJournal.jsx';
 import { Goals } from './components/Goals.jsx';
@@ -20,7 +20,7 @@ import { Homegroup } from './components/Homegroup.jsx';
 import MeetingTracker from './components/MeetingTracker.jsx';
 
 const App = () => {
-    const { currentUser, loading: authLoading } = useAuth();
+    const { session, loading: authLoading, logout } = useAuth();
     
     const [activeView, setActiveView] = useState('dashboard');
     const [sobrietyStartDate, setSobrietyStartDate] = useState(null);
@@ -28,25 +28,30 @@ const App = () => {
     const [journalTemplate, setJournalTemplate] = useState('');
 
     useEffect(() => {
+        DataStore.setStorageEngine(session?.type);
+
         const loadUserData = async () => {
-            if (currentUser) {
+            if (session) {
                 setIsDataLoading(true);
-                const storedDate = await FirestoreDataStore.load(FirestoreDataStore.KEYS.SOBRIETY);
+                const storedDate = await DataStore.load(DataStore.KEYS.SOBRIETY);
                 if (storedDate) {
                     setSobrietyStartDate(new Date(storedDate));
                 } else {
                     setSobrietyStartDate(null);
                 }
                 setIsDataLoading(false);
+            } else {
+                // If there's no session, we aren't loading data.
+                setIsDataLoading(false);
             }
         };
         loadUserData();
-    }, [currentUser]);
+    }, [session]);
 
     const handleSobrietyDateUpdate = async (newDate) => {
         if (!newDate || isNaN(newDate.getTime())) return;
         setSobrietyStartDate(newDate);
-        await FirestoreDataStore.save(FirestoreDataStore.KEYS.SOBRIETY, newDate.toISOString());
+        await DataStore.save(DataStore.KEYS.SOBRIETY, newDate.toISOString());
     };
 
     const handleJournalFromCopingCard = (card) => {
@@ -59,7 +64,7 @@ const App = () => {
         return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
     }
 
-    if (!currentUser) {
+    if (!session) {
         return <Login />;
     }
 
@@ -84,6 +89,7 @@ const App = () => {
                 currentStartDate={sobrietyStartDate} 
                 handleSobrietyDateUpdate={handleSobrietyDateUpdate}
                 onBack={() => setActiveView('dashboard')}
+                onLogout={logout}
             />;
             case 'finder': return <MeetingManagement onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
             case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />;

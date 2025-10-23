@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FirestoreDataStore } from '../utils/storage.js';
+import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { Spinner } from './common.jsx';
 import { CalendarIcon, CheckIcon, RefreshIcon, XIcon, ArrowLeftIcon, PenIcon } from '../utils/icons.jsx';
 
 // Data storage key
-const STORAGE_KEY = FirestoreDataStore.KEYS.NINETY_IN_NINETY;
+const STORAGE_KEY = DataStore.KEYS.NINETY_IN_NINETY; // UPDATED: Use DataStore
 const DAYS_IN_CHALLENGE = 90;
 
 // --- Custom Confirmation Modals ---
@@ -44,10 +44,10 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
     const [showJournalPrompt, setShowJournalPrompt] = useState(false);
     const [journalDate, setJournalDate] = useState(null);
 
-    // --- Data Persistence (UPDATED FOR FIREBASE) ---
+    // --- Data Persistence (UPDATED FOR DATASTORE) ---
     const loadChallengeData = useCallback(async () => {
         setIsLoading(true);
-        const stored = await FirestoreDataStore.load(STORAGE_KEY);
+        const stored = await DataStore.load(STORAGE_KEY); // UPDATED: Use DataStore
         if (stored && stored.startDate && stored.attendance) {
             setChallengeData({
                 ...stored,
@@ -63,7 +63,7 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
 
     const saveChallengeData = useCallback(async (data) => {
         setChallengeData(data);
-        await FirestoreDataStore.save(STORAGE_KEY, {
+        await DataStore.save(STORAGE_KEY, { // UPDATED: Use DataStore
             ...data,
             startDate: data.startDate.toISOString()
         });
@@ -83,7 +83,7 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         return { currentDay: dayDiff, attendanceCount: count };
     }, [challengeData]);
 
-    // --- Handlers (UPDATED FOR FIREBASE) ---
+    // --- Handlers (UPDATED FOR DATASTORE) ---
     const handleStartNewChallenge = async () => {
         setShowResetModal(false);
         const today = new Date();

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FirestoreDataStore } from '../utils/storage.js';
+import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, TrashIcon, EditIcon, PlusIcon } from '../utils/icons.jsx';
 
-const STORAGE_KEY = FirestoreDataStore.KEYS.HOMEGROUP_MEMBERS;
+const STORAGE_KEY = DataStore.KEYS.HOMEGROUP_MEMBERS; // UPDATED: Use DataStore
 
 // --- Confirmation Modal Component ---
 const DeleteMemberModal = ({ memberName, onConfirm, onCancel }) => (
@@ -39,21 +39,21 @@ const GroupMembers = ({ onBack }) => {
         "Chairperson", "Coffee Maker", "Literature Person", "Greeter",
     ];
 
-    // --- Data Persistence (UPDATED FOR FIREBASE) ---
+    // --- Data Persistence (UPDATED FOR DATASTORE) ---
     useEffect(() => {
         const loadMembers = async () => {
             setIsLoading(true);
-            const loadedMembers = await FirestoreDataStore.load(STORAGE_KEY) || [];
+            const loadedMembers = await DataStore.load(STORAGE_KEY) || []; // UPDATED: Use DataStore
             setMembers(loadedMembers.sort((a, b) => a.name.localeCompare(b.name)));
             setIsLoading(false);
         };
         loadMembers();
     }, []);
 
-    const saveMembersToFirestore = useCallback(async (updatedMembers) => {
+    const saveMembersToStore = useCallback(async (updatedMembers) => { // RENAMED for clarity
         const sortedMembers = updatedMembers.sort((a, b) => a.name.localeCompare(b.name));
         setMembers(sortedMembers);
-        await FirestoreDataStore.save(STORAGE_KEY, sortedMembers);
+        await DataStore.save(STORAGE_KEY, sortedMembers); // UPDATED: Use DataStore
     }, []);
 
     const resetForm = () => {
@@ -75,9 +75,9 @@ const GroupMembers = ({ onBack }) => {
         if (isEditing) {
             updatedMembers = members.map(m => m.id === formState.id ? formState : m);
         } else {
-            updatedMembers = [...members, { ...formState, id: FirestoreDataStore.generateId() }];
+            updatedMembers = [...members, { ...formState, id: DataStore.generateId() }]; // UPDATED: Use DataStore
         }
-        await saveMembersToFirestore(updatedMembers);
+        await saveMembersToStore(updatedMembers);
         resetForm();
     };
 
@@ -94,7 +94,7 @@ const GroupMembers = ({ onBack }) => {
 
     const confirmDelete = async () => {
         if (memberToDelete) {
-            await saveMembersToFirestore(members.filter(m => m.id !== memberToDelete.id));
+            await saveMembersToStore(members.filter(m => m.id !== memberToDelete.id));
             setMemberToDelete(null);
         }
     };

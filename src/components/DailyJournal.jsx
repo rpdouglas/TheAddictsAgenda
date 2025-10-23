@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FirestoreDataStore } from '../utils/storage.js';
+import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
 import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, PenIcon } from '../utils/icons.jsx';
@@ -102,28 +102,28 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     const [currentEntryTags, setCurrentEntryTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
 
-    // --- Persistence & Loading (UPDATED FOR FIREBASE) ---
-    const saveItemsToFirestore = useCallback(async (updatedItems) => {
+    // --- Persistence & Loading (UPDATED FOR DATASTORE) ---
+    const saveItemsToStore = useCallback(async (updatedItems) => {
         const sortedItems = updatedItems.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
         setItems(sortedItems);
         const serializableItems = sortedItems.map(item => ({
             ...item,
             timestamp: item.timestamp.toISOString()
         }));
-        await FirestoreDataStore.save(FirestoreDataStore.KEYS.JOURNAL, serializableItems);
+        await DataStore.save(DataStore.KEYS.JOURNAL, serializableItems);
     }, []);
 
-    const saveAllTagsToFirestore = useCallback(async (updatedTags) => {
+    const saveAllTagsToStore = useCallback(async (updatedTags) => {
         const sortedTags = [...new Set(updatedTags)].sort();
         setAllTags(sortedTags);
-        await FirestoreDataStore.save(FirestoreDataStore.KEYS.JOURNAL_TAGS, sortedTags);
+        await DataStore.save(DataStore.KEYS.JOURNAL_TAGS, sortedTags);
     }, []);
 
     useEffect(() => {
         const loadJournalData = async () => {
             setIsLoading(true);
-            const loadedItems = await FirestoreDataStore.load(FirestoreDataStore.KEYS.JOURNAL);
-            const loadedTags = await FirestoreDataStore.load(FirestoreDataStore.KEYS.JOURNAL_TAGS);
+            const loadedItems = await DataStore.load(DataStore.KEYS.JOURNAL);
+            const loadedTags = await DataStore.load(DataStore.KEYS.JOURNAL_TAGS);
 
             const formattedItems = (loadedItems || []).map(item => ({
                 ...item,
@@ -140,7 +140,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         loadJournalData();
     }, []);
     
-    // This effect properly handles incoming templates
     useEffect(() => {
         if (journalTemplate && setJournalTemplate) {
             setIsEditing(false);
@@ -182,7 +181,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     };
 
     const handleDeleteItem = async (id) => {
-        await saveItemsToFirestore(items.filter(item => item.id !== id));
+        await saveItemsToStore(items.filter(item => item.id !== id));
     };
     
     const handleApplyTemplate = () => {
@@ -191,13 +190,13 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         setSelectedTemplateId('');
     };
 
-    // --- Tag Handlers (UPDATED FOR FIREBASE) ---
+    // --- Tag Handlers (UPDATED FOR DATASTORE) ---
     const handleAddTag = async () => {
         const newTag = tagInput.trim().toLowerCase();
         if (newTag && !currentEntryTags.includes(newTag)) {
             setCurrentEntryTags([...currentEntryTags, newTag]);
             if (!allTags.includes(newTag)) {
-                await saveAllTagsToFirestore([...allTags, newTag]);
+                await saveAllTagsToStore([...allTags, newTag]);
             }
         }
         setTagInput('');
@@ -214,7 +213,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
     };
 
-    // --- Save Handler (UPDATED FOR FIREBASE) ---
+    // --- Save Handler (UPDATED FOR DATASTORE) ---
     const handleSaveEntry = async (e) => {
         e.preventDefault();
         if (newItemText.trim() === '') return;
@@ -227,9 +226,9 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         };
 
         if (isEditing && editItemId) {
-            await saveItemsToFirestore(items.map(item => item.id === editItemId ? { ...item, ...entryData } : item));
+            await saveItemsToStore(items.map(item => item.id === editItemId ? { ...item, ...entryData } : item));
         } else {
-            await saveItemsToFirestore([{ id: FirestoreDataStore.generateId(), ...entryData }, ...items]);
+            await saveItemsToStore([{ id: DataStore.generateId(), ...entryData }, ...items]);
         }
         
         handleCancelEdit();

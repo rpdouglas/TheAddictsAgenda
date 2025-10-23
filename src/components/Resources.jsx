@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FirestoreDataStore } from '../utils/storage.js';
+import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { MEETING_LINKS } from '../utils/data.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, ChevronDown, ChevronUp, TrashIcon, CheckIcon, StarIcon, ViewGridIcon, ViewListIcon, EditIcon, HomeIcon } from '../utils/icons.jsx';
@@ -21,10 +21,10 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
     });
     const [isEditing, setIsEditing] = useState(false);
 
-    // --- Data Persistence (UPDATED FOR FIREBASE) ---
+    // --- Data Persistence (UPDATED FOR DATASTORE) ---
     const loadMeetings = useCallback(async () => {
         setIsLoading(true);
-        const storedMeetings = await FirestoreDataStore.load(FirestoreDataStore.KEYS.MEETINGS) || [];
+        const storedMeetings = await DataStore.load(DataStore.KEYS.MEETINGS) || []; // UPDATED
         setMeetings(storedMeetings);
         setIsLoading(false);
     }, []);
@@ -35,10 +35,10 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
 
     const saveMeetings = useCallback(async (updatedMeetings) => {
         setMeetings(updatedMeetings);
-        await FirestoreDataStore.save(FirestoreDataStore.KEYS.MEETINGS, updatedMeetings);
+        await DataStore.save(DataStore.KEYS.MEETINGS, updatedMeetings); // UPDATED
     }, []);
     
-    // --- Handlers (UPDATED FOR FIREBASE) ---
+    // --- Handlers (UPDATED FOR DATASTORE) ---
     const resetForm = () => {
         setFormState({ id: null, name: '', day: 'Sunday', time: '', address: '', isHomegroup: false });
         setIsEditing(false);
@@ -56,7 +56,7 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
         if (isEditing) {
             updatedMeetings = meetings.map(m => m.id === formState.id ? { ...formState } : m);
         } else {
-            const newMeeting = { ...formState, id: FirestoreDataStore.generateId() };
+            const newMeeting = { ...formState, id: DataStore.generateId() }; // UPDATED
             submittedMeetingId = newMeeting.id;
             updatedMeetings = [...meetings, newMeeting];
         }
