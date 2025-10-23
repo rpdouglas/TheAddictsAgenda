@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="512" height="512" rx="80" fill="#24282B"/>
+<rect x="91" y="91" width="330" height="230" rx="20" fill="#D32F2F"/>
+<path d="M101 111H411C416.523 111 421 115.477 421 121V311C421 316.523 416.523 321 411 321H101C95.4772 321 91 316.523 91 311V121C91 115.477 95.4772 111 101 111Z" fill="#FDD835"/>
+<path d="M256 121H411C416.523 121 421 125.477 421 131V311C421 316.523 416.523 321 411 321H256V121Z" fill="#FFF9C4"/>
+<rect x="256" y="111" width="10" height="210" fill="#D32F2F"/>
+<path d="M116 156H226" stroke="#D32F2F" stroke-width="8" stroke-linecap="round"/>
+<path d="M116 196H226" stroke="#D32F2F" stroke-width="8" stroke-linecap="round"/>
+<path d="M116 236H226" stroke="#D32F2F" stroke-width="8" stroke-linecap="round"/>
+<path d="M116 276H226" stroke="#D32F2F" stroke-width="8" stroke-linecap="round"/>
+<path d="M301 161C301 154.373 306.373 149 313 149H343C349.627 149 355 154.373 355 161V226H301V161Z" fill="#CFD8DC"/>
+<path d="M301 226H355V291C355 297.627 349.627 303 343 303H313C306.373 303 301 297.627 301 291V226Z" fill="#D32F2F"/>
+<rect x="301" y="221" width="54" height="10" fill="#D32F2F"/>
+<path d="M316.5 246L326.5 256L346.5 236" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="80" y="405" font-family="Arial, sans-serif" font-weight="bold" font-size="50" fill="white">THE ADDICTS</text>
+<text x="80" y="465" font-family="Arial, sans-serif" font-weight="bold" font-size="70" fill="white">AGENDA</text>
+</svg>
