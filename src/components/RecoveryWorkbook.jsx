@@ -1,35 +1,43 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, ChevronDown, ChevronUp, CheckCircleIcon } from '../utils/icons.jsx';
 
 // --- Sub-Components ---
 
-const WorkbookQuestion = ({ questionText, questionKey }) => {
+const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
     const [response, setResponse] = useState('');
     const [saveStatus, setSaveStatus] = useState('');
     const isInitialLoad = useRef(true);
 
+    // Load initial data from props passed down from the main component
     useEffect(() => {
-        const data = LocalDataStore.load(LocalDataStore.KEYS.WORKBOOK) || {};
-        setResponse(data[questionKey] || '');
-        setSaveStatus('Initial Load');
-    }, [questionKey]);
+        setResponse(initialResponses[questionKey] || '');
+        isInitialLoad.current = true; // Reset initial load flag on key change
+    }, [questionKey, initialResponses]);
 
+    // Debounced save to Firestore
     useEffect(() => {
         if (isInitialLoad.current) {
             isInitialLoad.current = false;
             return;
         }
 
+        // Only save if the response has actually changed from what was loaded
+        if (response === (initialResponses[questionKey] || '')) {
+            return;
+        }
+
         setSaveStatus('Saving...');
         
-        const delayDebounceFn = setTimeout(() => {
+        const delayDebounceFn = setTimeout(async () => {
             try {
-                const data = LocalDataStore.load(LocalDataStore.KEYS.WORKBOOK) || {};
-                const updatedData = { ...data, [questionKey]: response };
-                LocalDataStore.save(LocalDataStore.KEYS.WORKBOOK, updatedData);
+                // To save a single field without overwriting the whole workbook,
+                // we load the workbook, update the one field, and save it back.
+                const currentWorkbookData = await FirestoreDataStore.load(FirestoreDataStore.KEYS.WORKBOOK) || {};
+                const updatedData = { ...currentWorkbookData, [questionKey]: response };
+                await FirestoreDataStore.save(FirestoreDataStore.KEYS.WORKBOOK, updatedData);
                 setSaveStatus('Saved');
             } catch (error) {
                 console.error("Error saving workbook response:", error);
@@ -38,7 +46,7 @@ const WorkbookQuestion = ({ questionText, questionKey }) => {
         }, 1500);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [response, questionKey]);
+    }, [response, questionKey, initialResponses]);
 
     return (
         <div className="mb-4 pb-2">
@@ -55,7 +63,7 @@ const WorkbookQuestion = ({ questionText, questionKey }) => {
     );
 };
 
-const CollapsibleWorkbookSection = ({ section, stepId }) => {
+const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const contentRef = useRef(null);
     
@@ -92,6 +100,7 @@ const CollapsibleWorkbookSection = ({ section, stepId }) => {
                             key={questionKey}
                             questionText={question}
                             questionKey={questionKey}
+                            initialResponses={initialResponses}
                         />
                     );
                 })}
@@ -100,12 +109,12 @@ const CollapsibleWorkbookSection = ({ section, stepId }) => {
     );
 };
 
-const WorkbookTopic = ({ topic, onBack }) => {
+const WorkbookTopic = ({ topic, onBack, initialResponses }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
             <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Topics</span></button>
             
-            <h3 className="2xl font-bold text-gray-800 mb-2">{topic.title}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{topic.title}</h3>
             
             {topic.quote && (
                 <div className="step-quote">
@@ -120,11 +129,12 @@ const WorkbookTopic = ({ topic, onBack }) => {
                             key={secIndex} 
                             section={section} 
                             stepId={topic.id} 
+                            initialResponses={initialResponses}
                         />
                     ))
                 ) : (
                     // Fallback for General Topics
-                    <WorkbookQuestion questionText={topic.prompt} questionKey={topic.id} />
+                    <WorkbookQuestion questionText={topic.prompt} questionKey={topic.id} initialResponses={initialResponses} />
                 )}
             </div>
         </div>
@@ -156,18 +166,17 @@ export const RecoveryWorkbook = () => {
     const [activeCategory, setActiveCategory] = useState(null); 
     const [selectedTopic, setSelectedTopic] = useState(null); 
     const [workbookResponses, setWorkbookResponses] = useState({});
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const loadedData = LocalDataStore.load(LocalDataStore.KEYS.WORKBOOK) || {};
-        setWorkbookResponses(loadedData);
-        
-        const handleStorageChange = (e) => {
-            if (e.key === LocalDataStore.KEYS.WORKBOOK) {
-                setWorkbookResponses(LocalDataStore.load(LocalDataStore.KEYS.WORKBOOK) || {});
-            }
+        const loadWorkbookData = async () => {
+            setIsLoading(true);
+            const loadedData = await FirestoreDataStore.load(FirestoreDataStore.KEYS.WORKBOOK) || {};
+            setWorkbookResponses(loadedData);
+            setIsLoading(false);
         };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        
+        loadWorkbookData();
     }, []);
 
     const completedTopicIds = useMemo(() => {
@@ -210,20 +219,23 @@ export const RecoveryWorkbook = () => {
     }, [completedTopicIds]);
 
     const overallCompletion = useMemo(() => {
-        const allTopics = Object.values(workbookData).flatMap(c => c.topics);
+        const allTopics = Object.values(workbookData).flatMap(c => c.topics || []);
         const completed = allTopics.filter(t => completedTopicIds.includes(t.id)).length;
         const total = allTopics.length;
         return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
     }, [completedTopicIds]);
     
-    if (selectedTopic && selectedTopic.sections) return <WorkbookTopic topic={selectedTopic} onBack={() => setSelectedTopic(null)} />;
-    if (selectedTopic) return <WorkbookTopic topic={selectedTopic} onBack={() => setSelectedTopic(null)} />;
+    if (isLoading) {
+        return <Spinner />;
+    }
+
+    if (selectedTopic) return <WorkbookTopic topic={selectedTopic} onBack={() => setSelectedTopic(null)} initialResponses={workbookResponses} />;
     if (activeCategory) return <WorkbookCategory category={activeCategory} onSelectTopic={setSelectedTopic} onBack={() => setActiveCategory(null)} completedTopicIds={completedTopicIds} />;
     
     return ( 
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in"> 
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Recovery Workbook</h2> 
-            <p className="text-gray-600 mb-6">Track your progress.</p> 
+            <p className="text-gray-600 mb-6">Track your progress through the exercises.</p> 
             <div className="mb-6"> 
                 <div className="flex justify-between items-center mb-1"> 
                     <span className="text-sm font-semibold text-gray-600">Overall Progress</span> 

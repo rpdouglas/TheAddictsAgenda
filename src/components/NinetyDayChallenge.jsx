@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { Spinner } from './common.jsx';
-import { CalendarIcon, CheckIcon, RefreshIcon, XIcon, ArrowLeftIcon, PenIcon } from '../utils/icons.jsx'; // Added PenIcon
+import { CalendarIcon, CheckIcon, RefreshIcon, XIcon, ArrowLeftIcon, PenIcon } from '../utils/icons.jsx';
 
 // Data storage key
-const STORAGE_KEY = LocalDataStore.KEYS.NINETY_IN_NINETY;
+const STORAGE_KEY = FirestoreDataStore.KEYS.NINETY_IN_NINETY;
 const DAYS_IN_CHALLENGE = 90;
 
 // --- Custom Confirmation Modals ---
@@ -21,7 +21,6 @@ const ResetModal = ({ onConfirm, onCancel }) => (
     </div>
 );
 
-// NEW: Modal to ask about journaling
 const JournalPromptModal = ({ dateString, onConfirm, onCancel }) => (
      <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md space-y-4">
@@ -38,15 +37,17 @@ const JournalPromptModal = ({ dateString, onConfirm, onCancel }) => (
 );
 
 
-export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) => { // Added props
+export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) => {
     const [challengeData, setChallengeData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showResetModal, setShowResetModal] = useState(false);
-    const [showJournalPrompt, setShowJournalPrompt] = useState(false); // State for journal modal
-    const [journalDate, setJournalDate] = useState(null); // Date for the journal entry
+    const [showJournalPrompt, setShowJournalPrompt] = useState(false);
+    const [journalDate, setJournalDate] = useState(null);
 
-    const loadChallengeData = useCallback(() => {
-        const stored = LocalDataStore.load(STORAGE_KEY);
+    // --- Data Persistence (UPDATED FOR FIREBASE) ---
+    const loadChallengeData = useCallback(async () => {
+        setIsLoading(true);
+        const stored = await FirestoreDataStore.load(STORAGE_KEY);
         if (stored && stored.startDate && stored.attendance) {
             setChallengeData({
                 ...stored,
@@ -60,14 +61,15 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         loadChallengeData();
     }, [loadChallengeData]);
 
-    const saveChallengeData = useCallback((data) => {
+    const saveChallengeData = useCallback(async (data) => {
         setChallengeData(data);
-        LocalDataStore.save(STORAGE_KEY, {
+        await FirestoreDataStore.save(STORAGE_KEY, {
             ...data,
             startDate: data.startDate.toISOString()
         });
     }, []);
 
+    // --- Logic ---
     const { currentDay, attendanceCount } = useMemo(() => {
         if (!challengeData || !challengeData.startDate) {
             return { currentDay: 0, attendanceCount: 0 };
@@ -76,19 +78,20 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         const start = challengeData.startDate.getTime();
         const now = new Date().getTime();
         let dayDiff = Math.floor((now - start) / msInDay) + 1;
-        dayDiff = Math.max(1, Math.min(dayDiff, DAYS_IN_CHALLENGE)); // Ensure day is at least 1
+        dayDiff = Math.max(1, Math.min(dayDiff, DAYS_IN_CHALLENGE));
         const count = Object.values(challengeData.attendance).filter(Boolean).length;
         return { currentDay: dayDiff, attendanceCount: count };
     }, [challengeData]);
 
-    const handleStartNewChallenge = () => {
+    // --- Handlers (UPDATED FOR FIREBASE) ---
+    const handleStartNewChallenge = async () => {
         setShowResetModal(false);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        saveChallengeData({ startDate: today, attendance: {} });
+        await saveChallengeData({ startDate: today, attendance: {} });
     };
 
-    const handleToggleAttendance = (dayIndex) => {
+    const handleToggleAttendance = async (dayIndex) => {
         if (!challengeData) return;
         
         const targetDate = new Date(challengeData.startDate);
@@ -99,21 +102,19 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         const newAttendanceState = !currentAttendance;
 
         const updatedAttendance = { ...challengeData.attendance, [dateKey]: newAttendanceState };
-        saveChallengeData({ ...challengeData, attendance: updatedAttendance });
+        await saveChallengeData({ ...challengeData, attendance: updatedAttendance });
 
-        // If attendance was marked *true*, prompt for journal
         if (newAttendanceState) {
-            setJournalDate(dateKey); // Set the date for the prompt
+            setJournalDate(dateKey);
             setShowJournalPrompt(true);
         }
     };
     
-     // NEW: Function to handle journaling confirmation
     const handleConfirmJournal = () => {
-        const meetingDate = new Date(journalDate + 'T00:00:00'); // Ensure correct date object
+        const meetingDate = new Date(journalDate + 'T00:00:00');
         const template = `Meeting Reflection - ${meetingDate.toLocaleDateString()}:\n\nMeeting Name/Topic: \nTime: \n\nOne Big Takeaway:\n\n`;
         setJournalTemplate(template);
-        onNavigate('journal'); // Navigate using the passed function
+        onNavigate('journal');
         setShowJournalPrompt(false);
         setJournalDate(null);
     };
@@ -127,11 +128,10 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         return date.toISOString().split('T')[0];
     };
 
-    // --- RENDER FUNCTIONS ---
+    // --- Render Functions ---
     const renderChallengeGrid = () => {
-        // ... (Grid rendering logic remains the same, uses handleToggleAttendance)
         const days = Array.from({ length: DAYS_IN_CHALLENGE }, (_, i) => {
-            const dayIndex = i; // 0 to 89
+            const dayIndex = i;
             const isAttended = challengeData.attendance[getFormattedDate(dayIndex)] || false;
             const isSelectable = isDayPastOrToday(dayIndex);
             
@@ -233,7 +233,6 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
                 <p className="text-sm text-gray-600 italic pt-2">Tap any past day to mark attendance. You'll be asked if you want to journal about it.</p>
             </div>
 
-            {/* Grid Visualization */}
             <div className="flex-grow overflow-y-auto pr-2 -mr-2">
                 {renderChallengeGrid()}
             </div>

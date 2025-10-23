@@ -1,23 +1,30 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { MEETING_LINKS } from '../utils/data.js';
 import { Spinner } from './common.jsx';
-import { ArrowLeftIcon, ChevronDown, ChevronUp, TrashIcon, StarIcon, EditIcon, HomeIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ChevronDown, ChevronUp, TrashIcon, CheckIcon, StarIcon, ViewGridIcon, ViewListIcon, EditIcon, HomeIcon } from '../utils/icons.jsx';
 
 // --- Main Component ---
 export const MeetingManagement = ({ onNavigate, onBack }) => {
     const [meetings, setMeetings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('list');
     
     // Form State & Editing State
     const [formState, setFormState] = useState({
-        id: null, name: '', day: 'Sunday', time: '', address: '', isHomegroup: false,
+        id: null,
+        name: '',
+        day: 'Sunday',
+        time: '',
+        address: '',
+        isHomegroup: false,
     });
     const [isEditing, setIsEditing] = useState(false);
 
-    // --- Data Persistence ---
-    const loadMeetings = useCallback(() => {
-        const storedMeetings = LocalDataStore.load(LocalDataStore.KEYS.MEETINGS) || [];
+    // --- Data Persistence (UPDATED FOR FIREBASE) ---
+    const loadMeetings = useCallback(async () => {
+        setIsLoading(true);
+        const storedMeetings = await FirestoreDataStore.load(FirestoreDataStore.KEYS.MEETINGS) || [];
         setMeetings(storedMeetings);
         setIsLoading(false);
     }, []);
@@ -26,60 +33,116 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
         loadMeetings();
     }, [loadMeetings]);
 
-    const saveMeetings = (updatedMeetings) => {
+    const saveMeetings = useCallback(async (updatedMeetings) => {
         setMeetings(updatedMeetings);
-        LocalDataStore.save(LocalDataStore.KEYS.MEETINGS, updatedMeetings);
-    };
+        await FirestoreDataStore.save(FirestoreDataStore.KEYS.MEETINGS, updatedMeetings);
+    }, []);
     
-    // --- Handlers ---
+    // --- Handlers (UPDATED FOR FIREBASE) ---
     const resetForm = () => {
         setFormState({ id: null, name: '', day: 'Sunday', time: '', address: '', isHomegroup: false });
         setIsEditing(false);
     };
 
-    const handleFormSubmit = (e) => {
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
-        const { id, name, day, time, address, isHomegroup } = formState;
+        const { name, time, isHomegroup } = formState;
+
         if (!name.trim() || !time) return;
 
         let updatedMeetings;
+        let submittedMeetingId = formState.id;
+
         if (isEditing) {
-            updatedMeetings = meetings.map(m => m.id === id ? { ...m, ...formState } : m);
+            updatedMeetings = meetings.map(m => m.id === formState.id ? { ...formState } : m);
         } else {
-            const newMeeting = { ...formState, id: LocalDataStore.generateId() };
+            const newMeeting = { ...formState, id: FirestoreDataStore.generateId() };
+            submittedMeetingId = newMeeting.id;
             updatedMeetings = [...meetings, newMeeting];
         }
 
         if (isHomegroup) {
-            updatedMeetings = updatedMeetings.map(m => 
-                m.id === (id || updatedMeetings[updatedMeetings.length -1].id) ? m : { ...m, isHomegroup: false }
+            updatedMeetings = updatedMeetings.map(m =>
+                m.id === submittedMeetingId
+                    ? { ...m, isHomegroup: true }
+                    : { ...m, isHomegroup: false }
             );
         }
 
-        saveMeetings(updatedMeetings);
+        await saveMeetings(updatedMeetings);
         resetForm();
     };
 
     const handleStartEdit = (meeting) => {
         setFormState(meeting);
         setIsEditing(true);
-        window.scrollTo(0, 0);
+        window.scrollTo(0, 0); // Scroll to top to see the form
     };
 
-    const handleDeleteMeeting = (id) => {
-        saveMeetings(meetings.filter(m => m.id !== id));
+    const handleDeleteMeeting = async (id) => {
+        await saveMeetings(meetings.filter(m => m.id !== id));
     };
 
-    const handleSetHomegroup = (id) => {
-        saveMeetings(meetings.map(m => ({ ...m, isHomegroup: m.id === id })));
+    const handleSetHomegroup = async (id) => {
+        await saveMeetings(meetings.map(m => ({ ...m, isHomegroup: m.id === id })));
     };
 
     const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormState(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        setFormState(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
+
+    // --- Render Views ---
+    const renderMeetingList = () => (
+        <ul className="space-y-3">
+            {meetings.sort((a,b) => daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day) || a.time.localeCompare(b.time)).map(m => (
+                <li key={m.id} className={`p-3 rounded-lg ${m.isHomegroup ? 'bg-yellow-100 border border-yellow-300' : 'bg-white border'}`}>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-semibold text-gray-800">{m.name}</p>
+                            <p className="text-sm text-gray-600">{m.day} at {m.time}</p>
+                            {m.address && <p className="text-xs text-gray-500">{m.address}</p>}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                             <button onClick={() => handleStartEdit(m)} title="Edit Meeting" className="text-gray-400 hover:text-blue-500"><EditIcon className="w-5 h-5"/></button>
+                             <button onClick={() => handleSetHomegroup(m.id)} title="Set as Homegroup">
+                                <StarIcon className={`w-6 h-6 ${m.isHomegroup ? 'text-yellow-500 fill-current' : 'text-gray-400 hover:text-yellow-500'}`} />
+                             </button>
+                             <button onClick={() => handleDeleteMeeting(m.id)} className="text-red-500 hover:text-red-700 p-1"><TrashIcon className="w-5 h-5"/></button>
+                        </div>
+                    </div>
+                    {m.isHomegroup && (
+                         <button onClick={() => onNavigate('homegroup')} className="mt-2 text-sm w-full bg-yellow-400 text-yellow-900 font-semibold py-1 px-3 rounded-lg hover:bg-yellow-500 flex items-center justify-center gap-2">
+                            <HomeIcon className="w-4 h-4"/> Homegroup Dashboard
+                         </button>
+                    )}
+                </li>
+            ))}
+        </ul>
+    );
+
+    const renderCalendarView = () => (
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            {daysOfWeek.map(day => (
+                <div key={day} className="border rounded-lg p-2 bg-gray-50 min-h-[100px]">
+                    <p className="font-bold text-center text-sm mb-2">{day}</p>
+                    <div className="space-y-2">
+                        {meetings.filter(m => m.day === day).sort((a, b) => a.time.localeCompare(b.time)).map(m => (
+                             <div key={m.id} className={`p-2 rounded-md text-xs ${m.isHomegroup ? 'bg-yellow-200' : 'bg-white shadow-sm'}`}>
+                                <p className="font-semibold truncate">{m.name}</p>
+                                <p>{m.time}</p>
+                             </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
@@ -108,35 +171,17 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
                 </div>
             </form>
 
-            <h3 className="font-bold text-lg text-gray-700 mb-3">My Meetings</h3>
+            <div className="flex justify-between items-center mb-3">
+                 <h3 className="font-bold text-lg text-gray-700">My Meetings</h3>
+                 <div className="flex items-center gap-2 p-1 bg-gray-200 rounded-lg">
+                    <button onClick={() => setViewMode('list')} className={`p-1 rounded-md ${viewMode === 'list' ? 'bg-white shadow' : ''}`}><ViewListIcon className="w-5 h-5"/></button>
+                    <button onClick={() => setViewMode('calendar')} className={`p-1 rounded-md ${viewMode === 'calendar' ? 'bg-white shadow' : ''}`}><ViewGridIcon className="w-5 h-5"/></button>
+                 </div>
+            </div>
 
             <div className="flex-grow overflow-y-auto pr-2 -mr-2">
                 {isLoading ? <Spinner /> : (meetings.length > 0 ? (
-                    <ul className="space-y-3">
-                        {meetings.sort((a,b) => daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day) || a.time.localeCompare(b.time)).map(m => (
-                            <li key={m.id} className={`p-3 rounded-lg ${m.isHomegroup ? 'bg-yellow-100 border border-yellow-300' : 'bg-white border'}`}>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="font-semibold text-gray-800">{m.name}</p>
-                                        <p className="text-sm text-gray-600">{m.day} at {m.time}</p>
-                                        {m.address && <p className="text-xs text-gray-500">{m.address}</p>}
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                        <button onClick={() => handleStartEdit(m)} title="Edit Meeting" className="text-gray-400 hover:text-blue-500"><EditIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleSetHomegroup(m.id)} title="Set as Homegroup">
-                                            <StarIcon className={`w-6 h-6 ${m.isHomegroup ? 'text-yellow-500 fill-current' : 'text-gray-400 hover:text-yellow-500'}`} />
-                                        </button>
-                                        <button onClick={() => handleDeleteMeeting(m.id)} className="text-red-500 hover:text-red-700 p-1"><TrashIcon className="w-5 h-5"/></button>
-                                    </div>
-                                </div>
-                                {m.isHomegroup && (
-                                    <button onClick={() => onNavigate('homegroup')} className="mt-2 text-sm w-full bg-yellow-400 text-yellow-900 font-semibold py-1 px-3 rounded-lg hover:bg-yellow-500 flex items-center justify-center gap-2">
-                                        <HomeIcon className="w-4 h-4"/> Homegroup Dashboard
-                                    </button>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
+                    viewMode === 'list' ? renderMeetingList() : renderCalendarView()
                 ) : (
                     <p className="text-gray-500 text-center py-4">You haven't added any meetings yet.</p>
                 ))}

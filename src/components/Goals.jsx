@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { Spinner, DebouncedTextarea } from './common.jsx';
 import { EditIcon, TrashIcon, CheckIcon } from '../utils/icons.jsx';
 
 export const Goals = () => {
     const config = { collectionName: 'goals', title: 'My Goals', prompt: 'Set small, achievable goals for your recovery.', placeholder: 'e.g., Attend a meeting or Call my sponsor tonight', emptyState: 'No goals set yet.', hasCompleted: true };
-    const storageKey = LocalDataStore.KEYS.GOALS;
+    const storageKey = FirestoreDataStore.KEYS.GOALS;
     
     const [items, setItems] = useState([]);
     const [newItem, setNewItem] = useState('');
@@ -13,55 +13,61 @@ export const Goals = () => {
     const [editedText, setEditedText] = useState(''); 
     const [isLoading, setIsLoading] = useState(true);
 
-    // --- Persistence & Loading ---
-    const saveItemsToLocal = useCallback((updatedItems) => {
-        const sortAndSet = updatedItems.sort((a, b) => (b.timestamp.getTime()) - (a.timestamp.getTime()));
-        setItems(sortAndSet);
-        const serializableItems = sortAndSet.map(item => ({
+    // --- Persistence & Loading (UPDATED FOR FIREBASE) ---
+    const saveItemsToFirestore = useCallback(async (updatedItems) => {
+        const sortedItems = updatedItems.sort((a, b) => (b.timestamp.getTime()) - (a.timestamp.getTime()));
+        setItems(sortedItems);
+        const serializableItems = sortedItems.map(item => ({
             ...item,
             timestamp: item.timestamp.toISOString()
         }));
-        LocalDataStore.save(storageKey, serializableItems);
+        await FirestoreDataStore.save(storageKey, serializableItems);
     }, [storageKey]);
 
     useEffect(() => {
-        const loadedItems = LocalDataStore.load(storageKey);
-        const formattedItems = loadedItems.map(item => ({
-            ...item,
-            timestamp: item.timestamp ? new Date(item.timestamp) : new Date(0)
-        })).sort((a, b) => (b.timestamp.getTime()) - (a.timestamp.getTime()));
+        const loadGoalsData = async () => {
+            setIsLoading(true);
+            const loadedItems = await FirestoreDataStore.load(storageKey);
+            
+            const formattedItems = (loadedItems || []).map(item => ({
+                ...item,
+                timestamp: item.timestamp ? new Date(item.timestamp) : new Date(0)
+            })).sort((a, b) => (b.timestamp.getTime()) - (a.timestamp.getTime()));
 
-        setItems(formattedItems);
-        setIsLoading(false);
+            setItems(formattedItems);
+            setIsLoading(false);
+        };
+        
+        loadGoalsData();
     }, [storageKey]);
     
-    // --- CRUD Handlers ---
+    // --- CRUD Handlers (UPDATED FOR FIREBASE) ---
 
-    const handleSaveNewEntry = (e) => {
+    const handleSaveNewEntry = async (e) => {
         e.preventDefault();
         if (newItem.trim() === '') return;
         
         const newItemObject = { 
-            id: LocalDataStore.generateId(), 
+            id: FirestoreDataStore.generateId(), 
             text: newItem, 
             timestamp: new Date(),
             completed: false
         };
         
-        saveItemsToLocal([newItemObject, ...items]);
+        await saveItemsToFirestore([newItemObject, ...items]);
         setNewItem('');
     };
     
-    const handleToggleCompleted = (item) => {
+    const handleToggleCompleted = async (item) => {
         const updatedItems = items.map(i => 
             i.id === item.id ? { ...i, completed: !i.completed } : i
         );
-        saveItemsToLocal(updatedItems);
+        await saveItemsToFirestore(updatedItems);
     };
 
-    const handleDeleteItem = (id) => {
+    const handleDeleteItem = async (id) => {
         const updatedItems = items.filter(item => item.id !== id);
-        saveItemsToLocal(updatedItems);
+        await saveItemsToFirestore(updatedItems);
     };
     
     const handleEditGoals = (item) => { 
@@ -69,7 +75,7 @@ export const Goals = () => {
         setEditedText(item.text);
     };
 
-    const handleUpdateGoals = (e) => { 
+    const handleUpdateGoals = async (e) => { 
         e.preventDefault();
         if (!editingItem || editedText.trim() === '') return;
 
@@ -77,7 +83,7 @@ export const Goals = () => {
             item.id === editingItem.id ? { ...item, text: editedText, timestamp: new Date() } : item
         );
         
-        saveItemsToLocal(updatedItems);
+        await saveItemsToFirestore(updatedItems);
         setEditingItem(null);
         setEditedText('');
     };
@@ -115,6 +121,7 @@ export const Goals = () => {
                                             onChange={(e) => setEditedText(e.target.value)}
                                             className="w-full p-2 border border-teal-500 rounded-lg resize-none"
                                             rows={2}
+                                            autoFocus
                                         />
                                         <div className="flex justify-end gap-2">
                                             <button type="button" onClick={() => setEditingItem(null)} className="text-gray-500 hover:text-gray-700 text-sm font-semibold">Cancel</button>

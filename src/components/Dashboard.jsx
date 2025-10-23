@@ -1,20 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { Spinner } from './common.jsx';
-import { RECOVERY_FACTS, copingStrategies } from '../utils/data.js';
-import { BookOpenIcon, TargetIcon, LifeBuoyIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, SettingsIcon, MapPinIcon, PhoneIcon, XIcon, CalendarIcon } from '../utils/icons.jsx';
-
-// Map string icon names to imported JSX components
-const iconMap = {
-    MapPinIcon: MapPinIcon,
-    PhoneIcon: PhoneIcon,
-    ShieldIcon: ShieldIcon,
-};
-const allCopingCards = copingStrategies.map(card => ({
-    ...card,
-    icon: iconMap[card.icon] || ShieldIcon
-}));
-
+import { RECOVERY_FACTS } from '../utils/data.js';
+import { BookOpenIcon, TargetIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, MapPinIcon, XIcon, CalendarIcon } from '../utils/icons.jsx';
 
 // --- Sub-Components ---
 
@@ -22,11 +10,28 @@ const SobrietyTracker = ({ startDate }) => {
     const calculateTimeSober = () => {
         const diff = new Date().getTime() - new Date(startDate).getTime();
         if (diff < 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-        return { days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000), minutes: Math.floor((diff % 3600000) / 60000), seconds: Math.floor((diff % 60000) / 1000) };
+        return {
+            days: Math.floor(diff / 86400000),
+            hours: Math.floor((diff % 86400000) / 3600000),
+            minutes: Math.floor((diff % 3600000) / 60000),
+            seconds: Math.floor((diff % 60000) / 1000)
+        };
     };
+
     const [timeSober, setTimeSober] = useState(calculateTimeSober());
-    useEffect(() => { const timer = setInterval(() => setTimeSober(calculateTimeSober()), 1000); return () => clearInterval(timer); }, [startDate]);
-    const timeUnits = [ { label: 'Days', value: timeSober.days }, { label: 'Hours', value: timeSober.hours }, { label: 'Minutes', value: timeSober.minutes }, { label: 'Seconds', value: timeSober.seconds } ];
+
+    useEffect(() => {
+        const timer = setInterval(() => setTimeSober(calculateTimeSober()), 1000);
+        return () => clearInterval(timer);
+    }, [startDate]);
+
+    const timeUnits = [
+        { label: 'Days', value: timeSober.days },
+        { label: 'Hours', value: timeSober.hours },
+        { label: 'Minutes', value: timeSober.minutes },
+        { label: 'Seconds', value: timeSober.seconds }
+    ];
+
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg text-center">
             <h3 className="text-lg font-semibold text-gray-500 mb-4">You are on your path</h3>
@@ -42,39 +47,45 @@ const SobrietyTracker = ({ startDate }) => {
     );
 };
 
-const WelcomeTip = ({ onDismiss }) => {
-    return (
-        <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl shadow-md flex justify-between items-start mb-6">
-            <div className="flex-grow pr-4">
-                <p className="font-bold text-blue-800 mb-1">Welcome Tip: Recovery Jargon</p>
-                <p className="text-sm text-blue-700">
-                    You'll see terms like **HALT** (Hungry, Angry, Lonely, Tired) and **Inventory** (self-reflection). Don't worry if they're new—the Workbook and Journal are here to guide you.
-                </p>
-            </div>
-            <button
-                onClick={onDismiss}
-                className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-200 transition-colors flex-shrink-0"
-                aria-label="Dismiss welcome tip"
-            >
-                <XIcon/>
-            </button>
+const WelcomeTip = ({ onDismiss }) => (
+    <div className="p-4 bg-blue-100 border border-blue-300 rounded-xl shadow-md flex justify-between items-start mb-6">
+        <div className="flex-grow pr-4">
+            <p className="font-bold text-blue-800 mb-1">Welcome Tip: Recovery Jargon</p>
+            <p className="text-sm text-blue-700">
+                You'll see terms like **HALT** (Hungry, Angry, Lonely, Tired) and **Inventory** (self-reflection). Don't worry if they're new—the Workbook and Journal are here to guide you.
+            </p>
         </div>
-    );
-};
+        <button
+            onClick={onDismiss}
+            className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-200 transition-colors flex-shrink-0"
+            aria-label="Dismiss welcome tip"
+        >
+            <XIcon/>
+        </button>
+    </div>
+);
 
 
 // --- Main Component ---
 
 export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
-    const randomFact = useMemo(() => {
-        const randomIndex = Math.floor(Math.random() * RECOVERY_FACTS.length);
-        return RECOVERY_FACTS[randomIndex];
-    }, []);
+    const randomFact = useMemo(() => RECOVERY_FACTS[Math.floor(Math.random() * RECOVERY_FACTS.length)], []);
     
-    const [isTipDismissed, setIsTipDismissed] = useState(LocalDataStore.load(LocalDataStore.KEYS.WELCOME_TIP));
+    const [isTipDismissed, setIsTipDismissed] = useState(true);
+    const [isLoadingTip, setIsLoadingTip] = useState(true);
 
-    const handleDismissTip = () => {
-        LocalDataStore.save(LocalDataStore.KEYS.WELCOME_TIP, 'true');
+    useEffect(() => {
+        const loadTipStatus = async () => {
+            setIsLoadingTip(true);
+            const dismissed = await FirestoreDataStore.load(FirestoreDataStore.KEYS.WELCOME_TIP);
+            setIsTipDismissed(dismissed);
+            setIsLoadingTip(false);
+        };
+        loadTipStatus();
+    }, []);
+
+    const handleDismissTip = async () => {
+        await FirestoreDataStore.save(FirestoreDataStore.KEYS.WELCOME_TIP, true);
         setIsTipDismissed(true);
     };
 
@@ -85,22 +96,20 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
         { view: 'coping', label: 'Coping Cards', icon: <ShieldIcon /> },
         { view: 'workbook', label: 'Recovery Workbook', icon: <ClipboardListIcon /> },
         { view: 'literature', label: 'Recovery Literature', icon: <LibraryIcon /> },
-        { view: 'finder', label: 'Meeting Finder', icon: <MapPinIcon /> },
+        { view: 'finder', label: 'Meeting Management', icon: <MapPinIcon /> },
         { view: 'challenge', label: '90 Day Challenge', icon: <ClipboardListIcon /> },
     ];
 
     return (
         <div className="animate-fade-in space-y-6">
-            {/* Display Welcome Tip if not dismissed */}
-            {!isTipDismissed && <WelcomeTip onDismiss={handleDismissTip} />}
+            {!isLoadingTip && !isTipDismissed && <WelcomeTip onDismiss={handleDismissTip} />}
             
-            {/* Display Random Fact */}
             <div className="text-center p-3 bg-yellow-50 rounded-xl shadow-sm border border-yellow-200">
                 <p className="text-sm font-medium text-yellow-800 italic">Recovery Insight: {randomFact}</p>
             </div>
 
             <SobrietyTracker startDate={sobrietyStartDate} />
-            {/* UPDATED: Change grid layout to 2 columns on all devices */}
+
             <div className="grid grid-cols-2 gap-4">
                 {menuItems.map(item => (
                     <button
@@ -119,12 +128,13 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
 
 export const SobrietyDataSetup = ({ onDateSet }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const handleSave = () => {
+    
+    const handleSave = async () => {
         const newStartDate = new Date(date);
-        LocalDataStore.save(LocalDataStore.KEYS.SOBRIETY, newStartDate.toISOString());
-        LocalDataStore.save(LocalDataStore.KEYS.WELCOME_TIP, 'false');
-        onDateSet(newStartDate);
+        await onDateSet(newStartDate); 
+        await FirestoreDataStore.save(FirestoreDataStore.KEYS.WELCOME_TIP, false);
     };
+
     return (
         <div className="flex flex-col items-center justify-center h-full p-6 bg-gray-50 rounded-xl shadow-lg animate-fade-in">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome</h2>

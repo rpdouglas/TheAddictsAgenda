@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
 import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, PenIcon } from '../utils/icons.jsx';
@@ -102,62 +102,62 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     const [currentEntryTags, setCurrentEntryTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
 
-    // --- Persistence & Loading ---
-    const saveItemsToLocal = useCallback((updatedItems) => {
-        const sortAndSet = updatedItems.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-        setItems(sortAndSet);
-        const serializableItems = sortAndSet.map(item => ({
+    // --- Persistence & Loading (UPDATED FOR FIREBASE) ---
+    const saveItemsToFirestore = useCallback(async (updatedItems) => {
+        const sortedItems = updatedItems.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        setItems(sortedItems);
+        const serializableItems = sortedItems.map(item => ({
             ...item,
             timestamp: item.timestamp.toISOString()
         }));
-        LocalDataStore.save(LocalDataStore.KEYS.JOURNAL, serializableItems);
+        await FirestoreDataStore.save(FirestoreDataStore.KEYS.JOURNAL, serializableItems);
     }, []);
 
-    const saveAllTagsToLocal = useCallback((updatedTags) => {
+    const saveAllTagsToFirestore = useCallback(async (updatedTags) => {
         const sortedTags = [...new Set(updatedTags)].sort();
         setAllTags(sortedTags);
-        LocalDataStore.save(LocalDataStore.KEYS.JOURNAL_TAGS, sortedTags);
+        await FirestoreDataStore.save(FirestoreDataStore.KEYS.JOURNAL_TAGS, sortedTags);
     }, []);
 
     useEffect(() => {
-        const loadedItems = LocalDataStore.load(LocalDataStore.KEYS.JOURNAL);
-        const formattedItems = loadedItems.map(item => ({
-            ...item,
-            tags: item.tags || [],
-            mood: typeof item.mood === 'number' ? item.mood : null,
-            timestamp: item.timestamp ? new Date(item.timestamp) : new Date(0)
-        })).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        const loadJournalData = async () => {
+            setIsLoading(true);
+            const loadedItems = await FirestoreDataStore.load(FirestoreDataStore.KEYS.JOURNAL);
+            const loadedTags = await FirestoreDataStore.load(FirestoreDataStore.KEYS.JOURNAL_TAGS);
 
-        const loadedTags = LocalDataStore.load(LocalDataStore.KEYS.JOURNAL_TAGS) || [];
-        setItems(formattedItems);
-        setAllTags(loadedTags.sort());
-        setIsLoading(false);
+            const formattedItems = (loadedItems || []).map(item => ({
+                ...item,
+                tags: item.tags || [],
+                mood: typeof item.mood === 'number' ? item.mood : null,
+                timestamp: item.timestamp ? new Date(item.timestamp) : new Date(0)
+            })).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+            setItems(formattedItems);
+            setAllTags((loadedTags || []).sort());
+            setIsLoading(false);
+        };
+        
+        loadJournalData();
     }, []);
     
-    // CORRECTED: This effect now properly handles incoming templates
+    // This effect properly handles incoming templates
     useEffect(() => {
         if (journalTemplate && setJournalTemplate) {
-            // Reset form state for a new entry, but use the template text
             setIsEditing(false);
             setEditItemId(null);
-            setNewItemText(journalTemplate); // Set the text from the template
+            setNewItemText(journalTemplate);
             setCurrentEntryTags([]);
             setCurrentMood(5);
-            
-            // Switch to the form view
             setViewMode('form');
-            
-            // Clear the template in the parent so this effect doesn't run again
             setJournalTemplate(''); 
         }
     }, [journalTemplate, setJournalTemplate]);
 
     // --- Form Handlers ---
-    // This handler is for when the user clicks the "Add New Entry" button
     const handleShowNewForm = () => {
         setIsEditing(false);
         setEditItemId(null);
-        setNewItemText(''); // Start with blank text
+        setNewItemText('');
         setCurrentEntryTags([]);
         setCurrentMood(5);
         setViewMode('form');
@@ -181,8 +181,8 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         setViewMode('list'); 
     };
 
-    const handleDeleteItem = (id) => {
-        saveItemsToLocal(items.filter(item => item.id !== id));
+    const handleDeleteItem = async (id) => {
+        await saveItemsToFirestore(items.filter(item => item.id !== id));
     };
     
     const handleApplyTemplate = () => {
@@ -191,13 +191,13 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         setSelectedTemplateId('');
     };
 
-    // --- Tag Handlers ---
-    const handleAddTag = () => {
+    // --- Tag Handlers (UPDATED FOR FIREBASE) ---
+    const handleAddTag = async () => {
         const newTag = tagInput.trim().toLowerCase();
         if (newTag && !currentEntryTags.includes(newTag)) {
             setCurrentEntryTags([...currentEntryTags, newTag]);
             if (!allTags.includes(newTag)) {
-                saveAllTagsToLocal([...allTags, newTag]);
+                await saveAllTagsToFirestore([...allTags, newTag]);
             }
         }
         setTagInput('');
@@ -214,8 +214,8 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
     };
 
-    // --- Save Handler ---
-    const handleSaveEntry = (e) => {
+    // --- Save Handler (UPDATED FOR FIREBASE) ---
+    const handleSaveEntry = async (e) => {
         e.preventDefault();
         if (newItemText.trim() === '') return;
         
@@ -227,9 +227,9 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         };
 
         if (isEditing && editItemId) {
-            saveItemsToLocal(items.map(item => item.id === editItemId ? { ...item, ...entryData } : item));
+            await saveItemsToFirestore(items.map(item => item.id === editItemId ? { ...item, ...entryData } : item));
         } else {
-            saveItemsToLocal([{ id: LocalDataStore.generateId(), ...entryData }, ...items]);
+            await saveItemsToFirestore([{ id: FirestoreDataStore.generateId(), ...entryData }, ...items]);
         }
         
         handleCancelEdit();
@@ -248,7 +248,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
     };
     
-    // --- Views ---
+    // --- Sub-Components (Views) ---
 
     const JournalListView = () => (
         <div className="flex-grow overflow-y-auto pr-2 -mr-2 mt-4">
@@ -352,7 +352,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
 
                 <DebouncedTextarea value={newItemText} onChange={setNewItemText} placeholder="Write your entry..." rows="10" />
 
-                {/* --- MOOD SLIDER --- */}
                 <div className="p-3 border border-gray-200 rounded-lg space-y-2">
                      <label htmlFor="mood-slider" className="block text-sm font-semibold text-gray-700">
                         Today's Mood: <span className="font-bold text-teal-600">{currentMood} / 10</span>
@@ -368,7 +367,6 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
                      />
                 </div>
                 
-                {/* --- TAGS SECTION --- */}
                 <div className="p-3 border border-gray-200 rounded-lg space-y-3">
                     <label className="block text-sm font-semibold text-gray-700">Tags</label>
                     <div className="flex flex-wrap gap-2">

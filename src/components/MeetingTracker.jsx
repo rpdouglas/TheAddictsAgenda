@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { ArrowLeftIcon, ArrowRightIcon, DownloadIcon } from '../utils/icons.jsx';
 
-const STORAGE_KEY = LocalDataStore.KEYS.HOMEGROUP_TRACKER;
+const STORAGE_KEY = FirestoreDataStore.KEYS.HOMEGROUP_TRACKER;
 
 const MeetingTracker = ({ onBack }) => {
     const [entries, setEntries] = useState({}); // Object keyed by YYYY-MM-DD
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [isLoading, setIsLoading] = useState(true);
 
     const getFormattedDate = (date) => date.toISOString().split('T')[0];
     
@@ -14,12 +15,18 @@ const MeetingTracker = ({ onBack }) => {
     const todayKey = getFormattedDate(currentDate);
     const currentEntry = entries[todayKey] || { chairperson: '', attendance: '', tradition: '', notes: '' };
 
+    // --- Data Persistence (UPDATED FOR FIREBASE) ---
     useEffect(() => {
-        const loadedEntries = LocalDataStore.load(STORAGE_KEY) || {};
-        setEntries(loadedEntries);
+        const loadTrackerData = async () => {
+            setIsLoading(true);
+            const loadedEntries = await FirestoreDataStore.load(STORAGE_KEY) || {};
+            setEntries(loadedEntries);
+            setIsLoading(false);
+        };
+        loadTrackerData();
     }, []);
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
         const form = e.target;
         const newEntry = {
@@ -30,7 +37,7 @@ const MeetingTracker = ({ onBack }) => {
         };
         const updatedEntries = { ...entries, [todayKey]: newEntry };
         setEntries(updatedEntries);
-        LocalDataStore.save(STORAGE_KEY, updatedEntries);
+        await FirestoreDataStore.save(STORAGE_KEY, updatedEntries);
         alert('Entry Saved!');
     };
 

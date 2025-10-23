@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LocalDataStore } from '../utils/storage.js';
+import { FirestoreDataStore } from '../utils/storage.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, TrashIcon, EditIcon, PlusIcon } from '../utils/icons.jsx';
 
-const STORAGE_KEY = LocalDataStore.KEYS.HOMEGROUP_MEMBERS;
+const STORAGE_KEY = FirestoreDataStore.KEYS.HOMEGROUP_MEMBERS;
 
 // --- Confirmation Modal Component ---
 const DeleteMemberModal = ({ memberName, onConfirm, onCancel }) => (
@@ -39,17 +39,22 @@ const GroupMembers = ({ onBack }) => {
         "Chairperson", "Coffee Maker", "Literature Person", "Greeter",
     ];
 
+    // --- Data Persistence (UPDATED FOR FIREBASE) ---
     useEffect(() => {
-        const loadedMembers = LocalDataStore.load(STORAGE_KEY) || [];
-        setMembers(loadedMembers);
-        setIsLoading(false);
+        const loadMembers = async () => {
+            setIsLoading(true);
+            const loadedMembers = await FirestoreDataStore.load(STORAGE_KEY) || [];
+            setMembers(loadedMembers.sort((a, b) => a.name.localeCompare(b.name)));
+            setIsLoading(false);
+        };
+        loadMembers();
     }, []);
 
-    const saveMembers = (updatedMembers) => {
+    const saveMembersToFirestore = useCallback(async (updatedMembers) => {
         const sortedMembers = updatedMembers.sort((a, b) => a.name.localeCompare(b.name));
         setMembers(sortedMembers);
-        LocalDataStore.save(STORAGE_KEY, sortedMembers);
-    };
+        await FirestoreDataStore.save(STORAGE_KEY, sortedMembers);
+    }, []);
 
     const resetForm = () => {
         setFormState({ id: null, name: '', phone: '', email: '', soberDate: '', position: 'Group Member' });
@@ -62,7 +67,7 @@ const GroupMembers = ({ onBack }) => {
         setFormState(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleFormSubmit = (e) => {
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
         if (!formState.name.trim()) return;
 
@@ -70,9 +75,9 @@ const GroupMembers = ({ onBack }) => {
         if (isEditing) {
             updatedMembers = members.map(m => m.id === formState.id ? formState : m);
         } else {
-            updatedMembers = [...members, { ...formState, id: LocalDataStore.generateId() }];
+            updatedMembers = [...members, { ...formState, id: FirestoreDataStore.generateId() }];
         }
-        saveMembers(updatedMembers);
+        await saveMembersToFirestore(updatedMembers);
         resetForm();
     };
 
@@ -80,16 +85,16 @@ const GroupMembers = ({ onBack }) => {
         setFormState(member);
         setIsEditing(true);
         setShowAddForm(true);
-        window.scrollTo(0, document.body.scrollHeight); // Scroll to bottom where form is
+        window.scrollTo(0, document.body.scrollHeight);
     };
 
     const handleDelete = (member) => {
         setMemberToDelete(member);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (memberToDelete) {
-            saveMembers(members.filter(m => m.id !== memberToDelete.id));
+            await saveMembersToFirestore(members.filter(m => m.id !== memberToDelete.id));
             setMemberToDelete(null);
         }
     };
@@ -100,7 +105,6 @@ const GroupMembers = ({ onBack }) => {
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            {/* --- Render Delete Confirmation Modal --- */}
             {memberToDelete && (
                 <DeleteMemberModal
                     memberName={memberToDelete.name}
@@ -114,7 +118,6 @@ const GroupMembers = ({ onBack }) => {
             </button>
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Group Members</h2>
 
-            {/* --- Members List (Moved to Top) --- */}
             <div className="flex-grow overflow-y-auto pr-2 -mr-2 mb-6">
                 {isLoading ? <Spinner /> : (members.length > 0 ? (
                     <ul className="space-y-3">
@@ -143,7 +146,6 @@ const GroupMembers = ({ onBack }) => {
                 ))}
             </div>
 
-            {/* --- "Add Member" Button and Form --- */}
             {!showAddForm ? (
                 <button
                     onClick={() => { setShowAddForm(true); setIsEditing(false); setFormState({ id: null, name: '', phone: '', email: '', soberDate: '', position: 'Group Member' }); }}

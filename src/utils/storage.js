@@ -1,9 +1,18 @@
-// --- LOCAL STORAGE UTILITIES (src/utils/storage.js) ---
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+// UPDATED: The path is now '../firebase.jsx' to correctly go up one level from 'utils' to 'src'
+import { db, auth } from '../firebase.jsx';
 
-// This file provides a simple, self-contained module for all read/write operations
-// using the browser's local storage. This ensures the app remains private and serverless.
+// Helper to get the current user's document reference
+const getUserDocRef = () => {
+    const user = auth.currentUser;
+    if (!user) {
+        // This is a normal condition when the user is logged out.
+        return null;
+    }
+    return doc(db, "users", user.uid);
+};
 
-export const LocalDataStore = {
+export const FirestoreDataStore = {
     KEYS: {
         SOBRIETY: 'recovery_sobriety_date',
         JOURNAL: 'recovery_journal_entries',
@@ -14,115 +23,66 @@ export const LocalDataStore = {
         NINETY_IN_NINETY: 'recovery_90_in_90_challenge',
         MEETINGS: 'recovery_user_meetings',
         HOMEGROUP_TRACKER: 'recovery_homegroup_tracker',
-        // CORRECTED: Added the missing key for homegroup members
         HOMEGROUP_MEMBERS: 'recovery_homegroup_members',
-        JOURNAL_TAGS: 'recovery_journal_tags' // Assuming this key might be used elsewhere
+        JOURNAL_TAGS: 'recovery_journal_tags'
     },
 
-    /**
-     * Loads and parses data from Local Storage based on the key type.
-     * Handles errors gracefully by returning appropriate defaults.
-     * @param {string} key - The key for the data item.
-     * @returns {*} The loaded data (Date string, Array, Object, or boolean).
-     */
-    load: (key) => {
+    loadAll: async () => {
+        const docRef = getUserDocRef();
+        if (!docRef) return {};
         try {
-            const serializedData = localStorage.getItem(key);
-            if (serializedData === null) {
-                // Return default values if item doesn't exist
-                if (key === LocalDataStore.KEYS.SOBRIETY) return null;
-                if (key === LocalDataStore.KEYS.WELCOME_TIP) return false; // Default: show tip
-                if (key === LocalDataStore.KEYS.PIN) return null;
-                if (key === LocalDataStore.KEYS.NINETY_IN_NINETY) return null;
-                return []; // Default for arrays (Journal/Goals/Meetings/Members)
-            }
-
-            // Sobriety date is stored as a raw ISO string
-            if (key === LocalDataStore.KEYS.SOBRIETY) {
-                return serializedData;
-            }
-            // Welcome tip is stored as the string 'true' or 'false'
-            if (key === LocalDataStore.KEYS.WELCOME_TIP) {
-                return serializedData === 'true';
-            }
-            // PIN is stored as a raw string
-            if (key === LocalDataStore.KEYS.PIN) {
-                return serializedData;
-            }
-
-            // For JSON data
-            return JSON.parse(serializedData);
-
+            const docSnap = await getDoc(docRef);
+            return docSnap.exists() ? docSnap.data() : {};
         } catch (error) {
-            console.error(`Error loading data from localStorage for key ${key}:`, error);
-            // Ensure runtime stability by returning safe defaults on error
-            if (key === LocalDataStore.KEYS.SOBRIETY) return null;
-            if (key === LocalDataStore.KEYS.WELCOME_TIP) return false;
-            if (key === LocalDataStore.KEYS.PIN) return null;
-            if (key === LocalDataStore.KEYS.NINETY_IN_NINETY) return null;
-            return [];
+            console.error("Error loading all data from Firestore:", error);
+            return {};
         }
     },
 
-    /**
-     * Serializes and saves data to Local Storage.
-     * @param {string} key - The key for the data item.
-     * @param {*} data - The data to be stored.
-     */
-    save: (key, data) => {
+    save: async (key, value) => {
+        const docRef = getUserDocRef();
+        if (!docRef) return;
         try {
-            let dataToStore;
-
-            if (key === LocalDataStore.KEYS.SOBRIETY || key === LocalDataStore.KEYS.PIN) {
-                dataToStore = data;
-            } else if (key === LocalDataStore.KEYS.WELCOME_TIP) {
-                dataToStore = data ? 'true' : 'false';
-            } else {
-                dataToStore = JSON.stringify(data);
-            }
-
-            localStorage.setItem(key, dataToStore);
+            await setDoc(docRef, { [key]: value }, { merge: true });
         } catch (error) {
-            console.error(`Error saving data to localStorage for key ${key}:`, error);
+            console.error(`Error saving data to Firestore for key ${key}:`, error);
         }
     },
-
-    /**
-     * Collects all user data for export.
-     * @returns {Object} An object containing all stored user data.
-     */
-    loadAll: () => {
-        const allData = {};
-        for (const key in LocalDataStore.KEYS) {
-            if (Object.prototype.hasOwnProperty.call(LocalDataStore.KEYS, key)) {
-                 const storageKey = LocalDataStore.KEYS[key];
-                 const rawData = localStorage.getItem(storageKey);
-                 if (rawData) {
-                     try {
-                         // Attempt to parse JSON, fall back to raw string if it fails
-                         allData[storageKey] = JSON.parse(rawData);
-                     } catch {
-                         allData[storageKey] = rawData;
-                     }
-                 }
+    
+    load: async (key) => {
+        try {
+            const allData = await FirestoreDataStore.loadAll();
+            if (allData[key] === undefined) {
+                if (key === FirestoreDataStore.KEYS.WELCOME_TIP) return false;
+                if ([
+                    FirestoreDataStore.KEYS.JOURNAL, 
+                    FirestoreDataStore.KEYS.GOALS, 
+                    FirestoreDataStore.KEYS.MEETINGS, 
+                    FirestoreDataStore.KEYS.HOMEGROUP_MEMBERS,
+                    FirestoreDataStore.KEYS.JOURNAL_TAGS
+                ].includes(key)) {
+                    return [];
+                }
+                return null;
             }
+            return allData[key];
+        } catch (error) {
+            console.error(`Error loading data from Firestore for key ${key}:`, error);
+            return null;
         }
-        return allData;
     },
 
+    deleteAll: async () => {
+        const docRef = getUserDocRef();
+        if (!docRef) return;
+        try {
+            await deleteDoc(docRef);
+        } catch (error) {
+            console.error("Error deleting user data from Firestore:", error);
+        }
+    },
 
-    /**
-     * Generates a simple, unique ID.
-     * @returns {string} A unique ID string.
-     */
-    generateId: () => Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-};
-
-/**
- * Simplified Auth Hook
- * @returns {{user: {uid: string}, isAuthLoading: boolean}}
- */
-export const useAuth = () => {
-    const user = { uid: 'local_user_id' };
-    return { user, isAuthLoading: false };
+    generateId: () => {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    },
 };
