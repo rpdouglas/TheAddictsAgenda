@@ -29,7 +29,7 @@ const App = () => {
 
     useEffect(() => {
         const loadUserData = async () => {
-            if (!authLoading && currentUser) {
+            if (currentUser) {
                 setIsDataLoading(true);
                 const storedDate = await FirestoreDataStore.load(FirestoreDataStore.KEYS.SOBRIETY);
                 if (storedDate) {
@@ -38,12 +38,10 @@ const App = () => {
                     setSobrietyStartDate(null);
                 }
                 setIsDataLoading(false);
-            } else if (!authLoading && !currentUser) {
-                setIsDataLoading(false);
             }
         };
         loadUserData();
-    }, [currentUser, authLoading]);
+    }, [currentUser]);
 
     const handleSobrietyDateUpdate = async (newDate) => {
         if (!newDate || isNaN(newDate.getTime())) return;
@@ -57,12 +55,16 @@ const App = () => {
         setActiveView('journal');
     };
 
-    if (authLoading || (currentUser && isDataLoading)) {
+    if (authLoading) {
         return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
     }
 
     if (!currentUser) {
         return <Login />;
+    }
+
+    if (isDataLoading) {
+        return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
     }
 
     if (!sobrietyStartDate) {
