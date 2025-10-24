@@ -120,4 +120,35 @@
       }
     ]
   }
+,
+    "recovery_dharma_guidebook": {
+    "title": "The Four Noble Truths: A Recovery Dharma Guidebook",
+    "pdfLink": "#",
+    "chapters": [
+      {
+        "title": "Introduction: The Dharma of Recovery",
+        "content": "Recovery Dharma integrates Buddhist teachings with evidence-based practices for addiction recovery. This guidebook translates the Four Noble Truths into practical guidance: diagnosis of suffering, understanding causes, evidence of possibility, and a step-by-step path. It emphasizes Sangha (community), meditation, ethical living, and inquiry as core supports for healing."
+      },
+      {
+        "title": "First Noble Truth: Understanding Dukkha",
+        "content": "There Is Suffering (Dukkha). Dukkha includes obvious pain (illness, loss), the dissatisfaction that comes when things change, and a subtler, existential unease that underlies much of our searching. For people in recovery, dukkha often appears as shame, restlessness, the feeling of 'not enough', and the relentless idea that relief must come from outside. Recovery Dharma invites us to face suffering with curiosity and kindness. Rather than using substances or behaviors to avoid discomfort, we learn to investigate pain as information. This inquiry weakens the urge to escape and strengthens wise action. Stress and craving activate neural reward circuits (dopamine pathways) that reinforce habit. Mindfulness practice engages prefrontal regulation, helping interrupt reactive loops. This is why both meditation and community support are effective: they rewire habitual responses over time."
+      },
+      {
+        "title": "Second Noble Truth: Understanding Craving (Tanhā)",
+        "content": "The Cause of Suffering is Craving. Craving is the mental motor that propels suffering. It manifests as wanting pleasure, wanting to be different, or wanting not to exist. In addiction, craving becomes a scripted response to triggers. The Habit Loop & Recovery: Triggers (internal or external) → craving/urge → behavior (use/compulsion) → short-term relief → long-term harm → renewed trigger. Recovery Dharma focuses on exposing this loop to mindful attention so it loses its covert power."
+      },
+      {
+        "title": "Third Noble Truth: The Possibility of Cessation",
+        "content": "The End of Suffering (Nirodha). Nirodha is the realization that craving can be ended, and with it much suffering. For recovery, this is both a practical and spiritual promise: cessation of compulsive use and a growing ease in life. Liberation in recovery looks like increased clarity and presence, fewer reactive decisions based on fear or craving, and a deepening sense of self-compassion and capacity to attend to life as it is."
+      },
+      {
+        "title": "Fourth Noble Truth: The Path (Magga)",
+        "content": "The Eightfold Path as Recovery Practice. The Path is a comprehensive approach: wisdom, ethics, and meditation. Each limb maps to recovery practices and values; together they form a living program of awakening and care. The path includes Right View, Right Intention, Right Speech, Right Action, Right Livelihood, Right Effort, Right Mindfulness, and Right Concentration."
+      },
+      {
+        "title": "Living the Four Noble Truths: Tools and Practices",
+        "content": "Daily Practice Template:\nMorning (Refuge & Intention): Sit 10-20 mins; set daily intention; dedicate practice.\nMidday (Pause): 2-5 minute mindfulness check-in; notice urges; breathe.\nEvening (Reflection): Brief journaling: wins, struggles, gratitude, intention for tomorrow.\n\nSangha Practices:\n- Share honestly and listen fully in meetings.\n- Offer service in simple ways: setup, reading, welcoming newcomers.\n- Organize regular practice sessions: sit, share, inquiry groups."
+      }
+    ]
+  }
 }
