@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from './AuthContext.jsx'; // THIS LINE WAS MISSING
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useAuth } from './AuthContext.jsx';
 import DataStore from './utils/dataStore.js';
 import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from './utils/icons.jsx';
 import { Spinner } from './components/common.jsx';
 import Login from './components/Login.jsx';
-
-// Import all view components
 import { Dashboard, SobrietyDataSetup } from './components/Dashboard.jsx';
-import { DailyJournal } from './components/DailyJournal.jsx';
-import { Goals } from './components/Goals.jsx';
-import { CopingCards } from './components/CopingCards.jsx';
-import { RecoveryWorkbook } from './components/RecoveryWorkbook.jsx';
-import { RecoveryLiterature } from './components/RecoveryLiterature.jsx';
-import { Resources, MeetingManagement } from './components/Resources.jsx';
-import { Settings } from './components/Settings.jsx';
-import { DailyReflection } from './components/DailyReflection.jsx';
-import { NinetyDayChallenge } from './components/NinetyDayChallenge.jsx';
-import { Homegroup } from './components/Homegroup.jsx';
-import MeetingTracker from './components/MeetingTracker.jsx';
+
+const DailyJournal = lazy(() => import('./components/DailyJournal.jsx').then(module => ({ default: module.DailyJournal })));
+const Goals = lazy(() => import('./components/Goals.jsx').then(module => ({ default: module.Goals })));
+const CopingCards = lazy(() => import('./components/CopingCards.jsx').then(module => ({ default: module.CopingCards })));
+const RecoveryWorkbook = lazy(() => import('./components/RecoveryWorkbook.jsx').then(module => ({ default: module.RecoveryWorkbook })));
+const RecoveryLiterature = lazy(() => import('./components/RecoveryLiterature.jsx').then(module => ({ default: module.RecoveryLiterature })));
+const Resources = lazy(() => import('./components/Resources.jsx').then(module => ({ default: module.Resources })));
+const MeetingManagement = lazy(() => import('./components/Resources.jsx').then(module => ({ default: module.MeetingManagement })));
+const Settings = lazy(() => import('./components/Settings.jsx').then(module => ({ default: module.Settings })));
+const DailyReflection = lazy(() => import('./components/DailyReflection.jsx').then(module => ({ default: module.DailyReflection })));
+const NinetyDayChallenge = lazy(() => import('./components/NinetyDayChallenge.jsx').then(module => ({ default: module.NinetyDayChallenge })));
+const Homegroup = lazy(() => import('./components/Homegroup.jsx').then(module => ({ default: module.Homegroup })));
+const MeetingTracker = lazy(() => import('./components/MeetingTracker.jsx'));
 
 const App = () => {
     const { session, loading: authLoading, logout } = useAuth();
@@ -41,7 +41,6 @@ const App = () => {
                 }
                 setIsDataLoading(false);
             } else {
-                // If there's no session, we aren't loading data.
                 setIsDataLoading(false);
             }
         };
@@ -83,7 +82,7 @@ const App = () => {
             case 'goals': return <Goals />;
             case 'coping': return <CopingCards onJournal={handleJournalFromCopingCard} />;
             case 'workbook': return <RecoveryWorkbook />;
-            case 'literature': return <RecoveryLiterature />;
+            case 'literature': return <RecoveryLiterature onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
             case 'resources': return <Resources />;
             case 'settings': return <Settings 
                 currentStartDate={sobrietyStartDate} 
@@ -112,7 +111,9 @@ const App = () => {
                 <button onClick={() => setActiveView('settings')} className="text-gray-500 hover:text-teal-600 p-1"><SettingsIcon className="w-6 h-6" /></button>
             </header>
             <main className="flex-grow w-full max-w-2xl mx-auto overflow-y-auto pb-4">
-                {renderContent()}
+                <Suspense fallback={<Spinner />}>
+                    {renderContent()}
+                </Suspense>
             </main>
         </div>
     );
