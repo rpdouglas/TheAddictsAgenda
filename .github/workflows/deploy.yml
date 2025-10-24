@@ -1,25 +1,19 @@
-name: Deploy to GitHub Pages
+name: Deploy to Dev, UAT, and Prod
 
 on:
-  # Triggers the workflow on push events to the main branch
   push:
-    branches: ["main"]
-  # Allows you to run this workflow manually from the Actions tab
+    branches:
+      - develop
+      - uat
+      - main
   workflow_dispatch:
 
-# Sets permissions that allow GitHub Actions to create a deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allows concurrent deployment runs
-concurrency:
-  cancel-in-progress: true
-  group: pages
-
 jobs:
-  # The 'build' job bundles the React app and uploads the artifact
   build:
     runs-on: ubuntu-latest
     steps:
@@ -38,23 +32,62 @@ jobs:
       - name: Build with Vite
         run: npm run build
         
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
-          # The contents of the dist folder are uploaded as the artifact
+          name: dist-files
           path: './dist'
           
-  # The 'deploy' job takes the uploaded artifact and deploys it to GitHub Pages
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+  deploy_develop:
     needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: develop
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/develop'
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages for Development
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  deploy_uat:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: uat
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/uat'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages for UAT
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  deploy_main:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: main
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages for Production
         id: deployment
         uses: actions/deploy-pages@v4
