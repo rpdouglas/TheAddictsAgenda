@@ -1,19 +1,23 @@
 name: Deploy to Dev, UAT, and Prod
 
 on:
+  # Triggers the workflow on push events to these specific branches
   push:
     branches:
       - develop
       - uat
       - main
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Sets permissions that allow GitHub Actions to create a deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
 jobs:
+  # The 'build' job bundles the React app and uploads the artifact
   build:
     runs-on: ubuntu-latest
     steps:
@@ -33,21 +37,22 @@ jobs:
         run: npm run build
         
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # <-- Updated from v3
         with:
           name: dist-files
           path: './dist'
           
+  # The 'deploy_develop' job deploys the artifact to the development environment
   deploy_develop:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: develop
+      name: develop 
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/develop'
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4 # <-- Updated from v3
         with:
           name: dist-files
       - name: Setup Pages
@@ -56,6 +61,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+  # The 'deploy_uat' job deploys the artifact to the UAT environment
   deploy_uat:
     needs: build
     runs-on: ubuntu-latest
@@ -65,7 +71,7 @@ jobs:
     if: github.ref == 'refs/heads/uat'
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4 # <-- Updated from v3
         with:
           name: dist-files
       - name: Setup Pages
@@ -74,16 +80,17 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+  # The 'deploy_main' job deploys the artifact to the production environment
   deploy_main:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: main
+      name: main 
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4 # <-- Updated from v3
         with:
           name: dist-files
       - name: Setup Pages
