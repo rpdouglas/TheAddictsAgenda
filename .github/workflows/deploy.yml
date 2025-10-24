@@ -32,24 +32,19 @@ jobs:
       - name: Build with Vite
         run: npm run build
         
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: dist-files
           path: './dist'
           
   deploy_develop:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: develop
+      name: develop 
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/develop'
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-files
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages for Development
@@ -64,10 +59,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/uat'
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-files
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages for UAT
@@ -78,14 +69,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: main
+      name: main 
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-files
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages for Production
