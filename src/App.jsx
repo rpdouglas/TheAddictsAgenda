@@ -18,6 +18,7 @@ const DailyReflection = lazy(() => import('./components/DailyReflection.jsx').th
 const NinetyDayChallenge = lazy(() => import('./components/NinetyDayChallenge.jsx').then(module => ({ default: module.NinetyDayChallenge })));
 const Homegroup = lazy(() => import('./components/Homegroup.jsx').then(module => ({ default: module.Homegroup })));
 const MeetingTracker = lazy(() => import('./components/MeetingTracker.jsx'));
+const GroupMembers = lazy(() => import('./components/GroupMembers.jsx'));
 
 const App = () => {
     const { session, loading: authLoading, logout } = useAuth();
@@ -95,6 +96,7 @@ const App = () => {
             case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
             case 'homegroup': return <Homegroup onBack={() => setActiveView('finder')} onNavigate={setActiveView} />;
             case 'meetingTracker': return <MeetingTracker onBack={() => setActiveView('homegroup')} />;
+            case 'groupMembers': return <GroupMembers onBack={() => setActiveView('homegroup')} />;
             default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
         }
     };

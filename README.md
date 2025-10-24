@@ -67,7 +67,7 @@ Built with **React** and **Vite**, the app runs entirely client-side — your da
 - Searchable library with space for personal notes.
 
 ### 🧩 Interactive Workbooks
-- Step-by-step **12 Steps** exercises and reflections.  
+- Step-by-step **12 Steps ** exercises and reflections.  
 - **Recovery Dharma inquiry workbooks** on craving, mindfulness, and compassion.  
 - Save progress locally or export to PDF/DOCX.  
 

@@ -78,23 +78,23 @@ const MoodGraphView = ({ items, onBack }) => {
 const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit, handleDeleteItem, setViewMode }) => (
     <div className="flex-grow overflow-y-auto pr-2 -mr-2 mt-4">
         <div className="flex gap-2 mb-6">
-            <button 
-                onClick={handleShowNewForm} 
+            <button
+                onClick={handleShowNewForm}
                 className="flex-grow bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-teal-700 transition-colors"
             >
                 Add New Entry
             </button>
-             <button 
-                onClick={() => setViewMode('graph')} 
+             <button
+                onClick={() => setViewMode('graph')}
                 className="flex-shrink-0 bg-white border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded-lg shadow-md hover:bg-gray-100 transition-colors"
                 title="View Mood Graph"
             >
                 <TrendingUpIcon className="w-5 h-5"/>
             </button>
         </div>
-        {isLoading ? <Spinner /> : (items.length > 0 ? ( 
-            <ul className="space-y-4"> 
-                {items.map(item => ( 
+        {isLoading ? <Spinner /> : (items.length > 0 ? (
+            <ul className="space-y-4">
+                {items.map(item => (
                     <li key={item.id} className="p-4 bg-gray-50 rounded-lg shadow-sm transition-colors hover:bg-gray-100">
                         <div className="flex justify-between items-start">
                             <div>
@@ -110,6 +110,8 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                                 </button>
                             </div>
                         </div>
+                        {/* THIS IS THE CORRECTED LINE */}
+                        <p className="mt-3 text-gray-700 whitespace-pre-wrap">{item.text}</p>
                          {(item.tags && item.tags.length > 0 || item.mood) && (
                             <div className="mt-3 flex flex-wrap gap-2 items-center">
                                 {item.mood && (
@@ -125,13 +127,13 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                             </div>
                         )}
                     </li>
-                ))} 
-            </ul> 
-        ) : ( 
+                ))}
+            </ul>
+        ) : (
             <div className="text-center py-10">
                 <p className="text-gray-500">No journal entries yet. Tap below to start.</p>
-                <button 
-                    onClick={handleShowNewForm} 
+                <button
+                    onClick={handleShowNewForm}
                     className="mt-4 bg-teal-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-teal-600 transition-colors"
                 >
                     Start Your First Entry
@@ -153,7 +155,7 @@ const JournalForm = ({
             <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Entries List</span>
         </button>
         <form onSubmit={handleSaveEntry} className="mb-2 space-y-4">
-            
+
             {isEditing && (
                 <div className="bg-teal-50 p-3 rounded-lg">
                     <p className="text-sm font-semibold text-teal-700">
@@ -161,12 +163,12 @@ const JournalForm = ({
                     </p>
                 </div>
             )}
-            
+
             {!isEditing && (
                 <div className="flex gap-2">
-                    <select 
-                        value={selectedTemplateId} 
-                        onChange={(e) => setSelectedTemplateId(e.target.value)} 
+                    <select
+                        value={selectedTemplateId}
+                        onChange={(e) => setSelectedTemplateId(e.target.value)}
                         className="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500"
                     >
                         {journalTemplates.map(template => (
@@ -181,11 +183,11 @@ const JournalForm = ({
                 </div>
             )}
 
-            <DebouncedTextarea 
-                value={newItemText} 
-                onChange={setNewItemText} 
-                placeholder="Write your entry..." 
-                rows="10" 
+            <DebouncedTextarea
+                value={newItemText}
+                onChange={setNewItemText}
+                placeholder="Write your entry..."
+                rows="10"
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 resize-y min-h-[150px]"
             />
 
@@ -203,7 +205,7 @@ const JournalForm = ({
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                  />
             </div>
-            
+
             <div className="p-3 border border-gray-200 rounded-lg space-y-3">
                 <label className="block text-sm font-semibold text-gray-700">Tags</label>
                 <div className="flex flex-wrap gap-2">
@@ -232,11 +234,11 @@ const JournalForm = ({
                 </button>
             </div>
         </form>
-        
+
         <button onClick={() => setShowGeminiHelper(!showGeminiHelper)} className="flex items-center justify-center gap-2 text-sm text-teal-600 hover:text-teal-800 font-semibold mt-4">
             <SparklesIcon className="w-5 h-5"/> {showGeminiHelper ? 'Close AI Helper' : 'Get Idea with AI'}
-        </button> 
-        {showGeminiHelper && <GeminiJournalHelper onInsertText={(text) => setNewItemText(text)} onClose={() => setShowGeminiHelper(false)} />} 
+        </button>
+        {showGeminiHelper && <GeminiJournalHelper onInsertText={(text) => setNewItemText(text)} onClose={() => setShowGeminiHelper(false)} />}
     </>
 );
 
@@ -252,7 +254,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     const [currentMood, setCurrentMood] = useState(5);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
-    
+
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
 
@@ -281,10 +283,10 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
             setAllTags(loadedTags.sort());
             setIsLoading(false);
         };
-        
+
         loadJournalData();
     }, []);
-    
+
     useEffect(() => {
         if (journalTemplate && setJournalTemplate) {
             setIsEditing(false);
@@ -293,7 +295,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
             setCurrentEntryTags([]);
             setCurrentMood(5);
             setViewMode('form');
-            setJournalTemplate(''); 
+            setJournalTemplate('');
         }
     }, [journalTemplate, setJournalTemplate]);
 
@@ -312,7 +314,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         setCurrentEntryTags(item.tags || []);
         setCurrentMood(item.mood || 5);
         setIsEditing(true);
-        setViewMode('form'); 
+        setViewMode('form');
     };
 
     const handleCancelEdit = () => {
@@ -321,13 +323,13 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         setNewItemText('');
         setCurrentEntryTags([]);
         setCurrentMood(5);
-        setViewMode('list'); 
+        setViewMode('list');
     };
 
     const handleDeleteItem = async (id) => {
         await saveItemsToStore(items.filter(item => item.id !== id));
     };
-    
+
     const handleApplyTemplate = () => {
         const templateObj = journalTemplates.find(t => t.id === selectedTemplateId);
         if (templateObj) setNewItemText(templateObj.template);
@@ -344,11 +346,11 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
         setTagInput('');
     };
-    
+
     const handleRemoveTag = (tagToRemove) => {
         setCurrentEntryTags(currentEntryTags.filter(tag => tag !== tagToRemove));
     };
-    
+
     const handleTagInputKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -359,9 +361,9 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     const handleSaveEntry = async (e) => {
         e.preventDefault();
         if (newItemText.trim() === '') return;
-        
-        const entryData = { 
-            text: newItemText, 
+
+        const entryData = {
+            text: newItemText,
             tags: currentEntryTags,
             mood: currentMood,
             timestamp: new Date().toISOString()
@@ -372,14 +374,14 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         } else {
             await saveItemsToStore([{ id: DataStore.generateId(), ...entryData }, ...items]);
         }
-        
+
         handleCancelEdit();
     };
 
     const renderContent = () => {
         switch (viewMode) {
             case 'form':
-                return <JournalForm 
+                return <JournalForm
                     isEditing={isEditing}
                     editItemId={editItemId}
                     items={items}
@@ -406,7 +408,7 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
                 return <MoodGraphView items={items} onBack={() => setViewMode('list')} />;
             case 'list':
             default:
-                return <JournalListView 
+                return <JournalListView
                     isLoading={isLoading}
                     items={items}
                     handleShowNewForm={handleShowNewForm}
@@ -417,11 +419,11 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         }
     };
 
-    return ( 
-        <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col"> 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Daily Journal</h2> 
-            <p className="text-gray-600 mb-6">How are you feeling? You can write about your day, feelings, or things you are grateful for.</p> 
+    return (
+        <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Daily Journal</h2>
+            <p className="text-gray-600 mb-6">How are you feeling? You can write about your day, feelings, or things you are grateful for.</p>
             {renderContent()}
-        </div> 
+        </div>
     );
 };
