@@ -1,9 +1,12 @@
-name: Deploy to GitHub Pages
+name: Deploy to Dev, UAT, and Prod
 
 on:
-  # Triggers the workflow on push events to the main branch
+  # Triggers the workflow on push events to these specific branches
   push:
-    branches: ["main"]
+    branches:
+      - develop
+      - uat
+      - main
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -12,11 +15,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-
-# Allows concurrent deployment runs
-concurrency:
-  cancel-in-progress: true
-  group: pages
 
 jobs:
   # The 'build' job bundles the React app and uploads the artifact
@@ -38,23 +36,65 @@ jobs:
       - name: Build with Vite
         run: npm run build
         
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
-          # The contents of the dist folder are uploaded as the artifact
+          name: dist-files
           path: './dist'
           
-  # The 'deploy' job takes the uploaded artifact and deploys it to GitHub Pages
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+  # The 'deploy_develop' job deploys the artifact to the development environment
+  deploy_develop:
     needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: develop # Match the environment name in your GitHub repository settings
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/develop'
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages for Development
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # The 'deploy_uat' job deploys the artifact to the UAT environment
+  deploy_uat:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: uat # Match the environment name in your GitHub repository settings
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/uat'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages for UAT
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # The 'deploy_main' job deploys the artifact to the production environment
+  deploy_main:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: main # Match the environment name in your GitHub repository settings
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages for Production
         id: deployment
         uses: actions/deploy-pages@v4
