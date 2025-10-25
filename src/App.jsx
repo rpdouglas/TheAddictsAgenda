@@ -20,6 +20,8 @@ const NinetyDayChallenge = lazy(() => import('./components/NinetyDayChallenge.js
 const Homegroup = lazy(() => import('./components/Homegroup.jsx').then(module => ({ default: module.Homegroup })));
 const MeetingTracker = lazy(() => import('./components/MeetingTracker.jsx'));
 const BreathingExercises = lazy(() => import('./components/BreathingExercise.jsx'));
+const Yoga = lazy(() => import('./components/YogaWalkthrough.jsx'));
+const RecoveryGames = lazy(() => import('./components/RecoveryGames.jsx'));
 
 
 const App = () => {
@@ -86,6 +88,8 @@ const App = () => {
             case 'coping-tools': return <CopingTools onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
             case 'coping': return <CopingCards onJournal={handleJournalFromCopingCard} />;
             case 'breathing-exercises': return <BreathingExercises onBack={() => setActiveView('coping-tools')} />;
+            case 'yoga': return <Yoga onBack={() => setActiveView('coping-tools')} />;
+            case 'recovery-games': return <RecoveryGames onBack={() => setActiveView('coping-tools')} />;
             case 'workbook': return <RecoveryWorkbook />;
             case 'literature': return <RecoveryLiterature onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
             case 'resources': return <Resources />;

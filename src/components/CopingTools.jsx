@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeftIcon, ShieldIcon, ZapIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ShieldIcon, ZapIcon, UsersIcon, GridIcon } from '../utils/icons.jsx'; 
 
 export const CopingTools = ({ onNavigate, onBack }) => {
     return (
@@ -26,6 +26,19 @@ export const CopingTools = ({ onNavigate, onBack }) => {
                     className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-lg"
                 >
                     <ZapIcon className="w-6 h-6"/> Breathing Exercises
+                </button>
+
+                <button
+                    onClick={() => onNavigate('yoga')}
+                    className="w-full bg-indigo-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 text-lg"
+                >
+                    <UsersIcon className="w-6 h-6"/> Yoga Poses
+                </button>
+                 <button
+                    onClick={() => onNavigate('recovery-games')}
+                    className="w-full bg-purple-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 text-lg"
+                >
+                    <GridIcon className="w-6 h-6"/> Recovery Games
                 </button>
             </div>
         </div>
