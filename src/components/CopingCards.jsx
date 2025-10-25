@@ -42,32 +42,32 @@ export const CopingCards = ({ onJournal }) => {
         <div className="flex flex-col items-center justify-center h-full p-4 animate-fade-in"> 
             <div 
                 className={`p-8 rounded-xl shadow-xl w-full max-w-md text-center flex-grow flex flex-col justify-between 
-                           bg-gradient-to-br ${card.color} text-gray-900 border border-gray-100`}
+                           bg-gradient-to-br ${card.color} text-deep-charcoal border border-gray-100`}
             >
                 <div className="flex justify-center items-start mb-4 w-full">
                     {/* Centered Icon and Category display */}
                     <div className="flex flex-col items-center">
                         {/* Using ZapIcon for a dynamic feel on the random card */}
-                        <CardIconComponent className="w-8 h-8 text-teal-800 mb-2" />
-                        <p className="text-xs font-semibold uppercase tracking-wider text-teal-800">{card.category}</p>
+                        <CardIconComponent className="w-8 h-8 text-serene-teal mb-2" />
+                        <p className="text-xs font-semibold uppercase tracking-wider text-serene-teal">{card.category}</p>
                     </div>
                 </div>
                 
                 <div className="flex flex-col justify-center flex-grow">
                     <h2 className="text-3xl font-bold text-teal-900 mb-4">{card.title}</h2>
-                    <p className="text-gray-800 text-lg">{card.description}</p>
+                    <p className="text-deep-charcoal text-lg">{card.description}</p>
                 </div>
 
-                <p className="text-xs text-gray-600 mt-4">Card {currentIndex + 1} of {allCopingCards.length}</p>
+                <p className="text-xs text-deep-charcoal/70 mt-4">Card {currentIndex + 1} of {allCopingCards.length}</p>
 
             </div> 
             
             <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full max-w-md"> 
                 {/* New button for randomization */}
-                <button onClick={showRandomCard} className="w-full bg-teal-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-700 transition-colors flex items-center justify-center">
+                <button onClick={showRandomCard} className="w-full bg-serene-teal text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 transition-colors flex items-center justify-center">
                     <ZapIcon className="mr-2 h-5 w-5" /> Get New Card
                 </button>
-                <button onClick={() => onJournal(card)} className="w-full bg-white text-teal-600 border-2 border-teal-600 font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-50 transition-colors">Journal on This</button>
+                <button onClick={() => onJournal(card)} className="w-full bg-white text-serene-teal border-2 border-teal-600 font-bold py-3 px-8 rounded-lg shadow-md hover:bg-serene-teal/10 transition-colors">Journal on This</button>
             </div> 
         </div> 
     );

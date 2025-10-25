@@ -98,14 +98,14 @@ export const Goals = () => {
                 isInput={false} 
                 rows="2"
             />
-            <button type="submit" className="flex-shrink-0 bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-teal-700 transition-colors">Add</button>
+            <button type="submit" className="flex-shrink-0 bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors">Add</button>
         </form>
     );
 
     return ( 
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col"> 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">{config.title}</h2> 
-            <p className="text-gray-600 mb-6">{config.prompt}</p> 
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-4">{config.title}</h2> 
+            <p className="text-deep-charcoal/70 mb-6">{config.prompt}</p> 
             
             {GoalsForm()}
             
@@ -113,35 +113,35 @@ export const Goals = () => {
                 {isLoading ? <Spinner /> : (items.length > 0 ? ( 
                     <ul className="space-y-3"> 
                         {items.map(item => ( 
-                            <li key={item.id} className="p-4 bg-gray-50 rounded-lg shadow-sm">
+                            <li key={item.id} className="p-4 bg-pure-white/60 rounded-lg shadow-sm">
                                 {editingItem?.id === item.id ? (
                                     <form onSubmit={handleUpdateGoals} className="space-y-2">
                                         <textarea
                                             value={editedText}
                                             onChange={(e) => setEditedText(e.target.value)}
-                                            className="w-full p-2 border border-teal-500 rounded-lg resize-none"
+                                            className="w-full p-2 border border-serene-teal rounded-lg resize-none"
                                             rows={2}
                                             autoFocus
                                         />
                                         <div className="flex justify-end gap-2">
-                                            <button type="button" onClick={() => setEditingItem(null)} className="text-gray-500 hover:text-gray-700 text-sm font-semibold">Cancel</button>
-                                            <button type="submit" className="bg-teal-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-teal-600 font-semibold">Save Changes</button>
+                                            <button type="button" onClick={() => setEditingItem(null)} className="text-deep-charcoal/60 hover:text-deep-charcoal/80 text-sm font-semibold">Cancel</button>
+                                            <button type="submit" className="bg-serene-teal/100 text-white px-3 py-1 rounded-lg text-sm hover:bg-serene-teal font-semibold">Save Changes</button>
                                         </div>
                                     </form>
                                 ) : (
                                     <div className="flex flex-col">
                                         <div className="flex items-start justify-between w-full">
-                                            <input type="checkbox" checked={item.completed} onChange={() => handleToggleCompleted(item)} className="h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-4 flex-shrink-0 mt-1"/>
+                                            <input type="checkbox" checked={item.completed} onChange={() => handleToggleCompleted(item)} className="h-5 w-5 rounded border-light-stone text-serene-teal focus:ring-teal-500 mr-4 flex-shrink-0 mt-1"/>
                                             <div className="flex-grow">
-                                                <p className={`text-gray-800 whitespace-pre-wrap ${item.completed ? 'line-through text-gray-400' : ''}`}>{item.text}</p>
-                                                <p className="text-xs text-gray-400 mt-1">{item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Just now'}</p>
+                                                <p className={`text-deep-charcoal whitespace-pre-wrap ${item.completed ? 'line-through text-deep-charcoal/50' : ''}`}>{item.text}</p>
+                                                <p className="text-xs text-deep-charcoal/50 mt-1">{item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Just now'}</p>
                                             </div>
                                         </div>
                                         <div className="flex justify-end mt-2 space-x-2">
-                                            <button onClick={() => handleEditGoals(item)} className="text-gray-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1">
+                                            <button onClick={() => handleEditGoals(item)} className="text-deep-charcoal/60 hover:text-blue-600 text-xs font-semibold flex items-center gap-1">
                                                 <EditIcon className="w-4 h-4"/> Edit
                                             </button>
-                                            <button onClick={() => handleDeleteItem(item.id)} className="text-gray-500 hover:text-red-500 text-xs font-semibold flex items-center gap-1">
+                                            <button onClick={() => handleDeleteItem(item.id)} className="text-deep-charcoal/60 hover:text-hopeful-coral text-xs font-semibold flex items-center gap-1">
                                                 <TrashIcon className="w-4 h-4"/> Delete
                                             </button>
                                         </div>
@@ -150,7 +150,7 @@ export const Goals = () => {
                             </li> 
                         ))} 
                     </ul> 
-                ) : ( <div className="text-center py-10"><p className="text-gray-500">{config.emptyState}</p></div> ))} 
+                ) : ( <div className="text-center py-10"><p className="text-deep-charcoal/60">{config.emptyState}</p></div> ))} 
             </div> 
         </div> 
     );

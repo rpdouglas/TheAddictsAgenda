@@ -45,14 +45,14 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-4 font-semibold flex-shrink-0">
+            <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold flex-shrink-0">
                 <ArrowLeftIcon /><span className="ml-2">Back to Chapters</span>
             </button>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">{chapter.title}</h2>
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-4 flex-shrink-0">{chapter.title}</h2>
             
             <div 
                 ref={contentRef} // Attach ref here
-                className="prose-lg text-gray-700 overflow-y-auto flex-grow pr-2 flex flex-col justify-between"
+                className="prose-lg text-deep-charcoal/80 overflow-y-auto flex-grow pr-2 flex flex-col justify-between"
                 onMouseUp={handleTextSelection} // Listen for text selection
                 onTouchEnd={handleTextSelection} // For mobile selections
             >
@@ -65,14 +65,14 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
                     <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
                         <button 
                             onClick={() => onJournal(bookTitle, chapter.title, currentPage + 1)}
-                            className="flex items-center justify-center gap-2 bg-teal-50 text-teal-700 font-semibold py-2 px-4 rounded-lg hover:bg-teal-100 transition-colors"
+                            className="flex items-center justify-center gap-2 bg-serene-teal/10 text-serene-teal font-semibold py-2 px-4 rounded-lg hover:bg-serene-teal/20 transition-colors"
                         >
                             <PenIcon className="w-4 h-4"/> Journal about this page
                         </button>
                         {highlightedText && (
                             <button 
                                 onClick={handleJournalHighlight}
-                                className="flex items-center justify-center gap-2 bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors"
+                                className="flex items-center justify-center gap-2 bg-hopeful-coral/100 text-white font-semibold py-2 px-4 rounded-lg hover:bg-hopeful-coral transition-colors"
                             >
                                 <HighlighterIcon className="w-4 h-4"/> Journal Highlight
                             </button>
@@ -82,17 +82,17 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
                         <button 
                             onClick={goToPreviousPage} 
                             disabled={currentPage === 0}
-                            className="flex items-center gap-2 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 bg-light-stone/50 text-deep-charcoal/80 font-semibold py-2 px-4 rounded-lg hover:bg-light-stone/70 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <ArrowLeftIcon /> Previous
                         </button>
-                        <span className="text-sm font-semibold text-gray-600">
+                        <span className="text-sm font-semibold text-deep-charcoal/70">
                             Page {currentPage + 1} of {chapter.pages.length}
                         </span>
                         <button 
                             onClick={goToNextPage} 
                             disabled={currentPage === chapter.pages.length - 1}
-                            className="flex items-center gap-2 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 bg-light-stone/50 text-deep-charcoal/80 font-semibold py-2 px-4 rounded-lg hover:bg-light-stone/70 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Next <ArrowRightIcon />
                         </button>
@@ -130,9 +130,9 @@ export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         }
         return ( 
             <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col"> 
-                <button onClick={() => setSelectedChapter(null)} className="flex items-center text-teal-600 hover:text-teal-800 mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Chapters</span></button> 
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">{selectedChapter.title}</h2> 
-                <div className="prose-lg text-gray-700 overflow-y-auto flex-grow pr-2">{formatContent(selectedChapter.content)}</div> 
+                <button onClick={() => setSelectedChapter(null)} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Chapters</span></button> 
+                <h2 className="text-2xl font-bold text-deep-charcoal mb-4 flex-shrink-0">{selectedChapter.title}</h2> 
+                <div className="prose-lg text-deep-charcoal/80 overflow-y-auto flex-grow pr-2">{formatContent(selectedChapter.content)}</div> 
             </div> 
         ); 
     }
@@ -140,35 +140,35 @@ export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
     if (selectedBook) { 
         return ( 
             <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in"> 
-                <button onClick={() => setSelectedBook(null)} className="flex items-center text-teal-600 hover:text-teal-800 mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Library</span></button> 
+                <button onClick={() => setSelectedBook(null)} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Library</span></button> 
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">{selectedBook.title}</h2>
-                    <a href={selectedBook.pdfLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50" disabled={selectedBook.pdfLink === "#"}>
+                    <h2 className="text-2xl font-bold text-deep-charcoal">{selectedBook.title}</h2>
+                    <a href={selectedBook.pdfLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-healing-green text-white font-semibold py-2 px-4 rounded-lg hover:brightness-95 disabled:opacity-50" disabled={selectedBook.pdfLink === "#"}>
                         <DownloadIcon />PDF
                     </a>
                 </div> 
-                <ul className="space-y-3">{selectedBook.chapters.map((chapter, index) => ( <li key={index}><button onClick={() => setSelectedChapter(chapter)} className="w-full text-left p-4 bg-gray-50 hover:bg-teal-50 rounded-lg shadow-sm"><h3 className="font-semibold text-gray-800">{chapter.title}</h3></button></li> ))}</ul> 
+                <ul className="space-y-3">{selectedBook.chapters.map((chapter, index) => ( <li key={index}><button onClick={() => setSelectedChapter(chapter)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-serene-teal/10 rounded-lg shadow-sm"><h3 className="font-semibold text-deep-charcoal">{chapter.title}</h3></button></li> ))}</ul> 
             </div> 
         ); 
     }
     
     return ( 
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Recovery Literature</h2>
-            <p className="text-gray-600 mb-6">Read or download foundational recovery texts.</p>
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Recovery Literature</h2>
+            <p className="text-deep-charcoal/70 mb-6">Read or download foundational recovery texts.</p>
             <ul className="space-y-4">
                 {Object.keys(literatureData).map(key => { 
                     const book = literatureData[key]; 
                     return ( 
                         <li key={key}> 
-                            <div className="p-4 bg-gray-50 rounded-lg shadow-sm"> 
+                            <div className="p-4 bg-pure-white/60 rounded-lg shadow-sm"> 
                                 <div className="flex justify-between items-start"> 
-                                    <div><h3 className="font-semibold text-gray-800 text-lg">{book.title}</h3></div> 
-                                    <a href={book.pdfLink} target="_blank" rel="noopener noreferrer" className={`flex-shrink-0 ml-4 flex items-center gap-2 bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 text-sm ${book.pdfLink === "#" ? "opacity-50 cursor-not-allowed" : ""}`} aria-disabled={book.pdfLink === "#"} onClick={(e) => book.pdfLink === "#" && e.preventDefault()}>
+                                    <div><h3 className="font-semibold text-deep-charcoal text-lg">{book.title}</h3></div> 
+                                    <a href={book.pdfLink} target="_blank" rel="noopener noreferrer" className={`flex-shrink-0 ml-4 flex items-center gap-2 bg-healing-green text-white font-semibold py-2 px-3 rounded-lg hover:brightness-95 text-sm ${book.pdfLink === "#" ? "opacity-50 cursor-not-allowed" : ""}`} aria-disabled={book.pdfLink === "#"} onClick={(e) => book.pdfLink === "#" && e.preventDefault()}>
                                         <DownloadIcon />PDF
                                     </a>
                                 </div> 
-                                <button onClick={() => setSelectedBook(book)} className="mt-4 w-full bg-teal-50 text-teal-700 font-semibold py-2 px-4 rounded-lg hover:bg-teal-100">Read in App</button>
+                                <button onClick={() => setSelectedBook(book)} className="mt-4 w-full bg-serene-teal/10 text-serene-teal font-semibold py-2 px-4 rounded-lg hover:bg-serene-teal/20">Read in App</button>
                             </div> 
                         </li> 
                     ); 

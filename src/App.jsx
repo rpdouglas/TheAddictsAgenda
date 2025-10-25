@@ -61,7 +61,7 @@ const App = () => {
     };
 
     if (authLoading) {
-        return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
+        return <div className="h-screen w-full flex items-center justify-center bg-soft-linen"><Spinner /></div>;
     }
 
     if (!session) {
@@ -69,7 +69,7 @@ const App = () => {
     }
 
     if (isDataLoading) {
-        return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
+        return <div className="h-screen w-full flex items-center justify-center bg-soft-linen"><Spinner /></div>;
     }
 
     if (!sobrietyStartDate) {
@@ -102,15 +102,15 @@ const App = () => {
     };
     
     return (
-        <div className="bg-gray-100 h-screen w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4">
+        <div className="bg-soft-linen h-screen w-full flex flex-col font-sans text-deep-charcoal p-2 sm:p-4">
             <header className="flex-shrink-0 w-full max-w-2xl mx-auto flex items-center justify-between p-4">
                 {activeView === 'dashboard' ? (
-                    <button onClick={() => setActiveView('resources')} className="text-red-500 hover:text-red-700 p-1"><LifeBuoyIcon className="w-6 h-6" /></button>
+                    <button onClick={() => setActiveView('resources')} className="text-hopeful-coral hover:text-red-700 p-1"><LifeBuoyIcon className="w-6 h-6" /></button>
                 ) : (
-                    <button onClick={() => setActiveView('dashboard')} className="text-teal-600 hover:text-teal-800 p-2 -ml-2"><ArrowLeftIcon className="w-6 h-6" /></button>
+                    <button onClick={() => setActiveView('dashboard')} className="text-serene-teal hover:text-serene-teal p-2 -ml-2"><ArrowLeftIcon className="w-6 h-6" /></button>
                 )}
-                <h1 className="text-xl font-bold text-gray-700">The Addict's Agenda</h1>
-                <button onClick={() => setActiveView('settings')} className="text-gray-500 hover:text-teal-600 p-1"><SettingsIcon className="w-6 h-6" /></button>
+                <h1 className="text-xl font-bold text-deep-charcoal/80">The Addict's Agenda</h1>
+                <button onClick={() => setActiveView('settings')} className="text-deep-charcoal/60 hover:text-serene-teal p-1"><SettingsIcon className="w-6 h-6" /></button>
             </header>
             <main className="flex-grow w-full max-w-2xl mx-auto overflow-y-auto pb-4">
                 <Suspense fallback={<Spinner />}>

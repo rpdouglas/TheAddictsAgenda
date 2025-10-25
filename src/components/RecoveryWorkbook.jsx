@@ -42,15 +42,15 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
 
     return (
         <div className="mb-4 pb-2">
-            <p className="workbook-question text-gray-800">{questionText}</p>
+            <p className="workbook-question text-deep-charcoal">{questionText}</p>
             <textarea 
                 value={response} 
                 onChange={(e) => setResponse(e.target.value)} 
                 placeholder="Write your answer here..." 
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 resize-y min-h-[100px] text-sm"
+                className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 resize-y min-h-[100px] text-sm"
                 rows="4"
             />
-            <p className="text-right text-xs text-gray-500 mt-1 h-4">{saveStatus === 'Saved' ? 'Saved' : (saveStatus === 'Saving...' ? 'Saving...' : '\u00A0')}</p>
+            <p className="text-right text-xs text-deep-charcoal/60 mt-1 h-4">{saveStatus === 'Saved' ? 'Saved' : (saveStatus === 'Saving...' ? 'Saving...' : '\u00A0')}</p>
         </div>
     );
 };
@@ -68,10 +68,10 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
     }, [isCollapsed]);
 
     return (
-        <div className="mb-4 border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="mb-4 border border-light-stone/50 rounded-lg shadow-sm overflow-hidden">
             <button 
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className={`w-full flex justify-between items-center p-4 font-bold text-lg transition-colors ${isCollapsed ? 'bg-gray-50 hover:bg-gray-100 text-gray-700' : 'bg-teal-500 text-white hover:bg-teal-600'}`}
+                className={`w-full flex justify-between items-center p-4 font-bold text-lg transition-colors ${isCollapsed ? 'bg-pure-white/60 hover:bg-soft-linen text-deep-charcoal/80' : 'bg-serene-teal/100 text-white hover:bg-serene-teal'}`}
             >
                 {section.title}
                 {isCollapsed ? <ChevronDown /> : <ChevronUp />}
@@ -103,9 +103,9 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
 const WorkbookTopic = ({ topic, onBack, initialResponses }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Topics</span></button>
+            <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Topics</span></button>
             
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{topic.title}</h3>
+            <h3 className="text-2xl font-bold text-deep-charcoal mb-2">{topic.title}</h3>
             
             {topic.quote && (
                 <div className="step-quote">
@@ -133,14 +133,14 @@ const WorkbookTopic = ({ topic, onBack, initialResponses }) => {
 
 const WorkbookCategory = ({ category, onSelectTopic, onBack, completedTopicIds }) => (
     <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
-        <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Workbook Sections</span></button>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">{category.title}</h2>
-        <p className="text-gray-600 mb-6">{category.description}</p>
+        <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Workbook Sections</span></button>
+        <h2 className="text-2xl font-bold text-deep-charcoal mb-2">{category.title}</h2>
+        <p className="text-deep-charcoal/70 mb-6">{category.description}</p>
         <ul className="space-y-3">
             {category.topics.map(topic => (
                 <li key={topic.id}>
-                    <button onClick={() => onSelectTopic(topic)} className="w-full text-left p-4 bg-gray-50 hover:bg-teal-50 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-800">{topic.title}</h3>
+                    <button onClick={() => onSelectTopic(topic)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-serene-teal/10 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-between">
+                        <h3 className="font-semibold text-deep-charcoal">{topic.title}</h3>
                         {completedTopicIds.includes(topic.id) && <CheckCircleIcon className="text-green-500 w-5 h-5"/>}
                     </button>
                 </li>
@@ -153,25 +153,25 @@ const InsightsModal = ({ onClose, isLoading, insights }) => (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg space-y-4 flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center flex-shrink-0">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-deep-charcoal flex items-center gap-2">
                     <SparklesIcon className="text-teal-500 w-6 h-6"/> AI-Powered Insights
                 </h3>
-                <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                <button onClick={onClose} className="text-deep-charcoal/60 hover:text-deep-charcoal text-2xl">&times;</button>
             </div>
             <div className="flex-grow overflow-y-auto pr-2 -mr-2">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
                         <Spinner />
-                        <p className="mt-4 text-gray-600">Analyzing your workbook entries...</p>
+                        <p className="mt-4 text-deep-charcoal/70">Analyzing your workbook entries...</p>
                     </div>
                 ) : (
-                    <div className="text-gray-700 space-y-4 whitespace-pre-wrap">
+                    <div className="text-deep-charcoal/80 space-y-4 whitespace-pre-wrap">
                         {insights.split('\n\n').map((paragraph, index) => <p key={index}>{paragraph}</p>)}
                     </div>
                 )}
             </div>
             <div className="flex-shrink-0">
-                <button onClick={onClose} className="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">
+                <button onClick={onClose} className="w-full bg-light-stone/50 text-deep-charcoal/80 font-semibold py-2 px-4 rounded-lg hover:bg-light-stone/70">
                     Close
                 </button>
             </div>
@@ -284,25 +284,25 @@ export const RecoveryWorkbook = () => {
                     insights={aiInsights}
                 />
             )}
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Recovery Workbook</h2> 
-            <p className="text-gray-600 mb-6">Track your progress through the exercises.</p> 
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Recovery Workbook</h2> 
+            <p className="text-deep-charcoal/70 mb-6">Track your progress through the exercises.</p> 
             <div className="mb-6"> 
                 <div className="flex justify-between items-center mb-1"> 
-                    <span className="text-sm font-semibold text-gray-600">Overall Progress</span> 
-                    <span className="text-sm font-semibold text-teal-600">{overallCompletion.percentage}%</span> 
+                    <span className="text-sm font-semibold text-deep-charcoal/70">Overall Progress</span> 
+                    <span className="text-sm font-semibold text-serene-teal">{overallCompletion.percentage}%</span> 
                 </div> 
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div className="bg-teal-500 h-2.5 rounded-full" style={{ width: `${overallCompletion.percentage}%` }}></div>
+                <div className="w-full bg-light-stone/50 rounded-full h-2.5">
+                    <div className="bg-serene-teal/100 h-2.5 rounded-full" style={{ width: `${overallCompletion.percentage}%` }}></div>
                 </div> 
             </div> 
             <div className="mt-6 mb-4 border-t pt-6">
                 <button
                     onClick={handleGenerateInsights}
-                    className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-teal-700 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors"
                 >
                     <SparklesIcon className="w-5 h-5"/> Get AI Insights on Your Work
                 </button>
-                <p className="text-xs text-gray-500 text-center mt-2">Analyzes your completed entries to find themes and patterns in your recovery journey.</p>
+                <p className="text-xs text-deep-charcoal/60 text-center mt-2">Analyzes your completed entries to find themes and patterns in your recovery journey.</p>
             </div>
             <ul className="space-y-4"> 
                 {Object.keys(workbookData).map(key => { 
@@ -311,16 +311,16 @@ export const RecoveryWorkbook = () => {
                     const { completed, total, percentage } = calculateCompletion(key); 
                     return ( 
                         <li key={key}> 
-                            <button onClick={() => setActiveCategory(category)} className="w-full text-left p-4 bg-gray-50 hover:bg-teal-50 rounded-lg shadow-sm"> 
-                                <h3 className="font-semibold text-gray-800 text-lg">{category.title}</h3> 
-                                <p className="text-gray-600 mt-1 text-sm">{category.description}</p> 
+                            <button onClick={() => setActiveCategory(category)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-serene-teal/10 rounded-lg shadow-sm"> 
+                                <h3 className="font-semibold text-deep-charcoal text-lg">{category.title}</h3> 
+                                <p className="text-deep-charcoal/70 mt-1 text-sm">{category.description}</p> 
                                 <div className="mt-3"> 
                                     <div className="flex justify-between items-center mb-1"> 
-                                        <span className="text-xs font-semibold text-gray-500">{completed} / {total} Completed</span> 
-                                        <span className="text-xs font-semibold text-teal-600">{percentage}%</span> 
+                                        <span className="text-xs font-semibold text-deep-charcoal/60">{completed} / {total} Completed</span> 
+                                        <span className="text-xs font-semibold text-serene-teal">{percentage}%</span> 
                                     </div> 
-                                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                        <div className="bg-teal-500 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+                                    <div className="w-full bg-light-stone/50 rounded-full h-1.5">
+                                        <div className="bg-serene-teal/100 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
                                     </div> 
                                 </div> 
                             </button> 

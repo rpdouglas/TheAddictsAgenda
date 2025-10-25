@@ -76,48 +76,48 @@ const MeetingTracker = ({ onBack }) => {
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
+            <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-6 font-semibold flex-shrink-0">
                 <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Homegroup</span>
             </button>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Homegroup Meeting Tracker</h2>
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-4">Homegroup Meeting Tracker</h2>
 
-            <div className="flex items-center justify-between mb-4 p-2 bg-gray-100 rounded-lg">
-                <button onClick={() => handleDateChange(-1)} className="p-2 hover:bg-gray-200 rounded-full"><ArrowLeftIcon className="w-6 h-6"/></button>
+            <div className="flex items-center justify-between mb-4 p-2 bg-soft-linen rounded-lg">
+                <button onClick={() => handleDateChange(-1)} className="p-2 hover:bg-light-stone/50 rounded-full"><ArrowLeftIcon className="w-6 h-6"/></button>
                 <input 
                     type="date" 
                     value={todayKey} 
                     onChange={(e) => setCurrentDate(new Date(e.target.value + 'T00:00:00'))}
-                    className="border-gray-300 rounded-lg shadow-sm"
+                    className="border-light-stone rounded-lg shadow-sm"
                 />
-                <button onClick={() => handleDateChange(1)} className="p-2 hover:bg-gray-200 rounded-full"><ArrowRightIcon className="w-6 h-6"/></button>
+                <button onClick={() => handleDateChange(1)} className="p-2 hover:bg-light-stone/50 rounded-full"><ArrowRightIcon className="w-6 h-6"/></button>
             </div>
 
             <form onSubmit={handleSave} className="space-y-4 flex-grow flex flex-col">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Chairperson</label>
-                        <input type="text" name="chairperson" defaultValue={currentEntry.chairperson} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                        <label className="block text-sm font-medium text-deep-charcoal/80">Chairperson</label>
+                        <input type="text" name="chairperson" defaultValue={currentEntry.chairperson} className="mt-1 block w-full border-light-stone rounded-md shadow-sm" />
                     </div>
                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Attendance</label>
-                        <input type="number" name="attendance" defaultValue={currentEntry.attendance} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                        <label className="block text-sm font-medium text-deep-charcoal/80">Attendance</label>
+                        <input type="number" name="attendance" defaultValue={currentEntry.attendance} className="mt-1 block w-full border-light-stone rounded-md shadow-sm" />
                     </div>
                      <div>
-                        <label className="block text-sm font-medium text-gray-700">7th Tradition ($)</label>
-                        <input type="number" step="0.01" name="tradition" defaultValue={currentEntry.tradition} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                        <label className="block text-sm font-medium text-deep-charcoal/80">7th Tradition ($)</label>
+                        <input type="number" step="0.01" name="tradition" defaultValue={currentEntry.tradition} className="mt-1 block w-full border-light-stone rounded-md shadow-sm" />
                     </div>
                 </div>
                 <div className="flex-grow flex flex-col">
-                    <label className="block text-sm font-medium text-gray-700">Notes</label>
-                    <textarea name="notes" rows="5" defaultValue={currentEntry.notes} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm flex-grow"></textarea>
+                    <label className="block text-sm font-medium text-deep-charcoal/80">Notes</label>
+                    <textarea name="notes" rows="5" defaultValue={currentEntry.notes} className="mt-1 block w-full border-light-stone rounded-md shadow-sm flex-grow"></textarea>
                 </div>
                 <div className="flex gap-2">
-                    <button type="submit" className="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700">Save Entry</button>
-                    <button type="button" onClick={handleExport} className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                    <button type="submit" className="w-full bg-serene-teal text-white font-bold py-2 px-4 rounded-lg hover:brightness-95">Save Entry</button>
+                    <button type="button" onClick={handleExport} className="w-full bg-healing-green text-white font-bold py-2 px-4 rounded-lg hover:brightness-95 flex items-center justify-center gap-2">
                         <DownloadIcon className="w-5 h-5"/> Export (.csv)
                     </button>
                 </div>
-                 <p className="text-xs text-gray-500 text-center">Exporting as a .csv file allows you to open your data in Google Sheets, Excel, or other spreadsheet programs.</p>
+                 <p className="text-xs text-deep-charcoal/60 text-center">Exporting as a .csv file allows you to open your data in Google Sheets, Excel, or other spreadsheet programs.</p>
             </form>
         </div>
     );
