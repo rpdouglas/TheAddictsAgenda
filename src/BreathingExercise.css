@@ -1,0 +1,132 @@
+/* src/components/BreathingExercise.css */
+
+.breathing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a202c; /* Dark background */
+  color: #e2e8f0; /* Light text */
+  padding: 40px 20px;
+  border-radius: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  width: 100%;
+  max-width: 450px;
+  margin: 2rem auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.breathing-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.breathing-subtitle {
+  font-size: 1.1rem;
+  color: #a0aec0; /* Lighter gray for subtitle */
+  margin: 5px 0 25px 0;
+}
+
+.exercise-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.selector-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #4a5568;
+  background-color: transparent;
+  color: #a0aec0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.selector-btn:hover {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.selector-btn.active {
+  background-color: #4299e1; /* Blue for active */
+  color: #1a202c;
+  border-color: #4299e1;
+  font-weight: 600;
+}
+
+.selector-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.visualizer-wrapper {
+  width: 250px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.visualizer-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #4299e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition-property: transform;
+  transition-timing-function: linear; /* Smooth, constant speed animation */
+  transform: scale(1);
+}
+
+.visualizer-circle.grow {
+  transform: scale(1.5);
+}
+
+.visualizer-circle.shrink {
+  transform: scale(1);
+}
+
+.visualizer-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #1a202c;
+  font-size: 1.5rem;
+  font-weight: 600;
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.visualizer-countdown {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.control-btn {
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 12px 40px;
+  border-radius: 25px;
+  border: none;
+  background-color: #38a169; /* Green for Start */
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.control-btn:hover {
+  background-color: #2f855a;
+}

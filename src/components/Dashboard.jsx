@@ -34,12 +34,12 @@ const SobrietyTracker = ({ startDate }) => {
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-            <h3 className="text-lg font-semibold text-deep-charcoal/60 mb-4">You are on your path</h3>
+            <h3 className="text-lg font-semibold text-gray-500 mb-4">You are on your path</h3>
             <div className="grid grid-cols-4 gap-2 sm:gap-4">
                 {timeUnits.map(unit => (
-                    <div key={unit.label} className="flex flex-col items-center bg-soft-linen p-2 sm:p-3 rounded-lg">
-                        <span className="text-3xl sm:text-4xl font-bold text-serene-teal">{String(unit.value).padStart(2, '0')}</span>
-                        <span className="text-xs sm:text-sm text-deep-charcoal/70 uppercase tracking-wider">{unit.label}</span>
+                    <div key={unit.label} className="flex flex-col items-center bg-gray-100 p-2 sm:p-3 rounded-lg">
+                        <span className="text-3xl sm:text-4xl font-bold text-teal-600">{String(unit.value).padStart(2, '0')}</span>
+                        <span className="text-xs sm:text-sm text-gray-600 uppercase tracking-wider">{unit.label}</span>
                     </div>
                 ))}
             </div>
@@ -70,7 +70,7 @@ const WelcomeTip = ({ onDismiss }) => (
 
 export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
     const randomFact = useMemo(() => RECOVERY_FACTS[Math.floor(Math.random() * RECOVERY_FACTS.length)], []);
-    
+
     const [isTipDismissed, setIsTipDismissed] = useState(true);
     const [isLoadingTip, setIsLoadingTip] = useState(true);
 
@@ -93,7 +93,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
         { view: 'journal', label: 'Daily Journal', icon: <BookOpenIcon /> },
         { view: 'reflection', label: 'Daily Reflection', icon: <CalendarIcon /> },
         { view: 'goals', label: 'My Goals', icon: <TargetIcon /> },
-        { view: 'coping', label: 'Coping Cards', icon: <ShieldIcon /> },
+        { view: 'coping-tools', label: 'Coping Tools', icon: <ShieldIcon /> },
         { view: 'workbook', label: 'Recovery Workbook', icon: <ClipboardListIcon /> },
         { view: 'literature', label: 'Recovery Literature', icon: <LibraryIcon /> },
         { view: 'finder', label: 'Meeting Management', icon: <MapPinIcon /> },
@@ -103,9 +103,9 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
     return (
         <div className="animate-fade-in space-y-6">
             {!isLoadingTip && !isTipDismissed && <WelcomeTip onDismiss={handleDismissTip} />}
-            
-            <div className="text-center p-3 bg-hopeful-coral/10 rounded-xl shadow-sm border border-hopeful-coral/30">
-                <p className="text-sm font-medium text-deep-charcoal italic">Recovery Insight: {randomFact}</p>
+
+            <div className="text-center p-3 bg-yellow-50 rounded-xl shadow-sm border border-yellow-200">
+                <p className="text-sm font-medium text-yellow-800 italic">Recovery Insight: {randomFact}</p>
             </div>
 
             <SobrietyTracker startDate={sobrietyStartDate} />
@@ -115,10 +115,10 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
                     <button
                         key={item.view}
                         onClick={() => onNavigate(item.view)}
-                        className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg hover:shadow-xl hover:bg-serene-teal/10 transition-all transform hover:-translate-y-1 text-center h-full"
+                        className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg hover:shadow-xl hover:bg-teal-50 transition-all transform hover:-translate-y-1 text-center h-full"
                     >
                         <div className="text-teal-500 mb-2">{item.icon}</div>
-                        <span className="text-sm font-semibold text-deep-charcoal/80">{item.label}</span>
+                        <span className="text-sm font-semibold text-gray-700">{item.label}</span>
                     </button>
                 ))}
             </div>
@@ -128,26 +128,26 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
 
 export const SobrietyDataSetup = ({ onDateSet }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    
+
     const handleSave = async () => {
         const newStartDate = new Date(date);
-        await onDateSet(newStartDate); 
+        await onDateSet(newStartDate);
         await DataStore.save(DataStore.KEYS.WELCOME_TIP, false); // UPDATED
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full p-6 bg-pure-white/60 rounded-xl shadow-lg animate-fade-in">
-            <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Welcome</h2>
-            <p className="text-deep-charcoal/70 mb-6 text-center">Let's start your journey. Please select your sobriety start date.</p>
+        <div className="flex flex-col items-center justify-center h-full p-6 bg-gray-50 rounded-xl shadow-lg animate-fade-in">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome</h2>
+            <p className="text-gray-600 mb-6 text-center">Let's start your journey. Please select your sobriety start date.</p>
             <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full max-w-xs p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-serene-teal"
+                className="w-full max-w-xs p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             />
             <button
                 onClick={handleSave}
-                className="mt-6 bg-serene-teal text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 transition-transform transform hover:scale-105"
+                className="mt-6 bg-teal-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-teal-700 transition-transform transform hover:scale-105"
             >
                 Begin Journey
             </button>
