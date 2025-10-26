@@ -28,20 +28,28 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           background_color: '#ffffff',
           icons: [
+            // ADDED: Full icon configuration
             {
-              "src": "/pwa-192x192.png",
-              "sizes": "192x192",
-              "type": "image/png"
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
             },
             {
-              "src": "/pwa-512x512.png",
-              "sizes": "512x512",
-              "type": "image/png"
-            }
-          ]
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
+            },
+          ] // End of icons array
         }
       })
     ],
+      
     base: getBase(mode),
     // Vitest configuration
     test: {
