@@ -9,13 +9,13 @@ const STORAGE_KEY = DataStore.KEYS.HOMEGROUP_MEMBERS; // UPDATED: Use DataStore
 const DeleteMemberModal = ({ memberName, onConfirm, onCancel }) => (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md space-y-4">
-            <h3 className="text-xl font-bold text-gray-800">Confirm Deletion</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-bold text-deep-charcoal">Confirm Deletion</h3>
+            <p className="text-deep-charcoal/70">
                 Are you sure you want to delete the member: <span className="font-semibold">{memberName}</span>? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
-                <button onClick={onCancel} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
-                <button onClick={onConfirm} className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">Delete Member</button>
+                <button onClick={onCancel} className="bg-light-stone/50 text-deep-charcoal/80 font-semibold py-2 px-4 rounded-lg hover:bg-light-stone/70 transition-colors">Cancel</button>
+                <button onClick={onConfirm} className="bg-hopeful-coral text-white font-semibold py-2 px-4 rounded-lg hover:brightness-95 transition-colors">Delete Member</button>
             </div>
         </div>
     </div>
@@ -113,27 +113,27 @@ const GroupMembers = ({ onBack }) => {
                 />
             )}
 
-            <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
+            <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-6 font-semibold flex-shrink-0">
                 <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Homegroup</span>
             </button>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Group Members</h2>
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-4">Group Members</h2>
 
             <div className="flex-grow overflow-y-auto pr-2 -mr-2 mb-6">
                 {isLoading ? <Spinner /> : (members.length > 0 ? (
                     <ul className="space-y-3">
                         {members.map(m => (
-                            <li key={m.id} className="p-4 border rounded-lg bg-gray-50 shadow-sm">
+                            <li key={m.id} className="p-4 border rounded-lg bg-pure-white/60 shadow-sm">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="font-semibold text-gray-900 text-lg">{m.name}</p>
-                                        <p className="text-sm text-teal-700 font-medium">{m.position}</p>
+                                        <p className="font-semibold text-deep-charcoal text-lg">{m.name}</p>
+                                        <p className="text-sm text-serene-teal font-medium">{m.position}</p>
                                     </div>
                                     <div className="flex items-center gap-3 flex-shrink-0">
-                                        <button onClick={() => handleStartEdit(m)} title="Edit Member" className="text-gray-500 hover:text-blue-600"><EditIcon className="w-5 h-5"/></button>
-                                        <button onClick={() => handleDelete(m)} title="Delete Member" className="text-gray-500 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleStartEdit(m)} title="Edit Member" className="text-deep-charcoal/60 hover:text-blue-600"><EditIcon className="w-5 h-5"/></button>
+                                        <button onClick={() => handleDelete(m)} title="Delete Member" className="text-deep-charcoal/60 hover:text-red-600"><TrashIcon className="w-5 h-5"/></button>
                                     </div>
                                 </div>
-                                <div className="text-sm text-gray-700 mt-3 pt-3 border-t border-gray-200 space-y-1">
+                                <div className="text-sm text-deep-charcoal/80 mt-3 pt-3 border-t border-light-stone/50 space-y-1">
                                     {m.phone && <p><strong>Phone:</strong> <a href={`tel:${m.phone}`} className="text-blue-600 hover:underline">{m.phone}</a></p>}
                                     {m.email && <p><strong>Email:</strong> <a href={`mailto:${m.email}`} className="text-blue-600 hover:underline">{m.email}</a></p>}
                                     {m.soberDate && <p><strong>Sober Date:</strong> {new Date(m.soberDate + 'T00:00:00').toLocaleDateString()}</p>}
@@ -142,38 +142,38 @@ const GroupMembers = ({ onBack }) => {
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-gray-500 text-center py-6">No group members added yet. Click the button below to add one.</p>
+                    <p className="text-deep-charcoal/60 text-center py-6">No group members added yet. Click the button below to add one.</p>
                 ))}
             </div>
 
             {!showAddForm ? (
                 <button
                     onClick={() => { setShowAddForm(true); setIsEditing(false); setFormState({ id: null, name: '', phone: '', email: '', soberDate: '', position: 'Group Member' }); }}
-                    className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 flex items-center justify-center gap-2"
+                    className="w-full bg-serene-teal text-white font-bold py-3 px-4 rounded-lg hover:brightness-95 flex items-center justify-center gap-2"
                 >
                     <PlusIcon className="w-5 h-5"/> Add New Member
                 </button>
             ) : (
-                <form onSubmit={handleFormSubmit} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4 animate-fade-in">
-                    <h3 className="font-bold text-xl text-gray-800">{isEditing ? 'Edit Member' : 'Add New Member'}</h3>
+                <form onSubmit={handleFormSubmit} className="p-4 bg-pure-white/60 rounded-lg border border-light-stone/50 space-y-4 animate-fade-in">
+                    <h3 className="font-bold text-xl text-deep-charcoal">{isEditing ? 'Edit Member' : 'Add New Member'}</h3>
                     <input type="text" name="name" value={formState.name} onChange={handleInputChange} placeholder="Name" className="w-full p-2 border rounded-lg" required />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input type="tel" name="phone" value={formState.phone} onChange={handleInputChange} placeholder="Phone Number" className="w-full p-2 border rounded-lg" />
                         <input type="email" name="email" value={formState.email} onChange={handleInputChange} placeholder="Email Address" className="w-full p-2 border rounded-lg" />
                     </div>
                     <div>
-                        <label className="text-sm font-medium text-gray-700">Sober Date</label>
+                        <label className="text-sm font-medium text-deep-charcoal/80">Sober Date</label>
                         <input type="date" name="soberDate" value={formState.soberDate} onChange={handleInputChange} className="w-full mt-1 p-2 border rounded-lg" />
                     </div>
                      <div>
-                        <label className="text-sm font-medium text-gray-700">Position</label>
+                        <label className="text-sm font-medium text-deep-charcoal/80">Position</label>
                         <select name="position" value={formState.position} onChange={handleInputChange} className="w-full mt-1 p-2 border rounded-lg">
                             {trustedServantRoles.map(role => <option key={role} value={role}>{role}</option>)}
                         </select>
                     </div>
                     <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={resetForm} className="w-full bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-400">Cancel</button>
-                        <button type="submit" className="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700">{isEditing ? 'Update Member' : 'Save Member'}</button>
+                        <button type="button" onClick={resetForm} className="w-full bg-light-stone/70 text-deep-charcoal font-bold py-2 px-4 rounded-lg hover:bg-gray-400">Cancel</button>
+                        <button type="submit" className="w-full bg-serene-teal text-white font-bold py-2 px-4 rounded-lg hover:brightness-95">{isEditing ? 'Update Member' : 'Save Member'}</button>
                     </div>
                 </form>
             )}

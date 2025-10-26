@@ -1,32 +1,14 @@
-import React, { useEffect } from 'react';
-import { signInWithRedirect, getRedirectResult } from "firebase/auth";
-import { auth, googleProvider, facebookProvider } from '../firebase.jsx';
+import React from 'react';
+import { auth, googleProvider, facebookProvider, signInWithPopup } from '../firebase.jsx';
 import { BookOpenIcon } from '../utils/icons.jsx';
 import { useAuth } from '../AuthContext.jsx';
 
 const Login = () => {
     const { loginLocally } = useAuth();
 
-    useEffect(() => {
-        const handleRedirectResult = async () => {
-            try {
-                // This checks if the user is returning from a redirect sign-in flow
-                const result = await getRedirectResult(auth);
-                if (result) {
-                    // User is signed in. The AuthContext will handle the session update.
-                }
-            } catch (error) {
-                console.error("Error handling redirect result:", error.message);
-                alert(`Sign-In Error: ${error.message}`);
-            }
-        };
-
-        handleRedirectResult();
-    }, []);
-
     const handleGoogleSignIn = async () => {
         try {
-            await signInWithRedirect(auth, googleProvider);
+            await signInWithPopup(auth, googleProvider);
         } catch (error) {
             console.error("Error signing in with Google:", error.message);
             alert(`Google Sign-In Error: ${error.message}`);
@@ -35,7 +17,7 @@ const Login = () => {
 
     const handleFacebookSignIn = async () => {
         try {
-            await signInWithRedirect(auth, facebookProvider);
+            await signInWithPopup(auth, facebookProvider);
         } catch (error) {
             console.error("Error signing in with Facebook:", error.message);
             alert(`Facebook Sign-In Error: ${error.message}`);

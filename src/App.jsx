@@ -1,3 +1,5 @@
+// rpdouglas/theaddictsagenda/TheAddictsAgenda-e41ad79b03616082ea3f0ed6a702997ffa42e680/src/App.jsx
+
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import DataStore from './utils/dataStore.js';
@@ -26,6 +28,9 @@ const App = () => {
     const [sobrietyStartDate, setSobrietyStartDate] = useState(null);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [journalTemplate, setJournalTemplate] = useState('');
+    
+    // ADDED STATE FOR DEFERRED PWA PROMPT
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
 
     useEffect(() => {
         DataStore.setStorageEngine(session?.type);
@@ -47,6 +52,25 @@ const App = () => {
         loadUserData();
     }, [session]);
 
+    // ADDED PWA INSTALL PROMPT LISTENER
+    useEffect(() => {
+        let installPrompt = null;
+        
+        const handler = (e) => {
+            // Prevent the default browser prompt (to show a custom button later)
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            installPrompt = e;
+            setDeferredPrompt(e);
+        };
+
+        window.addEventListener('beforeinstallprompt', handler);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handler);
+        };
+    }, []);
+
     const handleSobrietyDateUpdate = async (newDate) => {
         if (!newDate || isNaN(newDate.getTime())) return;
         setSobrietyStartDate(newDate);
@@ -57,6 +81,19 @@ const App = () => {
         const template = `Coping Card Reflection: "${card.title}"\n\n**Strategy:** ${card.description}\n\n**My Application Plan:**\n\n`;
         setJournalTemplate(template);
         setActiveView('journal');
+    };
+    
+    // CREATED INSTALLER FUNCTION
+    const handleInstallPWA = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                console.log('User accepted the PWA install prompt.');
+            }
+            // Clear the deferred prompt whether accepted or dismissed
+            setDeferredPrompt(null);
+        }
     };
 
     if (authLoading) {
@@ -77,7 +114,8 @@ const App = () => {
     
     const renderContent = () => {
         switch (activeView) {
-            case 'dashboard': return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
+            // UPDATED: Pass PWA related props to Dashboard
+            case 'dashboard': return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
             case 'journal': return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} />;
             case 'goals': return <Goals />;
             case 'coping': return <CopingCards onJournal={handleJournalFromCopingCard} />;
@@ -95,7 +133,8 @@ const App = () => {
             case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
             case 'homegroup': return <Homegroup onBack={() => setActiveView('finder')} onNavigate={setActiveView} />;
             case 'meetingTracker': return <MeetingTracker onBack={() => setActiveView('homegroup')} />;
-            default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} />;
+            // UPDATED: Pass PWA related props to Dashboard
+            default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
         }
     };
     

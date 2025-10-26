@@ -1,8 +1,11 @@
+// rpdouglas/theaddictsagenda/TheAddictsAgenda-e41ad79b03616082ea3f0ed6a702997ffa42e680/src/components/Dashboard.jsx
+
 import React, { useState, useEffect, useMemo } from 'react';
 import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
 import { Spinner } from './common.jsx';
 import { RECOVERY_FACTS } from '../utils/data.js';
-import { BookOpenIcon, TargetIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, MapPinIcon, XIcon, CalendarIcon } from '../utils/icons.jsx';
+// ADDED DownloadIcon for PWA button functionality
+import { BookOpenIcon, TargetIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, MapPinIcon, XIcon, CalendarIcon, DownloadIcon } from '../utils/icons.jsx'; 
 
 // --- Sub-Components ---
 
@@ -68,7 +71,7 @@ const WelcomeTip = ({ onDismiss }) => (
 
 // --- Main Component ---
 
-export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
+export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onInstallPWA }) => {
     const randomFact = useMemo(() => RECOVERY_FACTS[Math.floor(Math.random() * RECOVERY_FACTS.length)], []);
     
     const [isTipDismissed, setIsTipDismissed] = useState(true);
@@ -102,6 +105,17 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate }) => {
 
     return (
         <div className="animate-fade-in space-y-6">
+            
+            {/* NEW PWA INSTALL BUTTON: Only show if the install prompt is available */}
+            {deferredPrompt && (
+                <button
+                    onClick={onInstallPWA}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
+                >
+                    <DownloadIcon className="w-5 h-5"/> Install App
+                </button>
+            )}
+            
             {!isLoadingTip && !isTipDismissed && <WelcomeTip onDismiss={handleDismissTip} />}
             
             <div className="text-center p-3 bg-yellow-50 rounded-xl shadow-sm border border-yellow-200">

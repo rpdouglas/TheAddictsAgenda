@@ -5,7 +5,7 @@ import { SparklesIcon, XIcon, CheckIcon } from '../utils/icons.jsx';
 
 export const Spinner = ({ small = false }) => ( 
     <div className={`flex justify-center items-center ${small ? '' : 'h-full'}`}>
-        <div className={`animate-spin rounded-full border-t-2 border-b-2 border-teal-500 ${small ? 'h-6 w-6' : 'h-16 w-16'}`}></div>
+        <div className={`animate-spin rounded-full border-t-2 border-b-2 border-serene-teal ${small ? 'h-6 w-6' : 'h-16 w-16'}`}></div>
     </div>
 );
 
@@ -86,17 +86,17 @@ export const GeminiJournalHelper = ({ onInsertText, onClose }) => {
     };
 
     return (
-        <div className="mt-4 p-4 border rounded-lg bg-gray-50 animate-fade-in space-y-3">
+        <div className="mt-4 p-4 border rounded-lg bg-pure-white/60 animate-fade-in space-y-3">
             <div className="flex justify-between items-center">
-                <h4 className="font-bold text-gray-700 flex items-center gap-2">
+                <h4 className="font-bold text-deep-charcoal/80 flex items-center gap-2">
                     <SparklesIcon className="w-5 h-5 text-teal-500" />
                     AI Journal Helper
                 </h4>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <button onClick={onClose} className="text-deep-charcoal/50 hover:text-deep-charcoal/70">
                     <XIcon className="w-5 h-5" />
                 </button>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-deep-charcoal/70">
                 Use a prompt to get a personalized reflection idea from AI.
             </p>
             <div className="space-y-2">
@@ -111,7 +111,7 @@ export const GeminiJournalHelper = ({ onInsertText, onClose }) => {
                     <button
                         onClick={handleGenerateClick}
                         disabled={isLoading}
-                        className="bg-teal-600 text-white font-semibold px-4 rounded-lg text-sm hover:bg-teal-700 disabled:bg-gray-400"
+                        className="bg-serene-teal text-white font-semibold px-4 rounded-lg text-sm hover:brightness-95 disabled:bg-gray-400"
                     >
                         {isLoading ? '...' : 'Go'}
                     </button>
@@ -121,7 +121,7 @@ export const GeminiJournalHelper = ({ onInsertText, onClose }) => {
                         <button
                             key={p}
                             onClick={() => handlePromptClick(p)}
-                            className="text-xs bg-teal-100 text-teal-800 px-2 py-1 rounded-full hover:bg-teal-200"
+                            className="text-xs bg-teal-100 text-serene-teal px-2 py-1 rounded-full hover:bg-teal-200"
                         >
                             {p}
                         </button>
@@ -133,10 +133,10 @@ export const GeminiJournalHelper = ({ onInsertText, onClose }) => {
 
             {idea && (
                 <div className="p-3 bg-white border rounded-md space-y-3">
-                    <p className="text-sm text-gray-800 whitespace-pre-wrap">{idea}</p>
+                    <p className="text-sm text-deep-charcoal whitespace-pre-wrap">{idea}</p>
                     <button
                         onClick={handleInsert}
-                        className="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm hover:bg-blue-600 flex items-center justify-center gap-2"
+                        className="w-full bg-healing-green text-white font-semibold py-2 rounded-lg text-sm hover:brightness-95 flex items-center justify-center gap-2"
                     >
                         <CheckIcon className="w-4 h-4" /> Insert into Journal
                     </button>
