@@ -179,7 +179,7 @@ const InsightsModal = ({ onClose, isLoading, insights }) => (
     </div>
 );
 
-export const RecoveryWorkbook = () => {
+const RecoveryWorkbook = () => {
     const [activeCategory, setActiveCategory] = useState(null); 
     const [selectedTopic, setSelectedTopic] = useState(null); 
     const [workbookResponses, setWorkbookResponses] = useState({});
@@ -331,3 +331,5 @@ export const RecoveryWorkbook = () => {
         </div> 
     );
 };
+
+export default RecoveryWorkbook;

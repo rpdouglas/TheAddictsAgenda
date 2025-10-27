@@ -1,20 +1,21 @@
 import React, { useState, useRef } from 'react';
-import { literatureData } from '../utils/data.js';
+import { literatureManifest, getLiteratureBook } from '../utils/data.js';
 import { ArrowLeftIcon, ArrowRightIcon, DownloadIcon, PenIcon, HighlighterIcon } from '../utils/icons.jsx';
+import { Spinner } from './common.jsx';
 
 const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [highlightedText, setHighlightedText] = useState('');
-    const contentRef = useRef(null); // Ref to the content div
+    const contentRef = useRef(null);
 
     const goToNextPage = () => {
         setCurrentPage(prev => Math.min(prev + 1, chapter.pages.length - 1));
-        setHighlightedText(''); // Clear highlight on page change
+        setHighlightedText('');
     };
 
     const goToPreviousPage = () => {
         setCurrentPage(prev => Math.max(prev - 1, 0));
-        setHighlightedText(''); // Clear highlight on page change
+        setHighlightedText('');
     };
 
     const handleTextSelection = () => {
@@ -22,24 +23,20 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
                 const range = selection.getRangeAt(0);
-                // Check if the selection is within the contentRef
                 if (contentRef.current && contentRef.current.contains(range.commonAncestorContainer)) {
                     setHighlightedText(selection.toString().trim());
                 } else {
-                    setHighlightedText(''); // Clear if selection is outside content
+                    setHighlightedText('');
                 }
             }
-        } else if (document.selection && document.selection.type !== "Control") {
-            // For IE<9
-            setHighlightedText(document.selection.createRange().text.trim());
         }
     };
 
     const handleJournalHighlight = () => {
         if (highlightedText) {
             onJournal(bookTitle, chapter.title, currentPage + 1, highlightedText);
-            setHighlightedText(''); // Clear highlighted text after journaling
-            if (window.getSelection) window.getSelection().removeAllRanges(); // Deselect text
+            setHighlightedText('');
+            if (window.getSelection) window.getSelection().removeAllRanges();
         }
     };
 
@@ -51,10 +48,10 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
             <h2 className="text-2xl font-bold text-deep-charcoal mb-4 flex-shrink-0">{chapter.title}</h2>
             
             <div 
-                ref={contentRef} // Attach ref here
+                ref={contentRef}
                 className="prose-lg text-deep-charcoal/80 overflow-y-auto flex-grow pr-2 flex flex-col justify-between"
-                onMouseUp={handleTextSelection} // Listen for text selection
-                onTouchEnd={handleTextSelection} // For mobile selections
+                onMouseUp={handleTextSelection}
+                onTouchEnd={handleTextSelection}
             >
                 <div>
                     {chapter.pages[currentPage].split('\n\n').map((paragraph, index) => (
@@ -103,9 +100,23 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
     );
 };
 
-export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
+const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
     const [selectedBook, setSelectedBook] = useState(null); 
     const [selectedChapter, setSelectedChapter] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSelectBook = async (bookKey) => {
+        setIsLoading(true);
+        try {
+            const bookData = await getLiteratureBook(bookKey);
+            // The imported JSON module might have a 'default' property if it's treated as a module
+            setSelectedBook({ ...(bookData.default || bookData), key: bookKey });
+        } catch (error) {
+            console.error("Failed to load literature:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleJournal = (bookTitle, chapterTitle, pageNumber, highlightedText = '') => {
         let template = `Reflection on "${bookTitle}"\nChapter: ${chapterTitle}, Page ${pageNumber}\n\n`;
@@ -156,11 +167,10 @@ export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
             <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Recovery Literature</h2>
             <p className="text-deep-charcoal/70 mb-6">Read or download foundational recovery texts.</p>
-            <ul className="space-y-4">
-                {Object.keys(literatureData).map(key => { 
-                    const book = literatureData[key]; 
-                    return ( 
-                        <li key={key}> 
+            {isLoading ? <Spinner /> : (
+                <ul className="space-y-4">
+                    {Object.values(literatureManifest).map(book => ( 
+                        <li key={book.key}> 
                             <div className="p-4 bg-pure-white/60 rounded-lg shadow-sm"> 
                                 <div className="flex justify-between items-start"> 
                                     <div><h3 className="font-semibold text-deep-charcoal text-lg">{book.title}</h3></div> 
@@ -168,12 +178,14 @@ export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
                                         <DownloadIcon />PDF
                                     </a>
                                 </div> 
-                                <button onClick={() => setSelectedBook(book)} className="mt-4 w-full bg-serene-teal/10 text-serene-teal font-semibold py-2 px-4 rounded-lg hover:bg-serene-teal/20">Read in App</button>
+                                <button onClick={() => handleSelectBook(book.key)} className="mt-4 w-full bg-serene-teal/10 text-serene-teal font-semibold py-2 px-4 rounded-lg hover:bg-serene-teal/20">Read in App</button>
                             </div> 
                         </li> 
-                    ); 
-                })}
-            </ul>
+                    ))}
+                </ul>
+            )}
         </div> 
     );
 };
+
+export default RecoveryLiterature;

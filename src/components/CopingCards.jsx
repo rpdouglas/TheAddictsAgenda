@@ -1,37 +1,35 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { copingStrategies } from '../utils/data.js';
-import { ArrowLeftIcon, ShieldIcon, MapPinIcon, PhoneIcon, XIcon, ZapIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ShieldIcon, MapPinIcon, PhoneIcon, LifeBuoyIcon, ZapIcon, XIcon } from '../utils/icons.jsx';
 
-// Map string icon names from data.js to the imported JSX components
+// Map all icon names from data.js to the imported JSX components
 const iconMap = {
     MapPinIcon: MapPinIcon,
     PhoneIcon: PhoneIcon,
     ShieldIcon: ShieldIcon,
-    LifeBuoyIcon: XIcon, // Using XIcon as a fallback, but we should import LifeBuoyIcon if available
-    // Assuming you have ZapIcon (or similar) for a dynamic icon
-    ZapIcon: ZapIcon
+    LifeBuoyIcon: LifeBuoyIcon, // Correctly import and map this icon
+    ZapIcon: ZapIcon,
 };
 
-// Enhance cards with mapped icon component (needed for rendering)
+// Enhance cards with the mapped icon component. This is now safe.
 const allCopingCards = copingStrategies.map(card => ({
     ...card,
-    icon: iconMap[card.icon] || ShieldIcon
+    icon: iconMap[card.icon] || ShieldIcon // Fallback to a default icon if needed
 }));
 
-export const CopingCards = ({ onJournal }) => {
-    // Initialize with a random index to start fresh
+const CopingCards = ({ onJournal, onBack }) => {
+    // Initialize with a random index
     const [currentIndex, setCurrentIndex] = useState(() => Math.floor(Math.random() * allCopingCards.length));
     
+    // This line is now safe because allCopingCards is guaranteed to be a valid array
     const card = allCopingCards[currentIndex];
-    
-    const maxIndex = allCopingCards.length - 1;
 
-    // Function to select a new random card, ensuring it's not the same as the current one
+    // Function to select a new random card
     const showRandomCard = () => {
         let newIndex;
         do {
             newIndex = Math.floor(Math.random() * allCopingCards.length);
-        } while (newIndex === currentIndex && allCopingCards.length > 1); // Loop until different, unless only 1 card exists
+        } while (newIndex === currentIndex && allCopingCards.length > 1);
         
         setCurrentIndex(newIndex);
     };
@@ -39,15 +37,17 @@ export const CopingCards = ({ onJournal }) => {
     const CardIconComponent = card.icon;
 
     return ( 
-        <div className="flex flex-col items-center justify-center h-full p-4 animate-fade-in"> 
+        <div className="flex flex-col items-center justify-center h-full p-4 animate-fade-in relative">
+            <button onClick={onBack} className="absolute top-6 left-6 flex items-center text-serene-teal hover:text-serene-teal font-semibold z-10">
+                <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Coping Tools</span>
+            </button>
+            
             <div 
                 className={`p-8 rounded-xl shadow-xl w-full max-w-md text-center flex-grow flex flex-col justify-between 
                            bg-gradient-to-br ${card.color} text-deep-charcoal border border-gray-100`}
             >
                 <div className="flex justify-center items-start mb-4 w-full">
-                    {/* Centered Icon and Category display */}
                     <div className="flex flex-col items-center">
-                        {/* Using ZapIcon for a dynamic feel on the random card */}
                         <CardIconComponent className="w-8 h-8 text-serene-teal mb-2" />
                         <p className="text-xs font-semibold uppercase tracking-wider text-serene-teal">{card.category}</p>
                     </div>
@@ -63,7 +63,6 @@ export const CopingCards = ({ onJournal }) => {
             </div> 
             
             <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full max-w-md"> 
-                {/* New button for randomization */}
                 <button onClick={showRandomCard} className="w-full bg-serene-teal text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 transition-colors flex items-center justify-center">
                     <ZapIcon className="mr-2 h-5 w-5" /> Get New Card
                 </button>
@@ -72,3 +71,5 @@ export const CopingCards = ({ onJournal }) => {
         </div> 
     );
 };
+
+export default CopingCards;

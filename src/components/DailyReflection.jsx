@@ -2,65 +2,69 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, CalendarIcon } from '../utils/icons.jsx';
 
-// Placeholder/Mock API logic for fetching the daily reflection
-// In a real app, this would call a secure, date-specific endpoint.
+// --- Live Data Fetching using a reliable public API ---
 const fetchDailyReflection = async (date) => {
-    // Format date as MM-DD (or use a consistent format for the mock)
-    const dateKey = `${date.getMonth() + 1}-${date.getDate()}`;
+    // --- FIX #1: Correct Date Formatting ---
+    // The API requires the format "M/D/YYYY" without leading zeros.
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const formattedDate = `${month}/${day}/${year}`;
 
-    // --- Mock Data Structure ---
-    const mockData = {
-        '10-22': {
-            title: "A NEW FREEDOM",
-            quote: "With the self-discipline and insight gained from practicing Step Ten, I begin to know the gratifications of sobriety — not as mere abstinence from alcohol, but as recovery in every department of my life. I renew hope, regenerate faith, and regain the dignity of self-respect. I discover the word \"and\" in the phrase \"and when we were wrong, promptly admitted it.\" Reassured that I am no longer always wrong, I learn to accept myself as I am, with a new sense of the miracles of sobriety and serenity.",
-            source: "DAILY REFLECTIONS, p. 10"
-        },
-        '1-1': {
-            title: "A FRESH START",
-            quote: "Happy New Year! For a long time, the only time I felt happiness was when I was drinking. Now, thanks to the help of my Higher Power and A.A., I can look forward to a whole new year of joyful sobriety. I must practice these principles in all my affairs and remember that this is a daily program. Today, I am grateful for the chance to be of service and for a clean slate to begin anew.",
-            source: "MOCK REFLECTION, NEW YEAR"
+    const url = `https://www.steps-app.com/api/v1/readings/daily-reflection?date=${formattedDate}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Network response was not ok.');
         }
-        // ... more dates could be added here
-    };
-    
-    // Fallback reflection (Serenity Prayer)
-    const fallback = {
-        title: "The Serenity Prayer",
-        quote: "God grant me the serenity to accept the things I cannot change, courage to change the things I can, and wisdom to know the difference.",
-        source: "Reinhold Niebuhr / Commonly used in A.A."
-    };
+        const data = await response.json();
+        
+        const { title, text, source } = data.reading;
 
-    return new Promise(resolve => {
-        setTimeout(() => {
-            if (mockData[dateKey]) {
-                resolve(mockData[dateKey]);
-            } else {
-                resolve(fallback);
-            }
-        }, 500); // Simulate network delay
-    });
+        if (title && text && source) {
+            return { title, quote: text, source };
+        } else {
+            return getFallbackReflection();
+        }
+    } catch (error) {
+        console.error("Failed to fetch daily reflection for date:", formattedDate, error);
+        return getFallbackReflection();
+    }
 };
 
-export const DailyReflection = ({ onBack }) => {
+const getFallbackReflection = () => ({
+    title: "The Serenity Prayer",
+    quote: "God grant me the serenity to accept the things I cannot change, courage to change the things I can, and wisdom to know the difference.",
+    source: "Reinhold Niebuhr / Commonly used in A.A."
+});
+
+const DailyReflection = ({ onBack }) => {
     const today = new Date();
-    // Ensure date input default value is formatted as YYYY-MM-DD
-    const [selectedDate, setSelectedDate] = useState(today.toISOString().split('T')[0]);
+    // Use the full ISO string for the input value
+    const [selectedDateString, setSelectedDateString] = useState(today.toISOString().split('T')[0]);
     const [reflection, setReflection] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const loadReflection = useCallback(async (dateString) => {
         setIsLoading(true);
-        const dateObj = new Date(dateString);
+        // Create the date object from the string to ensure it's in the local timezone
+        const dateObj = new Date(dateString + 'T00:00:00');
         const data = await fetchDailyReflection(dateObj);
         setReflection(data);
         setIsLoading(false);
     }, []);
 
+    // --- FIX #2: useEffect Dependency ---
+    // Now it depends on the date *string*, so it will re-run even if the date object is the same.
     useEffect(() => {
-        loadReflection(selectedDate);
-    }, [selectedDate, loadReflection]);
+        loadReflection(selectedDateString);
+    }, [selectedDateString, loadReflection]);
 
-    // Helper to format the reflection text (split by double newline for paragraphs)
+    const handleDateChange = (e) => {
+        setSelectedDateString(e.target.value);
+    };
+    
     const formatContent = (content) => content.split('\n\n').map((paragraph, index) => (
         <p key={index} className="mb-4 whitespace-pre-wrap">{paragraph.trim()}</p>
     ));
@@ -75,19 +79,17 @@ export const DailyReflection = ({ onBack }) => {
                 <CalendarIcon className="w-6 h-6"/> Daily Reflection
             </h2>
             
-            {/* Date Selector */}
             <div className="mb-6 flex flex-col sm:flex-row items-center gap-4 flex-shrink-0">
                 <label htmlFor="reflection-date" className="text-sm font-medium text-deep-charcoal/80">Select Date:</label>
                 <input
                     id="reflection-date"
                     type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
+                    value={selectedDateString}
+                    onChange={handleDateChange}
                     className="w-full sm:w-auto p-2 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500"
                 />
             </div>
 
-            {/* Reflection Content */}
             <div className="flex-grow overflow-y-auto pr-2 -mr-2">
                 {isLoading ? (
                     <Spinner />
@@ -108,3 +110,5 @@ export const DailyReflection = ({ onBack }) => {
         </div>
     );
 };
+
+export default DailyReflection;

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
+import DataStore from '../utils/dataStore.js';
 import { Spinner } from './common.jsx';
 import { CalendarIcon, CheckIcon, RefreshIcon, XIcon, ArrowLeftIcon, PenIcon } from '../utils/icons.jsx';
 
 // Data storage key
-const STORAGE_KEY = DataStore.KEYS.NINETY_IN_NINETY; // UPDATED: Use DataStore
+const STORAGE_KEY = DataStore.KEYS.NINETY_IN_NINETY;
 const DAYS_IN_CHALLENGE = 90;
 
 // --- Custom Confirmation Modals ---
@@ -36,18 +36,16 @@ const JournalPromptModal = ({ dateString, onConfirm, onCancel }) => (
     </div>
 );
 
-
-export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) => {
+const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) => {
     const [challengeData, setChallengeData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showResetModal, setShowResetModal] = useState(false);
     const [showJournalPrompt, setShowJournalPrompt] = useState(false);
     const [journalDate, setJournalDate] = useState(null);
 
-    // --- Data Persistence (UPDATED FOR DATASTORE) ---
     const loadChallengeData = useCallback(async () => {
         setIsLoading(true);
-        const stored = await DataStore.load(STORAGE_KEY); // UPDATED: Use DataStore
+        const stored = await DataStore.load(STORAGE_KEY);
         if (stored && stored.startDate && stored.attendance) {
             setChallengeData({
                 ...stored,
@@ -63,13 +61,12 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
 
     const saveChallengeData = useCallback(async (data) => {
         setChallengeData(data);
-        await DataStore.save(STORAGE_KEY, { // UPDATED: Use DataStore
+        await DataStore.save(STORAGE_KEY, {
             ...data,
             startDate: data.startDate.toISOString()
         });
     }, []);
 
-    // --- Logic ---
     const { currentDay, attendanceCount } = useMemo(() => {
         if (!challengeData || !challengeData.startDate) {
             return { currentDay: 0, attendanceCount: 0 };
@@ -83,7 +80,6 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         return { currentDay: dayDiff, attendanceCount: count };
     }, [challengeData]);
 
-    // --- Handlers (UPDATED FOR DATASTORE) ---
     const handleStartNewChallenge = async () => {
         setShowResetModal(false);
         const today = new Date();
@@ -128,7 +124,6 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         return date.toISOString().split('T')[0];
     };
 
-    // --- Render Functions ---
     const renderChallengeGrid = () => {
         const days = Array.from({ length: DAYS_IN_CHALLENGE }, (_, i) => {
             const dayIndex = i;
@@ -165,7 +160,6 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
 
     if (isLoading) return <Spinner />;
 
-    // Initial Start Screen
     if (!challengeData || !challengeData.startDate) {
          return (
             <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col items-center justify-center text-center">
@@ -185,7 +179,6 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         );
     }
     
-    // Active Challenge View
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col space-y-6">
             {showResetModal && <ResetModal onConfirm={handleStartNewChallenge} onCancel={() => setShowResetModal(false)} />}
@@ -239,3 +232,5 @@ export const NinetyDayChallenge = ({ onBack, onNavigate, setJournalTemplate }) =
         </div>
     );
 };
+
+export default NinetyDayChallenge;

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
+import DataStore from '../utils/dataStore.js';
 import { Spinner, DebouncedTextarea } from './common.jsx';
 import { EditIcon, TrashIcon, CheckIcon } from '../utils/icons.jsx';
 
-export const Goals = () => {
+const Goals = () => {
     const config = { collectionName: 'goals', title: 'My Goals', prompt: 'Set small, achievable goals for your recovery.', placeholder: 'e.g., Attend a meeting or Call my sponsor tonight', emptyState: 'No goals set yet.', hasCompleted: true };
-    const storageKey = DataStore.KEYS.GOALS; // UPDATED: Use DataStore
+    const storageKey = DataStore.KEYS.GOALS;
     
     const [items, setItems] = useState([]);
     const [newItem, setNewItem] = useState('');
@@ -13,26 +13,25 @@ export const Goals = () => {
     const [editedText, setEditedText] = useState(''); 
     const [isLoading, setIsLoading] = useState(true);
 
-    // --- Persistence & Loading (UPDATED FOR DATASTORE) ---
-    const saveItemsToStore = useCallback(async (updatedItems) => { // RENAMED for clarity
-        const sortedItems = updatedItems.sort((a, b) => (b.timestamp.getTime()) - (a.timestamp.getTime()));
+    const saveItemsToStore = useCallback(async (updatedItems) => {
+        const sortedItems = updatedItems.sort((a, b) => (new Date(b.timestamp)) - (new Date(a.timestamp)));
         setItems(sortedItems);
         const serializableItems = sortedItems.map(item => ({
             ...item,
             timestamp: item.timestamp.toISOString()
         }));
-        await DataStore.save(storageKey, serializableItems); // UPDATED: Use DataStore
+        await DataStore.save(storageKey, serializableItems);
     }, [storageKey]);
 
     useEffect(() => {
         const loadGoalsData = async () => {
             setIsLoading(true);
-            const loadedItems = await DataStore.load(storageKey); // UPDATED: Use DataStore
+            const loadedItems = await DataStore.load(storageKey);
             
             const formattedItems = (loadedItems || []).map(item => ({
                 ...item,
                 timestamp: item.timestamp ? new Date(item.timestamp) : new Date(0)
-            })).sort((a, b) => (b.timestamp.getTime()) - (a.timestamp.getTime()));
+            })).sort((a, b) => (new Date(b.timestamp)) - (new Date(a.timestamp)));
 
             setItems(formattedItems);
             setIsLoading(false);
@@ -41,14 +40,12 @@ export const Goals = () => {
         loadGoalsData();
     }, [storageKey]);
     
-    // --- CRUD Handlers (UPDATED FOR DATASTORE) ---
-
     const handleSaveNewEntry = async (e) => {
         e.preventDefault();
         if (newItem.trim() === '') return;
         
         const newItemObject = { 
-            id: DataStore.generateId(), // UPDATED: Use DataStore
+            id: DataStore.generateId(),
             text: newItem, 
             timestamp: new Date(),
             completed: false
@@ -88,14 +85,12 @@ export const Goals = () => {
         setEditedText('');
     };
 
-    // --- Render Functions ---
     const GoalsForm = () => (
         <form onSubmit={handleSaveNewEntry} className="flex gap-2 mb-6">
              <DebouncedTextarea
                 value={newItem}
                 onChange={setNewItem}
                 placeholder={config.placeholder}
-                isInput={false} 
                 rows="2"
             />
             <button type="submit" className="flex-shrink-0 bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors">Add</button>
@@ -155,3 +150,5 @@ export const Goals = () => {
         </div> 
     );
 };
+
+export default Goals;

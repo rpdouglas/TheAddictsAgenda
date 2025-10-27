@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
+import DataStore from '../utils/dataStore.js';
 import { MEETING_LINKS } from '../utils/data.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, ChevronDown, ChevronUp, TrashIcon, CheckIcon, StarIcon, ViewGridIcon, ViewListIcon, EditIcon, HomeIcon } from '../utils/icons.jsx';
 
-// --- Main Component ---
+// --- Main Component for Meeting Management ---
 export const MeetingManagement = ({ onNavigate, onBack }) => {
     const [meetings, setMeetings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState('list');
     
-    // Form State & Editing State
     const [formState, setFormState] = useState({
         id: null,
         name: '',
@@ -21,10 +20,9 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
     });
     const [isEditing, setIsEditing] = useState(false);
 
-    // --- Data Persistence (UPDATED FOR DATASTORE) ---
     const loadMeetings = useCallback(async () => {
         setIsLoading(true);
-        const storedMeetings = await DataStore.load(DataStore.KEYS.MEETINGS) || []; // UPDATED
+        const storedMeetings = await DataStore.load(DataStore.KEYS.MEETINGS) || [];
         setMeetings(storedMeetings);
         setIsLoading(false);
     }, []);
@@ -35,10 +33,9 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
 
     const saveMeetings = useCallback(async (updatedMeetings) => {
         setMeetings(updatedMeetings);
-        await DataStore.save(DataStore.KEYS.MEETINGS, updatedMeetings); // UPDATED
+        await DataStore.save(DataStore.KEYS.MEETINGS, updatedMeetings);
     }, []);
     
-    // --- Handlers (UPDATED FOR DATASTORE) ---
     const resetForm = () => {
         setFormState({ id: null, name: '', day: 'Sunday', time: '', address: '', isHomegroup: false });
         setIsEditing(false);
@@ -56,7 +53,7 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
         if (isEditing) {
             updatedMeetings = meetings.map(m => m.id === formState.id ? { ...formState } : m);
         } else {
-            const newMeeting = { ...formState, id: DataStore.generateId() }; // UPDATED
+            const newMeeting = { ...formState, id: DataStore.generateId() };
             submittedMeetingId = newMeeting.id;
             updatedMeetings = [...meetings, newMeeting];
         }
@@ -76,7 +73,7 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
     const handleStartEdit = (meeting) => {
         setFormState(meeting);
         setIsEditing(true);
-        window.scrollTo(0, 0); // Scroll to top to see the form
+        window.scrollTo(0, 0);
     };
 
     const handleDeleteMeeting = async (id) => {
@@ -97,7 +94,6 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
         }));
     };
 
-    // --- Render Views ---
     const renderMeetingList = () => (
         <ul className="space-y-3">
             {meetings.sort((a,b) => daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day) || a.time.localeCompare(b.time)).map(m => (
@@ -192,6 +188,7 @@ export const MeetingManagement = ({ onNavigate, onBack }) => {
     );
 };
 
+// --- Main Component for S.O.S. Resources ---
 export const Resources = () => ( 
     <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
         <h2 className="text-2xl font-bold text-deep-charcoal mb-2">S.O.S. Resources</h2>

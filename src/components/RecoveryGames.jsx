@@ -1,56 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeftIcon } from '../utils/icons.jsx';
 
-// --- Main Component ---
-const RecoveryGames = ({ onBack }) => {
-  const [activeGame, setActiveGame] = useState(null);
-
-  const games = [
-    { id: 'gratitude', name: 'Gratitude Jar', component: <GratitudeJar /> },
-    { id: 'spinner', name: 'Serenity Spinner', component: <SerenitySpinner /> },
-    { id: 'affirmation', name: 'Daily Affirmation', component: <DailyAffirmation /> },
-  ];
-
-  const selectedGame = games.find(game => game.id === activeGame);
-
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-        <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
-            <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Coping Tools</span>
-        </button>
-        <div className="bg-gray-100 p-5 rounded-lg shadow-inner flex-grow">
-          <h2 className="text-center text-2xl font-bold text-gray-800 mb-5">Recovery Games Zone</h2>
-          {!activeGame ? (
-            <div className="flex justify-center gap-3 flex-wrap mb-5">
-              {games.map(game => (
-                <button
-                  key={game.id}
-                  className="py-2 px-4 text-base font-semibold cursor-pointer border-none rounded-md bg-teal-600 text-white shadow-md hover:bg-teal-700"
-                  onClick={() => setActiveGame(game.id)}
-                >
-                  {game.name}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div>
-              <h3 className="text-center text-xl font-bold text-gray-700 mb-4">{selectedGame.name}</h3>
-              <div className="p-5 border border-gray-200 rounded-lg bg-white">
-                {selectedGame.component}
-              </div>
-              <button
-                className="block mx-auto mt-5 py-2 px-4 text-sm font-semibold cursor-pointer border border-gray-300 rounded-md bg-gray-200 hover:bg-gray-300"
-                onClick={() => setActiveGame(null)}
-              >
-                Back to Games
-              </button>
-            </div>
-          )}
-        </div>
-    </div>
-  );
-};
-
 // --- Gratitude Jar Game ---
 const GratitudeJar = () => {
   const [items, setItems] = useState([]);
@@ -148,6 +98,57 @@ const DailyAffirmation = () => {
       >
         New Affirmation
       </button>
+    </div>
+  );
+};
+
+
+// --- Main Component ---
+const RecoveryGames = ({ onBack }) => {
+  const [activeGame, setActiveGame] = useState(null);
+
+  const games = [
+    { id: 'gratitude', name: 'Gratitude Jar', component: <GratitudeJar /> },
+    { id: 'spinner', name: 'Serenity Spinner', component: <SerenitySpinner /> },
+    { id: 'affirmation', name: 'Daily Affirmation', component: <DailyAffirmation /> },
+  ];
+
+  const selectedGame = games.find(game => game.id === activeGame);
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
+        <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
+            <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Coping Tools</span>
+        </button>
+        <div className="bg-gray-100 p-5 rounded-lg shadow-inner flex-grow">
+          <h2 className="text-center text-2xl font-bold text-gray-800 mb-5">Recovery Games Zone</h2>
+          {!activeGame ? (
+            <div className="flex justify-center gap-3 flex-wrap mb-5">
+              {games.map(game => (
+                <button
+                  key={game.id}
+                  className="py-2 px-4 text-base font-semibold cursor-pointer border-none rounded-md bg-teal-600 text-white shadow-md hover:bg-teal-700"
+                  onClick={() => setActiveGame(game.id)}
+                >
+                  {game.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <h3 className="text-center text-xl font-bold text-gray-700 mb-4">{selectedGame.name}</h3>
+              <div className="p-5 border border-gray-200 rounded-lg bg-white">
+                {selectedGame.component}
+              </div>
+              <button
+                className="block mx-auto mt-5 py-2 px-4 text-sm font-semibold cursor-pointer border border-gray-300 rounded-md bg-gray-200 hover:bg-gray-300"
+                onClick={() => setActiveGame(null)}
+              >
+                Back to Games
+              </button>
+            </div>
+          )}
+        </div>
     </div>
   );
 };
