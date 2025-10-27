@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
+import DataStore from '../utils/dataStore.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, DownloadIcon, FileTextIcon, LockIcon, UnlockIcon, LogOutIcon } from '../utils/icons.jsx';
 
-export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout }) => {
+const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout }) => {
     // --- Sobriety Date State ---
     const initialDateString = useMemo(() => {
         if (currentStartDate instanceof Date && !isNaN(currentStartDate)) {
@@ -36,7 +36,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, o
     useEffect(() => {
         const checkPinStatus = async () => {
             setIsLoadingPin(true);
-            const storedPin = await DataStore.load(DataStore.KEYS.PIN); // UPDATED
+            const storedPin = await DataStore.load(DataStore.KEYS.PIN);
             setIsPinSet(!!storedPin);
             setIsLoadingPin(false);
         };
@@ -54,7 +54,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, o
             return;
         }
 
-        await DataStore.save(DataStore.KEYS.PIN, pin); // UPDATED
+        await DataStore.save(DataStore.KEYS.PIN, pin);
         setIsPinSet(true);
         setPin('');
         setConfirmPin('');
@@ -64,10 +64,10 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, o
 
     const handleConfirmRemovePin = async () => {
         setPinMessage('');
-        const storedPinValue = await DataStore.load(DataStore.KEYS.PIN); // UPDATED
+        const storedPinValue = await DataStore.load(DataStore.KEYS.PIN);
 
         if (removalPinAttempt === storedPinValue) {
-            await DataStore.save(DataStore.KEYS.PIN, null); // UPDATED
+            await DataStore.save(DataStore.KEYS.PIN, null);
             setIsPinSet(false);
             setIsRemovingPin(false);
             setRemovalPinAttempt('');
@@ -81,7 +81,7 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, o
 
     const handleExportData = async () => {
         setExporting(true);
-        const data = await DataStore.loadAll(); // UPDATED
+        const data = await DataStore.loadAll();
         const jsonString = JSON.stringify(data, null, 2);
         const blob = new Blob([jsonString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -247,3 +247,5 @@ export const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, o
         </div>
     );
 };
+
+export default Settings;

@@ -1,30 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { copingStrategies } from '../utils/data.js';
-import { ArrowLeftIcon, ShieldIcon, MapPinIcon, PhoneIcon, LifeBuoyIcon, ZapIcon, XIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ShieldIcon, MapPinIcon, PhoneIcon, XIcon, ZapIcon, LifeBuoyIcon } from '../utils/icons.jsx';
 
-// Map all icon names from data.js to the imported JSX components
+// Map string icon names from data.js to the imported JSX components
 const iconMap = {
     MapPinIcon: MapPinIcon,
     PhoneIcon: PhoneIcon,
     ShieldIcon: ShieldIcon,
-    LifeBuoyIcon: LifeBuoyIcon, // Correctly import and map this icon
+    LifeBuoyIcon: LifeBuoyIcon,
     ZapIcon: ZapIcon,
 };
 
-// Enhance cards with the mapped icon component. This is now safe.
+// Enhance cards with the mapped icon component.
 const allCopingCards = copingStrategies.map(card => ({
     ...card,
-    icon: iconMap[card.icon] || ShieldIcon // Fallback to a default icon if needed
+    icon: iconMap[card.icon] || ShieldIcon // Fallback to a default icon
 }));
 
 const CopingCards = ({ onJournal, onBack }) => {
-    // Initialize with a random index
+    // Initialize with a random index to start fresh
     const [currentIndex, setCurrentIndex] = useState(() => Math.floor(Math.random() * allCopingCards.length));
     
-    // This line is now safe because allCopingCards is guaranteed to be a valid array
     const card = allCopingCards[currentIndex];
-
-    // Function to select a new random card
+    
+    // Function to select a new random card, ensuring it's not the same as the current one
     const showRandomCard = () => {
         let newIndex;
         do {
@@ -37,7 +36,7 @@ const CopingCards = ({ onJournal, onBack }) => {
     const CardIconComponent = card.icon;
 
     return ( 
-        <div className="flex flex-col items-center justify-center h-full p-4 animate-fade-in relative">
+        <div className="flex flex-col items-center justify-center h-full p-4 animate-fade-in relative"> 
             <button onClick={onBack} className="absolute top-6 left-6 flex items-center text-serene-teal hover:text-serene-teal font-semibold z-10">
                 <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Coping Tools</span>
             </button>
