@@ -1,7 +1,7 @@
 import React from 'react';
-import { ArrowLeftIcon, CheckIcon, UsersIcon } from '../utils/icons.jsx'; // Added UsersIcon
+import { ArrowLeftIcon, CheckIcon, UsersIcon } from '../utils/icons.jsx';
 
-export const Homegroup = ({ onBack, onNavigate }) => {
+const Homegroup = ({ onBack, onNavigate }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
             <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-6 font-semibold flex-shrink-0">
@@ -31,3 +31,5 @@ export const Homegroup = ({ onBack, onNavigate }) => {
         </div>
     );
 };
+
+export default Homegroup;

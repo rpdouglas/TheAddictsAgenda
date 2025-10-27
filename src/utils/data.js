@@ -1,14 +1,8 @@
-// --- IMPORT STATIC JSON DATA ---
-// Vite automatically loads the contents of this JSON file as a JavaScript object.
+// --- IMPORT JSON DATA ---
+// Vite automatically loads the contents of these JSON files as JavaScript objects.
 import workbookData from '../data/workbook.json';
 
-// --- EXPORT STATIC DATA ---
-export { workbookData };
-
 // --- DYNAMIC LITERATURE LOADING ---
-
-// This object now acts as a manifest of available literature.
-// It provides the metadata needed for the library view without loading the chapter content.
 export const literatureManifest = {
   aa_big_book: {
     key: 'aa_big_book',
@@ -32,14 +26,12 @@ export const literatureManifest = {
   }
 };
 
-// This function dynamically imports the content of a book when requested.
 export const getLiteratureBook = (bookKey) => {
   switch (bookKey) {
     case 'aa_big_book':
       return import('../data/aa_big_book.json');
     case 'na_basic_text':
       return import('../data/na_basic_text.json');
-    // CORRECTED LINE: Ensure this case imports twelve_and_twelve.json
     case 'twelve_and_twelve':
       return import('../data/twelve_and_twelve.json');
     case 'recovery_dharma_guidebook':
@@ -49,7 +41,10 @@ export const getLiteratureBook = (bookKey) => {
   }
 };
 
-// --- RECOVERY INSIGHTS/FACTS DATA (Simple arrays remain here) ---
+// --- EXPORT STATIC DATA ---
+export { workbookData };
+
+// --- RECOVERY INSIGHTS/FACTS DATA ---
 export const RECOVERY_FACTS = [
     "The Serenity Prayer was popularized by AA, but was originally written by theologian Reinhold Niebuhr.",
     "AA's Big Book was first published in 1939 and its core text (first 164 pages) remains unchanged.",
@@ -73,8 +68,27 @@ export const journalTemplates = [
 ];
 
 // --- Coping Cards Data ---
+// THIS SECTION IS NOW CORRECTLY POPULATED
 export const copingStrategies = [
-    // ... (Coping strategies data remains here)
+    // --- GROUNDING ---
+    { title: "Deep Breathing", description: "Inhale for 4s, hold for 7s, exhale for 8s. Repeat 3-5 times.", category: "Grounding", color: "from-serene-teal/20 to-healing-green/20", icon: "MapPinIcon" },
+    { title: "5-4-3-2-1 Method", description: "Name: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.", category: "Grounding", color: "from-serene-teal/20 to-healing-green/20", icon: "MapPinIcon" },
+    { title: "Ice Cube Hold", description: "Hold an ice cube or run your hands under very cold water for 30 seconds to reset your nervous system.", category: "Grounding", color: "from-serene-teal/20 to-healing-green/20", icon: "ShieldIcon" },
+    
+    // --- ACTION ---
+    { title: "Go for a Walk", description: "A 10-15 minute walk can change your scenery and mindset.", category: "Action", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
+    { title: "Tidy 5 Minutes", description: "Set a timer and clean one small area (e.g., your desk, one corner of the room).", category: "Action", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
+    { title: "Shower or Wash Face", description: "Use the temperature change of the water as a physical reset.", category: "Action", color: "from-healing-green/20 to-serene-teal/20", icon: "LifeBuoyIcon" },
+    
+    // --- COGNITIVE ---
+    { title: "Play the Tape Through", description: "Think about the full consequences of giving in to a craving.", category: "Cognitive", color: "from-hopeful-coral/20 to-hopeful-coral/30", icon: "ShieldIcon" },
+    { title: "Delay and Distract", description: "Wait 15 minutes. Do something to distract yourself in that time.", category: "Cognitive", color: "from-hopeful-coral/20 to-hopeful-coral/30", icon: "ShieldIcon" },
+    { title: "Read an Insight", description: "Read a passage from your favorite recovery book or an inspiring quote.", category: "Cognitive", color: "from-hopeful-coral/20 to-hopeful-coral/30", icon: "LifeBuoyIcon" },
+
+    // --- CONNECTION ---
+    { title: "Call a Friend", description: "Talk about what you're feeling with your support network.", category: "Connection", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
+    { title: "Check In with Sponsor", description: "Call your sponsor/accountability partner immediately for guidance.", category: "Connection", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
+    { title: "Attend Online Meeting", description: "Join a virtual fellowship meeting right now (AA, NA, SMART, etc.).", category: "Connection", color: "from-healing-green/20 to-serene-teal/20", icon: "MapPinIcon" },
 ];
 
 // --- Meeting Links ---
@@ -102,9 +116,9 @@ export const MEETING_LINKS = {
 // --- Application Versioning ---
 export const APP_VERSIONS = {
     DASHBOARD: '1.3.1',
-    JOURNAL: '1.4.0',
-    GOALS: '1.1.1',
-    COPING: '2.1.0',
+    JOURNAL: '1.4.0', 
+    GOALS: '1.1.1', 
+    COPING: '2.1.0', 
     WORKBOOK: '1.4.1',
     LITERATURE: '1.1.0',
     RESOURCES: '1.0.0',

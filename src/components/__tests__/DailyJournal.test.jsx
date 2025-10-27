@@ -1,8 +1,7 @@
-// src/components/__tests__/DailyJournal.test.jsx
-
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DailyJournal } from '../DailyJournal.jsx';
+// --- FIX: Changed from a named import { DailyJournal } to a default import ---
+import DailyJournal from '../DailyJournal.jsx';
 import DataStore from '../../utils/dataStore.js';
 
 // --- Mocks ---
@@ -63,7 +62,6 @@ describe('DailyJournal Component', () => {
     render(<DailyJournal journalTemplate="" setJournalTemplate={() => {}} />);
     expect(screen.getByText('Daily Journal')).toBeInTheDocument();
     
-    // Use findByText to wait for async data loading to complete
     expect(await screen.findByText('First journal entry')).toBeInTheDocument();
     expect(await screen.findByText('Second journal entry')).toBeInTheDocument();
     
@@ -73,7 +71,7 @@ describe('DailyJournal Component', () => {
 
   it('should switch to the form view when "Add New Entry" is clicked', async () => {
     render(<DailyJournal journalTemplate="" setJournalTemplate={() => {}} />);
-    await screen.findByText('First journal entry'); // Ensure list is loaded
+    await screen.findByText('First journal entry');
 
     const addButton = screen.getByRole('button', { name: 'Add New Entry' });
     fireEvent.click(addButton);
@@ -94,7 +92,6 @@ describe('DailyJournal Component', () => {
     const saveButton = screen.getByRole('button', { name: 'Add New Entry' });
     fireEvent.click(saveButton);
 
-    // Use waitFor to handle the async state update and save operation
     await waitFor(() => {
       expect(DataStore.save).toHaveBeenCalledWith(
         DataStore.KEYS.JOURNAL,
