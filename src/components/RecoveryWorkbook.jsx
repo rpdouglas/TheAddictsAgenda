@@ -47,7 +47,7 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
                 value={response} 
                 onChange={(e) => setResponse(e.target.value)} 
                 placeholder="Write your answer here..." 
-                className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 resize-y min-h-[100px] text-sm"
+                className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-pink-500 resize-y min-h-[100px] text-sm"
                 rows="4"
             />
             <p className="text-right text-xs text-deep-charcoal/60 mt-1 h-4">{saveStatus === 'Saved' ? 'Saved' : (saveStatus === 'Saving...' ? 'Saving...' : '\u00A0')}</p>
@@ -71,7 +71,7 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
         <div className="mb-4 border border-light-stone/50 rounded-lg shadow-sm overflow-hidden">
             <button 
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className={`w-full flex justify-between items-center p-4 font-bold text-lg transition-colors ${isCollapsed ? 'bg-pure-white/60 hover:bg-soft-linen text-deep-charcoal/80' : 'bg-serene-teal/100 text-white hover:bg-serene-teal'}`}
+                className={`w-full flex justify-between items-center p-4 font-bold text-lg transition-colors ${isCollapsed ? 'bg-pure-white/60 hover:bg-soft-linen text-deep-charcoal/80' : 'bg-pink-600 text-white hover:bg-pink-700'}`}
             >
                 {section.title}
                 {isCollapsed ? <ChevronDown /> : <ChevronUp />}
@@ -103,7 +103,7 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
 const WorkbookTopic = ({ topic, onBack, initialResponses }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Topics</span></button>
+            <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Topics</span></button>
             
             <h3 className="text-2xl font-bold text-deep-charcoal mb-2">{topic.title}</h3>
             
@@ -133,13 +133,13 @@ const WorkbookTopic = ({ topic, onBack, initialResponses }) => {
 
 const WorkbookCategory = ({ category, onSelectTopic, onBack, completedTopicIds }) => (
     <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
-        <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Workbook Sections</span></button>
+        <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Workbook Sections</span></button>
         <h2 className="text-2xl font-bold text-deep-charcoal mb-2">{category.title}</h2>
         <p className="text-deep-charcoal/70 mb-6">{category.description}</p>
         <ul className="space-y-3">
             {category.topics.map(topic => (
                 <li key={topic.id}>
-                    <button onClick={() => onSelectTopic(topic)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-serene-teal/10 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-between">
+                    <button onClick={() => onSelectTopic(topic)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-pink-100 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 flex items-center justify-between">
                         <h3 className="font-semibold text-deep-charcoal">{topic.title}</h3>
                         {completedTopicIds.includes(topic.id) && <CheckCircleIcon className="text-green-500 w-5 h-5"/>}
                     </button>
@@ -154,7 +154,7 @@ const InsightsModal = ({ onClose, isLoading, insights }) => (
         <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg space-y-4 flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center flex-shrink-0">
                 <h3 className="text-xl font-bold text-deep-charcoal flex items-center gap-2">
-                    <SparklesIcon className="text-teal-500 w-6 h-6"/> AI-Powered Insights
+                    <SparklesIcon className="text-pink-500 w-6 h-6"/> AI-Powered Insights
                 </h3>
                 <button onClick={onClose} className="text-deep-charcoal/60 hover:text-deep-charcoal text-2xl">&times;</button>
             </div>
@@ -256,7 +256,7 @@ const RecoveryWorkbook = () => {
             return;
         }
 
-        const prompt = `You are an AI assistant for a recovery application called "The Addict's Agenda." Your role is to provide compassionate, encouraging, and insightful reflections based on a user's workbook entries. Do not give medical advice. Focus on identifying themes, patterns, and opportunities for growth based on recovery principles. The user has provided the following workbook answers:\n\n${allResponsesText}\n\nBased on these entries, provide a few paragraphs of gentle, insightful feedback. Identify 2-3 key themes and suggest which recovery principles or workbook sections might be helpful to focus on next. Frame your response as a supportive guide.`;
+        const prompt = `You are an AI assistant for a recovery application called "My Recovery Toolkit." Your role is to provide compassionate, encouraging, and insightful reflections based on a user's workbook entries. Do not give medical advice. Focus on identifying themes, patterns, and opportunities for growth based on recovery principles. The user has provided the following workbook answers:\n\n${allResponsesText}\n\nBased on these entries, provide a few paragraphs of gentle, insightful feedback. Identify 2-3 key themes and suggest which recovery principles or workbook sections might be helpful to focus on next. Frame your response as a supportive guide.`;
 
         try {
             const result = await model.generateContent(prompt);
@@ -289,16 +289,16 @@ const RecoveryWorkbook = () => {
             <div className="mb-6"> 
                 <div className="flex justify-between items-center mb-1"> 
                     <span className="text-sm font-semibold text-deep-charcoal/70">Overall Progress</span> 
-                    <span className="text-sm font-semibold text-serene-teal">{overallCompletion.percentage}%</span> 
+                    <span className="text-sm font-semibold text-pink-600">{overallCompletion.percentage}%</span> 
                 </div> 
                 <div className="w-full bg-light-stone/50 rounded-full h-2.5">
-                    <div className="bg-serene-teal/100 h-2.5 rounded-full" style={{ width: `${overallCompletion.percentage}%` }}></div>
+                    <div className="bg-pink-600 h-2.5 rounded-full" style={{ width: `${overallCompletion.percentage}%` }}></div>
                 </div> 
             </div> 
             <div className="mt-6 mb-4 border-t pt-6">
                 <button
                     onClick={handleGenerateInsights}
-                    className="w-full flex items-center justify-center gap-2 bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 bg-pink-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors"
                 >
                     <SparklesIcon className="w-5 h-5"/> Get AI Insights on Your Work
                 </button>
@@ -311,16 +311,16 @@ const RecoveryWorkbook = () => {
                     const { completed, total, percentage } = calculateCompletion(key); 
                     return ( 
                         <li key={key}> 
-                            <button onClick={() => setActiveCategory(category)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-serene-teal/10 rounded-lg shadow-sm"> 
+                            <button onClick={() => setActiveCategory(category)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-pink-100 rounded-lg shadow-sm"> 
                                 <h3 className="font-semibold text-deep-charcoal text-lg">{category.title}</h3> 
                                 <p className="text-deep-charcoal/70 mt-1 text-sm">{category.description}</p> 
                                 <div className="mt-3"> 
                                     <div className="flex justify-between items-center mb-1"> 
                                         <span className="text-xs font-semibold text-deep-charcoal/60">{completed} / {total} Completed</span> 
-                                        <span className="text-xs font-semibold text-serene-teal">{percentage}%</span> 
+                                        <span className="text-xs font-semibold text-pink-600">{percentage}%</span> 
                                     </div> 
                                     <div className="w-full bg-light-stone/50 rounded-full h-1.5">
-                                        <div className="bg-serene-teal/100 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+                                        <div className="bg-pink-600 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
                                     </div> 
                                 </div> 
                             </button> 
