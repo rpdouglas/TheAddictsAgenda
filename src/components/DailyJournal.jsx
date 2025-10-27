@@ -4,7 +4,7 @@ import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
 import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, PenIcon } from '../utils/icons.jsx';
 
-// --- Sub-Components ---
+// --- Sub-Components (No Changes Here) ---
 
 const MoodGraphView = ({ items, onBack }) => {
     const moodData = useMemo(() => {
@@ -133,7 +133,7 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                 <p className="text-deep-charcoal/60">No journal entries yet. Tap below to start.</p>
                 <button
                     onClick={handleShowNewForm}
-                    className="mt-4 bg-serene-teal/100 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-serene-teal transition-colors"
+                    className="mt-4 bg-serene-teal text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-serene-teal transition-colors"
                 >
                     Start Your First Entry
                 </button>
@@ -225,7 +225,7 @@ const JournalForm = ({
             </div>
 
             <div className="flex justify-end gap-2">
-                <button type="button" onClick={handleCancelEdit} className="flex-grow bg-pure-white/600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-600 transition-colors">
+                <button type="button" onClick={handleCancelEdit} className="flex-grow bg-gray-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-600 transition-colors">
                     {isEditing ? 'Discard Changes' : 'Cancel'}
                 </button>
                 <button type="submit" className="flex-grow bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors">
@@ -244,19 +244,16 @@ const JournalForm = ({
 
 // --- Main Component ---
 
-const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
+const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJournalTags }) => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState('list');
-
     const [newItemText, setNewItemText] = useState('');
     const [currentMood, setCurrentMood] = useState(5);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
-
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
-
     const [allTags, setAllTags] = useState([]);
     const [currentEntryTags, setCurrentEntryTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
@@ -282,21 +279,28 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
             setAllTags(loadedTags.sort());
             setIsLoading(false);
         };
-
         loadJournalData();
     }, []);
-
+    
+    // --- MODIFIED SECTION ---
+    // This effect now correctly handles incoming templates and tags
     useEffect(() => {
-        if (journalTemplate && setJournalTemplate) {
+        if (journalTemplate) {
             setIsEditing(false);
             setEditItemId(null);
             setNewItemText(journalTemplate);
-            setCurrentEntryTags([]);
+            setCurrentEntryTags(journalTags || []);
             setCurrentMood(5);
             setViewMode('form');
+            
+            // Clean up the template and tags in App.jsx
             setJournalTemplate('');
+            if (setJournalTags) {
+                setJournalTags([]);
+            }
         }
-    }, [journalTemplate, setJournalTemplate]);
+    }, [journalTemplate, journalTags, setJournalTemplate, setJournalTags]);
+    // --- END MODIFIED SECTION ---
 
     const handleShowNewForm = () => {
         setIsEditing(false);
@@ -371,6 +375,10 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         if (isEditing && editItemId) {
             await saveItemsToStore(items.map(item => item.id === editItemId ? { ...item, ...entryData } : item));
         } else {
+            const newTagsForMasterList = currentEntryTags.filter(t => !allTags.includes(t));
+            if (newTagsForMasterList.length > 0) {
+                await saveAllTagsToStore([...allTags, ...newTagsForMasterList]);
+            }
             await saveItemsToStore([{ id: DataStore.generateId(), ...entryData }, ...items]);
         }
 
