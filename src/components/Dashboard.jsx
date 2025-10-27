@@ -48,8 +48,9 @@ export const SobrietyDataSetup = ({ onDateSet }) => {
  * @param {Date} props.sobrietyStartDate - The user's sobriety start date.
  * @param {object} props.deferredPrompt - The event for the PWA installation prompt.
  * @param {function} props.onInstallPWA - The function to call to trigger the PWA installation.
+ * @param {string} props.headerText - The custom header text for the sobriety counter. // ADDED
  */
-export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onInstallPWA }) => {
+export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onInstallPWA, headerText }) => { // UPDATED
     
     /**
      * Calculates the sobriety duration in Days, Hours, Minutes, and Seconds.
@@ -160,7 +161,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
         <div className="p-4 animate-fade-in">
             {/* Sobriety Counter Display */}
             <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-                <h2 className="text-sm font-semibold text-deep-charcoal/60 uppercase tracking-wider">You are sober for</h2>
+                <h2 className="text-sm font-semibold text-deep-charcoal/60 uppercase tracking-wider">{headerText}</h2>
                 <div className="flex flex-wrap justify-center space-x-4 mt-4">
                     
                     {/* Display Days */}

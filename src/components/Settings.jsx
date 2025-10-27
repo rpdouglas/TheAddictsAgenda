@@ -3,7 +3,7 @@ import DataStore from '../utils/dataStore.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, DownloadIcon, FileTextIcon, LockIcon, UnlockIcon, LogOutIcon } from '../utils/icons.jsx';
 
-const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout }) => {
+const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout, currentHeaderText, onHeaderTextUpdate }) => { // UPDATED PROPS
     // --- Sobriety Date State ---
     const initialDateString = useMemo(() => {
         if (currentStartDate instanceof Date && !isNaN(currentStartDate)) {
@@ -17,12 +17,38 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
     const [exporting, setExporting] = useState(false);
     const [saveDateStatus, setSaveDateStatus] = useState('');
 
+    // --- New State for Custom Header ---
+    const DEFAULT_HEADER = 'You have been clean for';
+    const [headerText, setHeaderText] = useState(currentHeaderText || DEFAULT_HEADER);
+    const [headerStatus, setHeaderStatus] = useState('');
+
+    // Sync local state if App.jsx re-fetches data (e.g., login)
+    useEffect(() => {
+        setHeaderText(currentHeaderText || DEFAULT_HEADER);
+    }, [currentHeaderText]);
+    
     const handleSaveDate = () => {
         const updatedDate = new Date(newDate);
         handleSobrietyDateUpdate(updatedDate, journalChecked);
         setSaveDateStatus('Date Updated!');
         setTimeout(() => setSaveDateStatus(''), 2000);
     };
+
+    // --- New Handler for Custom Header ---
+    const handleSaveHeaderText = async () => {
+        const textToSave = headerText.trim();
+        if (!textToSave) return;
+        
+        // 1. Save to DataStore
+        await DataStore.save(DataStore.KEYS.HEADER_TEXT, textToSave);
+        
+        // 2. Update App's state to immediately reflect change on Dashboard
+        onHeaderTextUpdate(textToSave);
+        
+        setHeaderStatus('Header Text Updated!');
+        setTimeout(() => setHeaderStatus(''), 2000);
+    };
+
 
     // --- PIN Management State & Logic ---
     const [isPinSet, setIsPinSet] = useState(false);
@@ -40,6 +66,7 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
             setIsPinSet(!!storedPin);
             setIsLoadingPin(false);
         };
+        // Removed loadHeaderText since App.jsx handles it via props
         checkPinStatus();
     }, []);
 
@@ -117,6 +144,28 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
 
             <div className="space-y-8">
 
+                {/* --- New Custom Header Section --- */}
+                <div className="p-4 bg-serene-teal/10 rounded-lg border border-teal-100">
+                    <h3 className="flex items-center gap-2 text-lg font-bold text-serene-teal mb-2">
+                        Customize Sobriety Header
+                    </h3>
+                    <p className="text-sm text-deep-charcoal/80 mb-4">
+                        Change the text above your sobriety counter (e.g., "You are sober for", "You have been clean for").
+                    </p>
+
+                    <label className="block text-sm font-bold text-deep-charcoal/80 mb-2">Sober Time Header</label>
+                    <input
+                        type="text"
+                        value={headerText}
+                        onChange={(e) => setHeaderText(e.target.value)}
+                        className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500"
+                        placeholder={DEFAULT_HEADER}
+                        maxLength={50}
+                    />
+                    <button onClick={handleSaveHeaderText} disabled={!headerText.trim()} className="w-full mt-4 bg-serene-teal text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 disabled:bg-gray-400">Save Header Text</button>
+                    {headerStatus && <p className="mt-3 text-sm text-center text-green-600">{headerStatus}</p>}
+                </div>
+                
                 {/* PIN Lock Management */}
                 <div className="p-4 bg-serene-teal/10 rounded-lg border border-teal-100">
                     <h3 className="flex items-center gap-2 text-lg font-bold text-serene-teal mb-2">

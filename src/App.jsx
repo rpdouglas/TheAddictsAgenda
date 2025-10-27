@@ -50,6 +50,9 @@ const App = () => {
     const [journalTemplate, setJournalTemplate] = useState(''); // Holds pre-filled text for a new journal entry
     const [journalTags, setJournalTags] = useState([]); // Holds pre-filled tags for a new journal entry
     const [deferredPrompt, setDeferredPrompt] = useState(null); // Stores the PWA install prompt event to be triggered later
+    // --- New State for Header Text ---
+    const DEFAULT_HEADER = 'You have been clean for';
+    const [headerText, setHeaderText] = useState(DEFAULT_HEADER); // Default to the user's requested text
 
     // --- Effects ---
 
@@ -69,6 +72,12 @@ const App = () => {
                     // If no date is set, the user will be prompted to set one.
                     setSobrietyStartDate(null);
                 }
+                
+                // --- Load Custom Header Text ---
+                const storedHeader = await DataStore.load(DataStore.KEYS.HEADER_TEXT);
+                // Set custom header or use the new default
+                setHeaderText(storedHeader || DEFAULT_HEADER); 
+                
                 setIsDataLoading(false);
             } else {
                 // No session, so no user data to load.
@@ -179,7 +188,13 @@ const App = () => {
     const renderContent = () => {
         switch (activeView) {
             case 'dashboard':
-                return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
+                return <Dashboard 
+                            onNavigate={setActiveView} 
+                            sobrietyStartDate={sobrietyStartDate} 
+                            deferredPrompt={deferredPrompt} 
+                            onInstallPWA={handleInstallPWA} 
+                            headerText={headerText} // PASS NEW PROP
+                        />;
             case 'journal':
                 return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} journalTags={journalTags} setJournalTags={setJournalTags} />;
             case 'goals':
@@ -196,6 +211,8 @@ const App = () => {
                     handleSobrietyDateUpdate={handleSobrietyDateUpdate}
                     onBack={() => setActiveView('dashboard')}
                     onLogout={logout}
+                    currentHeaderText={headerText} // PASS NEW PROP
+                    onHeaderTextUpdate={setHeaderText} // PASS NEW PROP
                 />;
             case 'finder':
                 return <MeetingManagement onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
@@ -226,7 +243,13 @@ const App = () => {
 
             // Default case to prevent errors, falls back to the dashboard.
             default:
-                return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
+                return <Dashboard 
+                            onNavigate={setActiveView} 
+                            sobrietyStartDate={sobrietyStartDate} 
+                            deferredPrompt={deferredPrompt} 
+                            onInstallPWA={handleInstallPWA} 
+                            headerText={headerText} // PASS NEW PROP
+                        />;
         }
     };
 
@@ -241,7 +264,7 @@ const App = () => {
                 ) : (
                     <button onClick={() => setActiveView('dashboard')} className="text-teal-600 hover:text-teal-800 p-2 -ml-2" title="Back to Dashboard"><ArrowLeftIcon className="w-6 h-6" /></button>
                 )}
-                <h1 className="text-xl font-bold text-gray-700">The Addict's Agenda</h1>
+                <h1 className="text-xl font-bold text-gray-700">My Recovery Toolkit</h1>
                 <button onClick={() => setActiveView('settings')} className="text-gray-500 hover:text-teal-600 p-1" title="Settings"><SettingsIcon className="w-6 h-6" /></button>
             </header>
 
