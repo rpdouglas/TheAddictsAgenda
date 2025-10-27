@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { literatureManifest, getLiteratureBook } from '../utils/data.js';
 import { ArrowLeftIcon, ArrowRightIcon, DownloadIcon, PenIcon, HighlighterIcon } from '../utils/icons.jsx';
 import { Spinner } from './common.jsx';
@@ -6,16 +6,16 @@ import { Spinner } from './common.jsx';
 const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [highlightedText, setHighlightedText] = useState('');
-    const contentRef = useRef(null); // Ref to the content div
+    const contentRef = useRef(null);
 
     const goToNextPage = () => {
         setCurrentPage(prev => Math.min(prev + 1, chapter.pages.length - 1));
-        setHighlightedText(''); // Clear highlight on page change
+        setHighlightedText('');
     };
 
     const goToPreviousPage = () => {
         setCurrentPage(prev => Math.max(prev - 1, 0));
-        setHighlightedText(''); // Clear highlight on page change
+        setHighlightedText('');
     };
 
     const handleTextSelection = () => {
@@ -100,7 +100,7 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
     );
 };
 
-export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
+const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
     const [selectedBook, setSelectedBook] = useState(null); 
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -109,7 +109,8 @@ export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         setIsLoading(true);
         try {
             const bookData = await getLiteratureBook(bookKey);
-            setSelectedBook({ ...bookData, key: bookKey });
+            // The imported JSON module might have a 'default' property if it's treated as a module
+            setSelectedBook({ ...(bookData.default || bookData), key: bookKey });
         } catch (error) {
             console.error("Failed to load literature:", error);
         } finally {
@@ -186,3 +187,5 @@ export const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         </div> 
     );
 };
+
+export default RecoveryLiterature;

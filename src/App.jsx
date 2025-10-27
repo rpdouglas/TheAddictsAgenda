@@ -1,5 +1,3 @@
-// rpdouglas/theaddictsagenda/TheAddictsAgenda-e41ad79b03616082ea3f0ed6a702997ffa42e680/src/App.jsx
-
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import DataStore from './utils/dataStore.js';
@@ -8,28 +6,34 @@ import { Spinner } from './components/common.jsx';
 import Login from './components/Login.jsx';
 import { Dashboard, SobrietyDataSetup } from './components/Dashboard.jsx';
 
-const DailyJournal = lazy(() => import('./components/DailyJournal.jsx').then(module => ({ default: module.DailyJournal })));
-const Goals = lazy(() => import('./components/Goals.jsx').then(module => ({ default: module.Goals })));
-const CopingCards = lazy(() => import('./components/CopingCards.jsx').then(module => ({ default: module.CopingCards })));
-const RecoveryWorkbook = lazy(() => import('./components/RecoveryWorkbook.jsx').then(module => ({ default: module.RecoveryWorkbook })));
-const RecoveryLiterature = lazy(() => import('./components/RecoveryLiterature.jsx').then(module => ({ default: module.RecoveryLiterature })));
+// Core Components
+const DailyJournal = lazy(() => import('./components/DailyJournal.jsx'));
+const Goals = lazy(() => import('./components/Goals.jsx'));
+const RecoveryWorkbook = lazy(() => import('./components/RecoveryWorkbook.jsx'));
+const RecoveryLiterature = lazy(() => import('./components/RecoveryLiterature.jsx'));
 const Resources = lazy(() => import('./components/Resources.jsx').then(module => ({ default: module.Resources })));
 const MeetingManagement = lazy(() => import('./components/Resources.jsx').then(module => ({ default: module.MeetingManagement })));
-const Settings = lazy(() => import('./components/Settings.jsx').then(module => ({ default: module.Settings })));
-const DailyReflection = lazy(() => import('./components/DailyReflection.jsx').then(module => ({ default: module.DailyReflection })));
-const NinetyDayChallenge = lazy(() => import('./components/NinetyDayChallenge.jsx').then(module => ({ default: module.NinetyDayChallenge })));
-const Homegroup = lazy(() => import('./components/Homegroup.jsx').then(module => ({ default: module.Homegroup })));
+const Settings = lazy(() => import('./components/Settings.jsx'));
+const DailyReflection = lazy(() => import('./components/DailyReflection.jsx'));
+const NinetyDayChallenge = lazy(() => import('./components/NinetyDayChallenge.jsx'));
+const Homegroup = lazy(() => import('./components/Homegroup.jsx'));
 const MeetingTracker = lazy(() => import('./components/MeetingTracker.jsx'));
+
+// Coping Tools Components
+const CopingTools = lazy(() => import('./components/CopingTools.jsx'));
+const CopingCards = lazy(() => import('./components/CopingCards.jsx'));
+const BreathingExercise = lazy(() => import('./components/BreathingExercise.jsx'));
+const YogaWalkthrough = lazy(() => import('./components/YogaWalkthrough.jsx'));
+const RecoveryGames = lazy(() => import('./components/RecoveryGames.jsx'));
 
 const App = () => {
     const { session, loading: authLoading, logout } = useAuth();
-    
+
     const [activeView, setActiveView] = useState('dashboard');
     const [sobrietyStartDate, setSobrietyStartDate] = useState(null);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [journalTemplate, setJournalTemplate] = useState('');
-    
-    // ADDED STATE FOR DEFERRED PWA PROMPT
+
     const [deferredPrompt, setDeferredPrompt] = useState(null);
 
     useEffect(() => {
@@ -52,15 +56,9 @@ const App = () => {
         loadUserData();
     }, [session]);
 
-    // ADDED PWA INSTALL PROMPT LISTENER
     useEffect(() => {
-        let installPrompt = null;
-        
         const handler = (e) => {
-            // Prevent the default browser prompt (to show a custom button later)
             e.preventDefault();
-            // Stash the event so it can be triggered later
-            installPrompt = e;
             setDeferredPrompt(e);
         };
 
@@ -82,8 +80,7 @@ const App = () => {
         setJournalTemplate(template);
         setActiveView('journal');
     };
-    
-    // CREATED INSTALLER FUNCTION
+
     const handleInstallPWA = async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
@@ -91,7 +88,6 @@ const App = () => {
             if (outcome === 'accepted') {
                 console.log('User accepted the PWA install prompt.');
             }
-            // Clear the deferred prompt whether accepted or dismissed
             setDeferredPrompt(null);
         }
     };
@@ -111,33 +107,56 @@ const App = () => {
     if (!sobrietyStartDate) {
         return <SobrietyDataSetup onDateSet={handleSobrietyDateUpdate} />;
     }
-    
+
     const renderContent = () => {
         switch (activeView) {
-            // UPDATED: Pass PWA related props to Dashboard
-            case 'dashboard': return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
-            case 'journal': return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} />;
-            case 'goals': return <Goals />;
-            case 'coping': return <CopingCards onJournal={handleJournalFromCopingCard} />;
-            case 'workbook': return <RecoveryWorkbook />;
-            case 'literature': return <RecoveryLiterature onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
-            case 'resources': return <Resources />;
-            case 'settings': return <Settings 
-                currentStartDate={sobrietyStartDate} 
-                handleSobrietyDateUpdate={handleSobrietyDateUpdate}
-                onBack={() => setActiveView('dashboard')}
-                onLogout={logout}
-            />;
-            case 'finder': return <MeetingManagement onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
-            case 'reflection': return <DailyReflection onBack={() => setActiveView('dashboard')} />;
-            case 'challenge': return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
-            case 'homegroup': return <Homegroup onBack={() => setActiveView('finder')} onNavigate={setActiveView} />;
-            case 'meetingTracker': return <MeetingTracker onBack={() => setActiveView('homegroup')} />;
-            // UPDATED: Pass PWA related props to Dashboard
-            default: return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
+            case 'dashboard':
+                return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
+            case 'journal':
+                return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} />;
+            case 'goals':
+                return <Goals />;
+            case 'workbook':
+                return <RecoveryWorkbook />;
+            case 'literature':
+                return <RecoveryLiterature onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
+            case 'resources':
+                return <Resources />;
+            case 'settings':
+                return <Settings
+                    currentStartDate={sobrietyStartDate}
+                    handleSobrietyDateUpdate={handleSobrietyDateUpdate}
+                    onBack={() => setActiveView('dashboard')}
+                    onLogout={logout}
+                />;
+            case 'finder':
+                return <MeetingManagement onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
+            case 'reflection':
+                return <DailyReflection onBack={() => setActiveView('dashboard')} />;
+            case 'challenge':
+                return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
+            case 'homegroup':
+                return <Homegroup onBack={() => setActiveView('finder')} onNavigate={setActiveView} />;
+            case 'meetingTracker':
+                return <MeetingTracker onBack={() => setActiveView('homegroup')} />;
+
+            // Coping Tools Navigation
+            case 'coping-tools':
+                return <CopingTools onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
+            case 'coping-cards':
+                return <CopingCards onJournal={handleJournalFromCopingCard} onBack={() => setActiveView('coping-tools')} />;
+            case 'breathing-exercises':
+                return <BreathingExercise onBack={() => setActiveView('coping-tools')} />;
+            case 'yoga':
+                return <YogaWalkthrough onBack={() => setActiveView('coping-tools')} />;
+            case 'recovery-games':
+                return <RecoveryGames onBack={() => setActiveView('coping-tools')} />;
+
+            default:
+                return <Dashboard onNavigate={setActiveView} sobrietyStartDate={sobrietyStartDate} deferredPrompt={deferredPrompt} onInstallPWA={handleInstallPWA} />;
         }
     };
-    
+
     return (
         <div className="bg-gray-100 h-screen w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4">
             <header className="flex-shrink-0 w-full max-w-2xl mx-auto flex items-center justify-between p-4">

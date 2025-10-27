@@ -4,7 +4,7 @@ import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
 import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, PenIcon } from '../utils/icons.jsx';
 
-// --- Sub-Components (Moved outside the main component to preserve state) ---
+// --- Sub-Components ---
 
 const MoodGraphView = ({ items, onBack }) => {
     const moodData = useMemo(() => {
@@ -110,7 +110,6 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                                 </button>
                             </div>
                         </div>
-                        {/* THIS IS THE CORRECTED LINE */}
                         <p className="mt-3 text-deep-charcoal/80 whitespace-pre-wrap">{item.text}</p>
                          {(item.tags && item.tags.length > 0 || item.mood) && (
                             <div className="mt-3 flex flex-wrap gap-2 items-center">
@@ -245,7 +244,7 @@ const JournalForm = ({
 
 // --- Main Component ---
 
-export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
+const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState('list');
@@ -427,3 +426,5 @@ export const DailyJournal = ({ journalTemplate, setJournalTemplate }) => {
         </div>
     );
 };
+
+export default DailyJournal;

@@ -1,33 +1,34 @@
 import React, { useState } from 'react';
-import '../YogaWalkthrough.css'; // Corrected import path
+import '../YogaWalkthrough.css';
 import { ArrowLeftIcon } from '../utils/icons.jsx';
 
 // --- Data for the Yoga Poses ---
+// UPDATED: Image paths are now absolute from the public directory.
 const yogaPoses = [
   {
     name: 'Mountain Pose (Tadasana)',
     description: 'Stand with your feet together, ground down through your feet, and lengthen your spine. Keep your shoulders relaxed and arms by your sides. This is a foundational pose for balance and posture.',
-    imgSrc: 'https://i.imgur.com/vH1A5T2.jpeg'
+    imgSrc: '/images/mountain-pose.png'
   },
   {
     name: 'Downward-Facing Dog (Adho Mukha Svanasana)',
     description: 'Start on your hands and knees. Lift your hips up and back to form an inverted V-shape. Press firmly into your hands and heels. It helps to stretch the entire body.',
-    imgSrc: 'https://i.imgur.com/8Q4sA8A.jpeg'
+    imgSrc: '/images/downward-dog.png'
   },
   {
     name: 'Warrior II (Virabhadrasana II)',
     description: 'Step your feet wide apart. Turn your right foot out 90 degrees and your left foot in slightly. Bend your right knee over your right ankle and extend your arms parallel to the floor.',
-    imgSrc: 'https://i.imgur.com/Y1ZXZd8.jpeg'
+    imgSrc: '/images/warrior-two.png'
   },
   {
     name: 'Triangle Pose (Trikonasana)',
     description: 'From Warrior II, straighten your front leg. Hinge at your hip to reach forward, then bring your front hand down to your shin or the floor. Extend the other arm towards the ceiling.',
-    imgSrc: 'https://i.imgur.com/vLhP3gD.jpeg'
+    imgSrc: '/images/triangle-pose.png'
   },
   {
     name: 'Child\'s Pose (Balasana)',
     description: 'Kneel on the floor, sit back on your heels, and then fold forward, resting your forehead on the floor. This is a gentle resting pose that calms the mind and body.',
-    imgSrc: 'https://i.imgur.com/6O7fQ3B.jpeg'
+    imgSrc: '/images/childs-pose.png'
   }
 ];
 
@@ -36,12 +37,10 @@ const YogaWalkthrough = ({ onBack }) => {
   const [currentPoseIndex, setCurrentPoseIndex] = useState(0);
 
   const handleNext = () => {
-    // Move to the next pose, but don't go past the last one
     setCurrentPoseIndex(prevIndex => Math.min(prevIndex + 1, yogaPoses.length - 1));
   };
 
   const handlePrevious = () => {
-    // Move to the previous pose, but don't go before the first one
     setCurrentPoseIndex(prevIndex => Math.max(prevIndex - 1, 0));
   };
 

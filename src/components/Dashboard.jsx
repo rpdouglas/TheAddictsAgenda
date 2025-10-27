@@ -1,11 +1,8 @@
-// rpdouglas/theaddictsagenda/TheAddictsAgenda-e41ad79b03616082ea3f0ed6a702997ffa42e680/src/components/Dashboard.jsx
-
 import React, { useState, useEffect, useMemo } from 'react';
-import DataStore from '../utils/dataStore.js'; // UPDATED: Import the unified DataStore
+import DataStore from '../utils/dataStore.js';
 import { Spinner } from './common.jsx';
 import { RECOVERY_FACTS } from '../utils/data.js';
-// ADDED DownloadIcon for PWA button functionality
-import { BookOpenIcon, TargetIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, MapPinIcon, XIcon, CalendarIcon, DownloadIcon } from '../utils/icons.jsx'; 
+import { BookOpenIcon, TargetIcon, ClipboardListIcon, ShieldIcon, LibraryIcon, MapPinIcon, XIcon, CalendarIcon, DownloadIcon } from '../utils/icons.jsx';
 
 // --- Sub-Components ---
 
@@ -70,7 +67,6 @@ const WelcomeTip = ({ onDismiss }) => (
 
 
 // --- Main Component ---
-
 export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onInstallPWA }) => {
     const randomFact = useMemo(() => RECOVERY_FACTS[Math.floor(Math.random() * RECOVERY_FACTS.length)], []);
     
@@ -80,7 +76,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
     useEffect(() => {
         const loadTipStatus = async () => {
             setIsLoadingTip(true);
-            const dismissed = await DataStore.load(DataStore.KEYS.WELCOME_TIP); // UPDATED
+            const dismissed = await DataStore.load(DataStore.KEYS.WELCOME_TIP);
             setIsTipDismissed(dismissed);
             setIsLoadingTip(false);
         };
@@ -88,7 +84,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
     }, []);
 
     const handleDismissTip = async () => {
-        await DataStore.save(DataStore.KEYS.WELCOME_TIP, true); // UPDATED
+        await DataStore.save(DataStore.KEYS.WELCOME_TIP, true);
         setIsTipDismissed(true);
     };
 
@@ -96,7 +92,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
         { view: 'journal', label: 'Daily Journal', icon: <BookOpenIcon /> },
         { view: 'reflection', label: 'Daily Reflection', icon: <CalendarIcon /> },
         { view: 'goals', label: 'My Goals', icon: <TargetIcon /> },
-        { view: 'coping', label: 'Coping Cards', icon: <ShieldIcon /> },
+        { view: 'coping-tools', label: 'Coping Tools', icon: <ShieldIcon /> },
         { view: 'workbook', label: 'Recovery Workbook', icon: <ClipboardListIcon /> },
         { view: 'literature', label: 'Recovery Literature', icon: <LibraryIcon /> },
         { view: 'finder', label: 'Meeting Management', icon: <MapPinIcon /> },
@@ -106,7 +102,6 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
     return (
         <div className="animate-fade-in space-y-6">
             
-            {/* NEW PWA INSTALL BUTTON: Only show if the install prompt is available */}
             {deferredPrompt && (
                 <button
                     onClick={onInstallPWA}
@@ -146,7 +141,7 @@ export const SobrietyDataSetup = ({ onDateSet }) => {
     const handleSave = async () => {
         const newStartDate = new Date(date);
         await onDateSet(newStartDate); 
-        await DataStore.save(DataStore.KEYS.WELCOME_TIP, false); // UPDATED
+        await DataStore.save(DataStore.KEYS.WELCOME_TIP, false);
     };
 
     return (

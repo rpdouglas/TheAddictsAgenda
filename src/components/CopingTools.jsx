@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeftIcon, ShieldIcon, ZapIcon, UsersIcon, GridIcon } from '../utils/icons.jsx'; 
 
-export const CopingTools = ({ onNavigate, onBack }) => {
+const CopingTools = ({ onNavigate, onBack }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
             <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
@@ -15,7 +15,7 @@ export const CopingTools = ({ onNavigate, onBack }) => {
 
             <div className="space-y-4">
                 <button
-                    onClick={() => onNavigate('coping')}
+                    onClick={() => onNavigate('coping-cards')}
                     className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 text-lg"
                 >
                     <ShieldIcon className="w-6 h-6"/> Coping Cards
@@ -44,3 +44,5 @@ export const CopingTools = ({ onNavigate, onBack }) => {
         </div>
     );
 };
+
+export default CopingTools;
