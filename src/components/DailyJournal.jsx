@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
-import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, PenIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon } from '../utils/icons.jsx';
 
-// --- Sub-Components (No Changes Here) ---
+// --- Sub-Components (Color Scheme Updated) ---
 
 const MoodGraphView = ({ items, onBack }) => {
     const moodData = useMemo(() => {
@@ -16,7 +16,7 @@ const MoodGraphView = ({ items, onBack }) => {
     if (moodData.length < 2) {
         return (
             <div className="flex flex-col h-full">
-                <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold flex-shrink-0">
+                <button onClick={onBack} className="flex items-center text-blue-600 hover:text-blue-700 mb-4 font-semibold flex-shrink-0">
                     <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Entries</span>
                 </button>
                 <div className="flex-grow flex flex-col items-center justify-center text-center">
@@ -49,22 +49,27 @@ const MoodGraphView = ({ items, onBack }) => {
 
     return (
         <div className="h-full flex flex-col">
-            <button onClick={onBack} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold flex-shrink-0">
+            <button onClick={onBack} className="flex items-center text-blue-600 hover:text-blue-700 mb-4 font-semibold flex-shrink-0">
                 <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Entries</span>
             </button>
             <h3 className="text-xl font-bold text-deep-charcoal mb-4">Mood Over Time</h3>
             <div className="w-full overflow-x-auto">
                  <svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} className="min-w-[500px]">
+                    {/* Axis Labels */}
                     <text x="15" y={PADDING} dy="5" textAnchor="middle" className="text-xs fill-gray-500">10</text>
                     <text x="15" y={PADDING + chartHeight / 2} dy="5" textAnchor="middle" className="text-xs fill-gray-500">5</text>
                     <text x="15" y={PADDING + chartHeight} dy="5" textAnchor="middle" className="text-xs fill-gray-500">1</text>
                     <text x={PADDING} y={SVG_HEIGHT - 10} textAnchor="start" className="text-xs fill-gray-500">{new Date(moodData[0].timestamp).toLocaleDateString()}</text>
                     <text x={SVG_WIDTH - PADDING} y={SVG_HEIGHT - 10} textAnchor="end" className="text-xs fill-gray-500">{new Date(moodData[moodData.length - 1].timestamp).toLocaleDateString()}</text>
-                    <path d={pathData} fill="none" stroke="#14b8a6" strokeWidth="2" />
+                    
+                    {/* Data Path */}
+                    <path d={pathData} fill="none" stroke="#2563eb" strokeWidth="2" />
+                    
+                    {/* Data Points */}
                     {points.map((p, i) => (
                         <g key={i}>
-                            <circle cx={p.x} cy={p.y} r="8" fill="#14b8a6" fillOpacity="0.2" />
-                            <circle cx={p.x} cy={p.y} r="4" fill="#14b8a6">
+                            <circle cx={p.x} cy={p.y} r="8" fill="#2563eb" fillOpacity="0.2" />
+                            <circle cx={p.x} cy={p.y} r="4" fill="#2563eb">
                                 <title>{`Mood: ${p.mood} on ${p.date}`}</title>
                             </circle>
                         </g>
@@ -75,12 +80,13 @@ const MoodGraphView = ({ items, onBack }) => {
     );
 };
 
+
 const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit, handleDeleteItem, setViewMode }) => (
     <div className="flex-grow overflow-y-auto pr-2 -mr-2 mt-4">
         <div className="flex gap-2 mb-6">
             <button
                 onClick={handleShowNewForm}
-                className="flex-grow bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors"
+                className="flex-grow bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
             >
                 Add New Entry
             </button>
@@ -102,7 +108,7 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                                 <p className="text-sm text-deep-charcoal/60">{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                             <div className="flex space-x-2 flex-shrink-0">
-                                <button onClick={() => handleStartEdit(item)} className="text-serene-teal hover:text-serene-teal text-sm font-semibold flex items-center gap-1 p-2 rounded-lg bg-white shadow-sm border border-light-stone/50">
+                                <button onClick={() => handleStartEdit(item)} className="text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 p-2 rounded-lg bg-white shadow-sm border border-light-stone/50">
                                     <EditIcon className="w-4 h-4" /> Edit
                                 </button>
                                 <button onClick={() => handleDeleteItem(item.id)} className="text-hopeful-coral hover:text-red-700 text-sm font-semibold flex items-center gap-1 p-2 rounded-lg bg-white shadow-sm border border-light-stone/50">
@@ -119,7 +125,7 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                                     </span>
                                 )}
                                 {item.tags.map(tag => (
-                                    <span key={tag} className="text-xs font-semibold bg-teal-100 text-serene-teal px-2 py-1 rounded-full">
+                                    <span key={tag} className="text-xs font-semibold bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                         {tag}
                                     </span>
                                 ))}
@@ -133,7 +139,7 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                 <p className="text-deep-charcoal/60">No journal entries yet. Tap below to start.</p>
                 <button
                     onClick={handleShowNewForm}
-                    className="mt-4 bg-serene-teal text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-serene-teal transition-colors"
+                    className="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
                 >
                     Start Your First Entry
                 </button>
@@ -150,14 +156,14 @@ const JournalForm = ({
     handleAddTag, handleRemoveTag, allTags, showGeminiHelper, setShowGeminiHelper
 }) => (
     <>
-        <button onClick={handleCancelEdit} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold flex-shrink-0">
+        <button onClick={handleCancelEdit} className="flex items-center text-blue-600 hover:text-blue-700 mb-4 font-semibold flex-shrink-0">
             <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Entries List</span>
         </button>
         <form onSubmit={handleSaveEntry} className="mb-2 space-y-4">
 
             {isEditing && (
-                <div className="bg-serene-teal/10 p-3 rounded-lg">
-                    <p className="text-sm font-semibold text-serene-teal">
+                <div className="bg-blue-100 p-3 rounded-lg">
+                    <p className="text-sm font-semibold text-blue-800">
                         Editing Entry from: {new Date(items.find(i => i.id === editItemId)?.timestamp).toLocaleString()}
                     </p>
                 </div>
@@ -168,7 +174,7 @@ const JournalForm = ({
                     <select
                         value={selectedTemplateId}
                         onChange={(e) => setSelectedTemplateId(e.target.value)}
-                        className="flex-grow p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500"
+                        className="flex-grow p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
                     >
                         {journalTemplates.map(template => (
                             <option key={template.id} value={template.id} disabled={!template.id}>
@@ -176,7 +182,7 @@ const JournalForm = ({
                             </option>
                         ))}
                     </select>
-                    <button type="button" onClick={handleApplyTemplate} disabled={!selectedTemplateId} className="flex-shrink-0 bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 disabled:bg-gray-400 flex items-center gap-1 transition-colors">
+                    <button type="button" onClick={handleApplyTemplate} disabled={!selectedTemplateId} className="flex-shrink-0 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-1 transition-colors">
                         <CheckIcon className="w-4 h-4" /> Apply
                     </button>
                 </div>
@@ -187,12 +193,12 @@ const JournalForm = ({
                 onChange={setNewItemText}
                 placeholder="Write your entry..."
                 rows="10"
-                className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 resize-y min-h-[150px]"
+                className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 resize-y min-h-[150px]"
             />
 
             <div className="p-3 border border-light-stone/50 rounded-lg space-y-2">
                  <label htmlFor="mood-slider" className="block text-sm font-semibold text-deep-charcoal/80">
-                    Today's Mood: <span className="font-bold text-serene-teal">{currentMood} / 10</span>
+                    Today's Mood: <span className="font-bold text-blue-600">{currentMood} / 10</span>
                  </label>
                  <input
                     id="mood-slider"
@@ -209,9 +215,9 @@ const JournalForm = ({
                 <label className="block text-sm font-semibold text-deep-charcoal/80">Tags</label>
                 <div className="flex flex-wrap gap-2">
                     {currentEntryTags.map(tag => (
-                        <div key={tag} className="flex items-center bg-teal-100 text-serene-teal px-2 py-1 rounded-full text-sm font-medium">
+                        <div key={tag} className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
                             <span>{tag}</span>
-                            <button type="button" onClick={() => handleRemoveTag(tag)} className="ml-1.5 text-serene-teal hover:text-serene-teal"><XIcon className="w-3 h-3"/></button>
+                            <button type="button" onClick={() => handleRemoveTag(tag)} className="ml-1.5 text-blue-800 hover:text-blue-900"><XIcon className="w-3 h-3"/></button>
                         </div>
                     ))}
                 </div>
@@ -228,13 +234,13 @@ const JournalForm = ({
                 <button type="button" onClick={handleCancelEdit} className="flex-grow bg-gray-500 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-600 transition-colors">
                     {isEditing ? 'Discard Changes' : 'Cancel'}
                 </button>
-                <button type="submit" className="flex-grow bg-serene-teal text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors">
+                <button type="submit" className="flex-grow bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors">
                     {isEditing ? 'Save Changes' : 'Add New Entry'}
                 </button>
             </div>
         </form>
 
-        <button onClick={() => setShowGeminiHelper(!showGeminiHelper)} className="flex items-center justify-center gap-2 text-sm text-serene-teal hover:text-serene-teal font-semibold mt-4">
+        <button onClick={() => setShowGeminiHelper(!showGeminiHelper)} className="flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-semibold mt-4">
             <SparklesIcon className="w-5 h-5"/> {showGeminiHelper ? 'Close AI Helper' : 'Get Idea with AI'}
         </button>
         {showGeminiHelper && <GeminiJournalHelper onInsertText={(text) => setNewItemText(text)} onClose={() => setShowGeminiHelper(false)} />}
@@ -242,22 +248,28 @@ const JournalForm = ({
 );
 
 
-// --- Main Component ---
+// --- Main Component (No Functional Changes) ---
 
 const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJournalTags }) => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('list');
+    const [viewMode, setViewMode] = useState('list'); // 'list', 'form', 'graph'
     const [newItemText, setNewItemText] = useState('');
     const [currentMood, setCurrentMood] = useState(5);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
+
+    // Editing state
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
+
+    // Tagging state
     const [allTags, setAllTags] = useState([]);
     const [currentEntryTags, setCurrentEntryTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
 
+
+    // --- Data Management ---
     const saveItemsToStore = useCallback(async (updatedItems) => {
         const sortedItems = updatedItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setItems(sortedItems);
@@ -282,8 +294,6 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         loadJournalData();
     }, []);
     
-    // --- MODIFIED SECTION ---
-    // This effect now correctly handles incoming templates and tags
     useEffect(() => {
         if (journalTemplate) {
             setIsEditing(false);
@@ -292,15 +302,15 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             setCurrentEntryTags(journalTags || []);
             setCurrentMood(5);
             setViewMode('form');
-            
-            // Clean up the template and tags in App.jsx
             setJournalTemplate('');
             if (setJournalTags) {
                 setJournalTags([]);
             }
         }
     }, [journalTemplate, journalTags, setJournalTemplate, setJournalTags]);
-    // --- END MODIFIED SECTION ---
+
+
+    // --- UI Handlers ---
 
     const handleShowNewForm = () => {
         setIsEditing(false);
@@ -339,6 +349,8 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setSelectedTemplateId('');
     };
 
+    // --- Tag Handlers ---
+
     const handleAddTag = async () => {
         const newTag = tagInput.trim().toLowerCase();
         if (newTag && !currentEntryTags.includes(newTag)) {
@@ -361,6 +373,9 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         }
     };
 
+
+    // --- Form Submission ---
+
     const handleSaveEntry = async (e) => {
         e.preventDefault();
         if (newItemText.trim() === '') return;
@@ -373,8 +388,10 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         };
 
         if (isEditing && editItemId) {
+            // Update existing entry
             await saveItemsToStore(items.map(item => item.id === editItemId ? { ...item, ...entryData } : item));
         } else {
+            // Create new entry and update master tag list if needed
             const newTagsForMasterList = currentEntryTags.filter(t => !allTags.includes(t));
             if (newTagsForMasterList.length > 0) {
                 await saveAllTagsToStore([...allTags, ...newTagsForMasterList]);
@@ -382,9 +399,12 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             await saveItemsToStore([{ id: DataStore.generateId(), ...entryData }, ...items]);
         }
 
-        handleCancelEdit();
+        handleCancelEdit(); // Reset form and return to list view
     };
 
+
+    // --- View Rendering ---
+    
     const renderContent = () => {
         switch (viewMode) {
             case 'form':
