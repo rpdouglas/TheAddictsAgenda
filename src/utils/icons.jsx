@@ -266,3 +266,54 @@ export const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24
  * @returns {JSX.Element} SVG for Sun.
  */
 export const SunIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
+
+
+// --- Icons from previous set, still in use ---
+
+export const UserIcon = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+);
+
+export const CogIcon = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5M12 9v.01M12 12v.01M12 15v.01" />
+    </svg>
+);
+
+export const BellIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.017 5.454 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0v3a3 3 0 11-6 0v-3" />
+  </svg>
+);
+
+export const BellOffIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l.938 1.03m-3.038-1.03l3.038 1.03m0 0l.938 1.03m-3.038-1.03l3.038 1.03M15 15.3l-3-3m0 0l-3 3m3-3v-6m0 6l-3 3M15 15.3l-3-3M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.199 15.4a4.5 4.5 0 01-3.398 0M2.25 12.454l4.24-4.24m11.26 0l4.24 4.24M12 21a9 9 0 110-18 9 9 0 010 18z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.9 15.9l-2.1-2.1m-2.1-2.1l-2.1-2.1M12 9.75l.938 1.03m-3.038-1.03l3.038 1.03m0 0l.938 1.03m-3.038-1.03l3.038 1.03m-3.038-1.03L9 9.75m0 0l.938 1.03M9 9.75l-.938-1.03m0 0L9 9.75m0 0l.938 1.03M9.75 9.75l-.938-1.03m0 0l.938-1.03m-.938 1.03l-.938-1.03m0 0L9 9.75M9 9.75L9.75 9l-.938-.75M9.75 9.75l.938 1.03" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.023V6.75m0 0v.75m0-.75V6.023m0 .727V6.023m0 10.454v-.75m0 .75v.727m0-.727v.727m0-1.207v.727m0-.727v-.75m0 2.25v-.75m0 .75v.727" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.017 5.454 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0v3a3 3 0 11-6 0v-3m0 0l-3-3m0 0l-3 3m3-3v-6m0 6l-3 3" />
+  </svg>
+);
+
+
+export const RefreshCwIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+  </svg>
+);
+
+export const ChevronLeftIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+  </svg>
+);
+
+export const ChevronRightIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+);
+
