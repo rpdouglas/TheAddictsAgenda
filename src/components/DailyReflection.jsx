@@ -62,7 +62,7 @@ const DailyReflection = ({ onBack, onJournal }) => {
         if (!reflection) return;
 
         const shareTitle = `Daily Reflection: ${reflection.title}`;
-        const shareText = `${reflection.quote}\n\n- From The Addict's Agenda`;
+        const shareText = `${reflection.quote}\n\nWhen they ask you how you did it, you tell them I did it with the help of www.myrecoverytoolkit.ca`;
         
         if (navigator.share) { // Use Web Share API if available
             try {

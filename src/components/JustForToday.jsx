@@ -60,7 +60,7 @@ const JustForToday = ({ onBack, onJournal }) => {
     const handleShare = async () => {
         if (!meditation) return;
         const shareTitle = `Just for Today: ${meditation.title}`;
-        const shareText = `"${meditation.quote}"\n\n${meditation.meditation}\n\n- From The Addict's Agenda`;
+        const shareText = `"${meditation.quote}"\n\n${meditation.meditation}\n\nWhen they ask you how you did it, you tell them I did it with the help of www.myrecoverytoolkit.ca`;
         
         if (navigator.share) {
             try {

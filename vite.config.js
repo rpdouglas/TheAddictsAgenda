@@ -11,7 +11,7 @@ const getBase = (mode) => {
   // Replace 'your-repo-name' with the actual name of your GitHub repository
   return '/TheAddictsAgenda/'
   // For Firehosting deployment
-   // return '/'
+  //  return '/'
 }
 
 export default defineConfig(({ mode }) => {
@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
-          name: "The Addict's Agenda",
-          short_name: "Addict's Agenda",
+          name: "My Recovery Toolkit",
+          short_name: "Recovery Toolkit",
           description: 'A recovery tool for tracking sobriety, journaling, and working the steps.',
           theme_color: '#ffffff',
           start_url: '.',
