@@ -221,6 +221,18 @@ body {
     text-align: center;
 }
 
+.submenu-content h3 {
+  font-size: 0.7em;
+}
+
+.submenu-content p {
+  font-size: 0.5em;
+}
+
+.submenu-content .btn-action {
+  font-size: 0.45em;
+}
+
 /* Buttons */
 .btn-action, .end-turn-button {
     color: white;
