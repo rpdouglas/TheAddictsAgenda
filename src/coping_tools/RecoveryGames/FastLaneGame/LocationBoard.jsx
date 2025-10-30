@@ -30,34 +30,13 @@ const LocationBoard = ({
 
   const renderMainBoard = () => (
     <div className="location-board">
-      <div className="location-tile">
-        <h3>🏢 At Work</h3>
-        <button onClick={() => setActiveLocation('work')} className="btn-action btn-primary">Go to Work</button>
-      </div>
-      <div className="location-tile tile-university">
-        <h3>🎓 At University</h3>
-        <button onClick={() => setActiveLocation('university')} className="btn-action btn-study">Go to University</button>
-      </div>
-      <div className="location-tile tile-shop">
-        <h3>🛍️ At the Shop</h3>
-        <button onClick={() => setActiveLocation('shop')} className="btn-action btn-buy">Go to Shop</button>
-      </div>
-      <div className="location-tile">
-        <h3>🏠 Living Situation</h3>
-        <button onClick={() => setActiveLocation('apartment')} className="btn-action btn-primary">Manage Home</button>
-      </div>
-      <div className="location-tile tile-bank">
-        <h3>💰 Financials</h3>
-        <button onClick={() => setActiveLocation('financials')} className="btn-action btn-primary">Manage Finances</button>
-      </div>
-      <div className="location-tile tile-pawn-shop">
-        <h3>🎲 Risky Area</h3>
-        <button onClick={() => setActiveLocation('risky')} className="btn-action btn-sell">Enter Risky Area</button>
-      </div>
-       <div className="location-tile tile-university">
-        <h3>❤️ Self-Care & Support</h3>
-        <button onClick={() => setActiveLocation('selfCare')} className="btn-action btn-buy">Go to Self-Care</button>
-      </div>
+      <button onClick={() => setActiveLocation('work')} className="btn-action btn-primary">🏢 Work</button>
+      <button onClick={() => setActiveLocation('university')} className="btn-action btn-study">🎓 School</button>
+      <button onClick={() => setActiveLocation('shop')} className="btn-action btn-buy">🛍️ Shopping</button>
+      <button onClick={() => setActiveLocation('apartment')} className="btn-action btn-primary">🏠 Living Situation</button>
+      <button onClick={() => setActiveLocation('financials')} className="btn-action btn-primary">💰 Financials</button>
+      <button onClick={() => setActiveLocation('risky')} className="btn-action btn-sell">🎲 Risky Area</button>
+      <button onClick={() => setActiveLocation('selfCare')} className="btn-action btn-buy">❤️ Self-Care & Support</button>
     </div>
   );
 

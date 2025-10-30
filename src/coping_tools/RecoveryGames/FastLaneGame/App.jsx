@@ -653,7 +653,8 @@ function RecoverySimulatorGame({ onExit }) {
   return (
     <div className="App">
       <header className="game-header">
-        <h1>🧠 Recovery Simulator ({DIFFICULTY_LEVELS[gameState.difficulty].name})</h1>
+        <h1>Beat John G</h1>
+        <p className="difficulty-subtitle">{DIFFICULTY_LEVELS[gameState.difficulty].name}</p>
         <button onClick={saveAndExit} className="btn-exit">
             💾 Save & Exit Tool
         </button>
