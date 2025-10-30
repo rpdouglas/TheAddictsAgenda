@@ -32,37 +32,30 @@ const LocationBoard = ({
     <div className="location-board">
       <div className="location-tile">
         <h3>🏢 At Work</h3>
-        <p className="location-details">Engage in healthy work to earn money and build your career path.</p>
         <button onClick={() => setActiveLocation('work')} className="btn-action btn-primary">Go to Work</button>
       </div>
       <div className="location-tile tile-university">
         <h3>🎓 At University</h3>
-        <p className="location-details">Invest in yourself by taking courses to improve your skills and qualifications.</p>
         <button onClick={() => setActiveLocation('university')} className="btn-action btn-study">Go to University</button>
       </div>
       <div className="location-tile tile-shop">
         <h3>🛍️ At the Shop</h3>
-        <p className="location-details">Purchase items to improve your wellbeing and efficiency.</p>
         <button onClick={() => setActiveLocation('shop')} className="btn-action btn-buy">Go to Shop</button>
       </div>
       <div className="location-tile">
         <h3>🏠 Living Situation</h3>
-        <p className="location-details">Upgrade your home to improve stability and reduce stress.</p>
         <button onClick={() => setActiveLocation('apartment')} className="btn-action btn-primary">Manage Home</button>
       </div>
       <div className="location-tile tile-bank">
         <h3>💰 Financials</h3>
-        <p className="location-details">Manage your money, take or repay high-risk loans, and invest.</p>
         <button onClick={() => setActiveLocation('financials')} className="btn-action btn-primary">Manage Finances</button>
       </div>
       <div className="location-tile tile-pawn-shop">
         <h3>🎲 Risky Area</h3>
-        <p className="location-details">High-risk, high-reward actions. Can provide quick cash at a high stress cost.</p>
         <button onClick={() => setActiveLocation('risky')} className="btn-action btn-sell">Enter Risky Area</button>
       </div>
        <div className="location-tile tile-university">
         <h3>❤️ Self-Care & Support</h3>
-        <p className="location-details">Focus on your wellbeing, attend support meetings, and meditate.</p>
         <button onClick={() => setActiveLocation('selfCare')} className="btn-action btn-buy">Go to Self-Care</button>
       </div>
     </div>
@@ -73,6 +66,7 @@ const LocationBoard = ({
       return (
         <div>
           <h3>🏢 At Work</h3>
+          <p className="location-details">Engage in healthy work to earn money and build your career path.</p>
           <button onClick={handleWork} disabled={timeRemaining < gameState.currentJob.timeCost} className="btn-action btn-primary">
             Work Your Job ({gameState.currentJob.timeCost} hrs)
           </button>
@@ -87,6 +81,7 @@ const LocationBoard = ({
       return (
         <div>
           <h3>🎓 At University</h3>
+          <p className="location-details">Invest in yourself by taking courses to improve your skills and qualifications.</p>
           {courses.map(course => (
             <button
               key={course.name}
@@ -105,6 +100,7 @@ const LocationBoard = ({
         return (
             <div>
                 <h3>🛍️ At the Shop</h3>
+                <p className="location-details">Purchase items to improve your wellbeing and efficiency.</p>
                 {shopItems.map(item => (
                     <button
                         key={item.id}
@@ -123,6 +119,7 @@ const LocationBoard = ({
         return (
             <div>
                 <h3>🏠 Living Situation</h3>
+                <p className="location-details">Upgrade your home to improve stability and reduce stress.</p>
                 {apartmentTiers.filter(tier => tier.id > gameState.livingSituation.id).map(tier => (
                      <button
                         key={tier.id}
@@ -141,6 +138,7 @@ const LocationBoard = ({
         return (
             <div>
                 <h3>💰 Financials</h3>
+                <p className="location-details">Manage your money, take or repay high-risk loans, and invest.</p>
                 <div>
                     <input type="number" value={loanAmount} onChange={e => setLoanAmount(parseInt(e.target.value, 10))} />
                     <button onClick={() => handleTakeLoan(loanAmount)} disabled={timeRemaining < 1} className="btn-action btn-sell">
@@ -173,6 +171,7 @@ const LocationBoard = ({
         return (
             <div>
                 <h3>🎲 Risky Area</h3>
+                <p className="location-details">High-risk, high-reward actions. Can provide quick cash at a high stress cost.</p>
                 <button onClick={handleShadyGig} disabled={timeRemaining < 15} className="btn-action btn-sell">
                     Shady Side Gig (15 hrs)
                 </button>
@@ -184,6 +183,7 @@ const LocationBoard = ({
         return (
             <div>
                 <h3>❤️ Self-Care & Support</h3>
+                <p className="location-details">Focus on your wellbeing, attend support meetings, and meditate.</p>
                 <button onClick={handleMeetingAttendance} disabled={timeRemaining < 3} className="btn-action btn-buy">
                     Attend 12-Step Meeting (3 hrs)
                 </button>
