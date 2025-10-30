@@ -1,4 +1,5 @@
 import React from 'react';
+// 1. Removed PuzzlePieceIcon to see if the icon name was the issue.
 import { ArrowLeftIcon, ShieldIcon, ZapIcon, UsersIcon, GridIcon } from '../utils/icons.jsx'; 
 
 const CopingTools = ({ onNavigate, onBack }) => {
@@ -13,7 +14,8 @@ const CopingTools = ({ onNavigate, onBack }) => {
                 <p className="text-gray-600 mb-6">Choose a tool to help you navigate cravings and difficult emotions.</p>
             </div>
 
-            <div className="space-y-4">
+            {/* Added overflow-y-auto in case the list grows */}
+            <div className="space-y-4 overflow-y-auto">
                 <button
                     onClick={() => onNavigate('coping-cards')}
                     className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 text-lg"
@@ -40,9 +42,19 @@ const CopingTools = ({ onNavigate, onBack }) => {
                 >
                     <GridIcon className="w-6 h-6"/> Recovery Games
                 </button>
+
+                {/* 2. This is the new button for your game */}
+                {/* 3. Used GridIcon as a placeholder to fix the import error */}
+                <button
+                    onClick={() => onNavigate('recovery-simulator')}
+                    className="w-full bg-green-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-lg"
+                >
+                    <GridIcon className="w-6 h-6"/> Recovery Simulator
+                </button>
             </div>
         </div>
     );
 };
 
 export default CopingTools;
+
