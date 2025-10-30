@@ -479,3 +479,15 @@ p strong:contains("SUCCESS") { color: #059669; }
       font-size: 1em;
   }
 }
+
+/* Added styles for side-by-side layout */
+.side-by-side-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* Adds some space between the two columns */
+}
+
+.player-column,
+.jones-column {
+  width: 50%; /* Each column takes up half of the container's width */
+}
