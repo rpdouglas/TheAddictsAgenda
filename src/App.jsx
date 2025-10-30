@@ -2,43 +2,47 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 
 // Import authentication context and data storage utility
-import { useAuth } from './AuthContext.jsx';
-import DataStore from './utils/dataStore.js';
+// Changed all imports to be absolute paths from the /src/ root
+import { useAuth } from '/src/AuthContext.jsx';
+import DataStore from '/src/utils/dataStore.js';
 
 // Import icons and shared components
-import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from './utils/icons.jsx';
-import { Spinner } from './components/common.jsx';
-import Login from './components/Login.jsx';
-import { Dashboard, SobrietyDataSetup } from './components/Dashboard.jsx';
+import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from '/src/utils/icons.jsx';
+import { Spinner } from '/src/components/common.jsx';
+import Login from '/src/components/Login.jsx';
+import { Dashboard, SobrietyDataSetup } from '/src/components/Dashboard.jsx';
 
 // --- Lazy-loaded Components ---
 // This splits the code into smaller chunks that are loaded only when needed,
 // improving initial app performance. The Suspense component will show a fallback UI while they load.
 
 // Core Feature Components
-const DailyJournal = lazy(() => import('./components/DailyJournal.jsx'));
-const Goals = lazy(() => import('./components/Goals.jsx'));
-const RecoveryWorkbook = lazy(() => import('./components/RecoveryWorkbook.jsx'));
-const RecoveryLiterature = lazy(() => import('./components/RecoveryLiterature.jsx'));
-const Settings = lazy(() => import('./components/Settings.jsx'));
-const DailyReflection = lazy(() => import('./components/DailyReflection.jsx'));
-const NinetyDayChallenge = lazy(() => import('./components/NinetyDayChallenge.jsx'));
-const Homegroup = lazy(() => import('./components/Homegroup.jsx'));
-const MeetingTracker = lazy(() => import('./components/MeetingTracker.jsx'));
-const DailyReadings = lazy(() => import('./components/DailyReadings.jsx'));
-const JustForToday = lazy(() => import('./components/JustForToday.jsx'));
+const DailyJournal = lazy(() => import('/src/components/DailyJournal.jsx'));
+const Goals = lazy(() => import('/src/components/Goals.jsx'));
+const RecoveryWorkbook = lazy(() => import('/src/components/RecoveryWorkbook.jsx'));
+const RecoveryLiterature = lazy(() => import('/src/components/RecoveryLiterature.jsx'));
+const Settings = lazy(() => import('/src/components/Settings.jsx'));
+const DailyReflection = lazy(() => import('/src/components/DailyReflection.jsx'));
+const NinetyDayChallenge = lazy(() => import('/src/components/NinetyDayChallenge.jsx'));
+const Homegroup = lazy(() => import('/src/components/Homegroup.jsx'));
+const MeetingTracker = lazy(() => import('/src/components/MeetingTracker.jsx'));
+const DailyReadings = lazy(() => import('/src/components/DailyReadings.jsx'));
+const JustForToday = lazy(() => import('/src/components/JustForToday.jsx'));
 
 
 // Components exported as named exports require a special '.then()' syntax for lazy loading
-const Resources = lazy(() => import('./components/Resources.jsx').then(module => ({ default: module.Resources })));
-const MeetingManagement = lazy(() => import('./components/Resources.jsx').then(module => ({ default: module.MeetingManagement })));
+const Resources = lazy(() => import('/src/components/Resources.jsx').then(module => ({ default: module.Resources })));
+const MeetingManagement = lazy(() => import('/src/components/Resources.jsx').then(module => ({ default: module.MeetingManagement })));
 
 // Coping Tools Feature Components
-const CopingTools = lazy(() => import('./components/CopingTools.jsx'));
-const CopingCards = lazy(() => import('./components/CopingCards.jsx'));
-const BreathingExercise = lazy(() => import('./components/BreathingExercise.jsx'));
-const YogaWalkthrough = lazy(() => import('./components/YogaWalkthrough.jsx'));
-const RecoveryGames = lazy(() => import('./components/RecoveryGames.jsx'));
+const CopingTools = lazy(() => import('/src/components/CopingTools.jsx'));
+const CopingCards = lazy(() => import('/src/components/CopingCards.jsx'));
+const BreathingExercise = lazy(() => import('/src/components/BreathingExercise.jsx'));
+const YogaWalkthrough = lazy(() => import('/src/components/YogaWalkthrough.jsx'));
+const RecoveryGames = lazy(() => import('/src/components/RecoveryGames.jsx'));
+// 1. IMPORT YOUR NEW GAME
+const RecoverySimulatorGame = lazy(() => import('/src/coping_tools/RecoveryGames/FastLaneGame/App.jsx'));
+
 
 // --- Main Application Component ---
 const App = () => {
@@ -167,6 +171,8 @@ const App = () => {
         }
     };
 
+
+
     // --- Render Logic ---
 
     // Show a full-screen spinner while checking authentication status or loading initial data.
@@ -239,7 +245,11 @@ const App = () => {
             case 'yoga':
                 return <YogaWalkthrough onBack={() => setActiveView('coping-tools')} />;
             case 'recovery-games':
-                return <RecoveryGames onBack={() => setActiveView('coping-tools')} />;
+                return <RecoveryGames onBack={() => setActiveViptool('coping-tools')} />;
+            
+            // 2. ADD THE CASE FOR YOUR NEW GAME
+            case 'recovery-simulator':
+                return <RecoverySimulatorGame onBack={() => setActiveView('coping-tools')} />;
 
             // Default case to prevent errors, falls back to the dashboard.
             default:
@@ -280,3 +290,4 @@ const App = () => {
 };
 
 export default App;
+
