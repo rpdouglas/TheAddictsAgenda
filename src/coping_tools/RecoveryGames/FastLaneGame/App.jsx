@@ -652,19 +652,13 @@ function RecoverySimulatorGame({ onExit }) {
 
   return (
     <div className="App">
-      <header className="game-header">
-        <h1>🧠 Recovery Simulator ({DIFFICULTY_LEVELS[gameState.difficulty].name})</h1>
-        <button onClick={saveAndExit} className="btn-exit">
-            💾 Save & Exit Tool
-        </button>
-      </header>
-      
       <div className="game-layout">
         <PlayerStatus 
             status={gameState.player} 
             opponentStatus={gameState.johnG} 
             goals={gameState.goals} 
-            shopItems={SHOP_ITEMS} 
+            shopItems={SHOP_ITEMS}
+            difficulty={DIFFICULTY_LEVELS[gameState.difficulty].name}
         />
         
         <LocationBoard 

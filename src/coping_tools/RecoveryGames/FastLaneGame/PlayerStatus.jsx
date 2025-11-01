@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PlayerStatus = ({ status, opponentStatus, goals, shopItems }) => { 
+const PlayerStatus = ({ status, opponentStatus, goals, shopItems, difficulty }) => { 
   const { week, money, wellbeing, education, currentJob, loanAmount, inventory, stockShares, stockValue, stressLevel, inCrisis, livingSituation, rentDueIn } = status; 
   
   const stockPortfolioValue = stockShares * stockValue;
@@ -22,10 +22,10 @@ const PlayerStatus = ({ status, opponentStatus, goals, shopItems }) => {
       
       <h3 className="panel-title">Player Status (Week {week})</h3>
       
-      <div className="status-grid">
+      <div className="side-by-side-container">
           {/* --- PLAYER STATS COLUMN --- */}
           <div className="player-column">
-              <h4>YOU {inCrisis && <span className="text-danger" style={{marginLeft: '10px'}}>(CRISIS TURN)</span>}</h4>
+              <h4>YOU ({difficulty}) {inCrisis && <span className="text-danger" style={{marginLeft: '10px'}}>(CRISIS TURN)</span>}</h4>
               <p>🏠 Home: **{livingSituation.name}**</p>
               <p>💰 Funds: **${money.toFixed(2)}**</p>
               <p>📈 Shares: **{stockShares}** (${stockPortfolioValue.toFixed(2)})</p>

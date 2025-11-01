@@ -3,8 +3,8 @@ body {
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f5f7fa; 
-  color: #1f2937; 
+  background-color: #f5f7fa;
+  color: #1f2937;
   line-height: 1.5;
 }
 
@@ -13,7 +13,7 @@ body {
   margin: 0 auto;
   padding: 30px;
   background-color: #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   min-height: 100vh;
 }
@@ -25,65 +25,42 @@ body {
 }
 
 /* --- Header and Footer --- */
-.game-header {
-  background-color: #1d4ed8; 
-  color: white;
-  padding: 20px 0;
-  text-align: center;
-  border-radius: 12px 12px 0 0;
-  margin: -30px -30px 30px -30px; 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  position: relative; /* For exit button positioning */
-}
-
-.game-header h1 {
-  margin: 0;
-  font-size: 2.5em;
-  letter-spacing: 1.5px;
-  font-weight: 700;
-}
-
-.btn-exit {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    background-color: #f59e0b; /* Amber */
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 600;
-    transition: background-color 0.2s;
-    border-bottom: 3px solid #d97706;
-}
-
-.btn-exit:hover {
-    background-color: #d97706;
-}
-
 .game-footer {
   margin-top: 40px;
   padding-top: 20px;
   border-top: 1px solid #e5e7eb;
   text-align: center;
   color: #6b7280;
-  font-size: 0.85em;
+  font-size: 0.6375em;
 }
 
-/* --- Layout Grid --- */
-.game-layout {
-  display: grid;
-  grid-template-columns: 300px 1fr 300px; 
-  gap: 30px;
-  flex-grow: 1; 
+/* --- Tab Navigation --- */
+.tab-nav {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e5e7eb;
 }
+
+.tab-nav button {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1em;
+    font-weight: 600;
+    color: #6b7280;
+    transition: color 0.2s, border-bottom 0.2s;
+}
+
+.tab-nav button.active {
+    color: #1d4ed8;
+    border-bottom: 2px solid #1d4ed8;
+}
+
 
 /* --- General Panel & Card Styles --- */
 .panel {
-    background-color: #f9fafb; 
+    background-color: #f9fafb;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 20px;
@@ -96,7 +73,7 @@ body {
 }
 
 .panel-title {
-    font-size: 1.6em;
+    font-size: 1.2em;
     color: #1d4ed8;
     margin-top: 0;
     margin-bottom: 20px;
@@ -105,8 +82,8 @@ body {
 }
 
 .panel-subtitle {
-    font-size: 1.2em;
-    color: #10b981; 
+    font-size: 0.9em;
+    color: #10b981;
     margin-top: 25px;
     margin-bottom: 10px;
     font-weight: 600;
@@ -120,11 +97,11 @@ body {
 }
 
 .player-column h4 { color: #1d4ed8; }
-.jones-column h4 { color: #dc2626; } 
+.jones-column h4 { color: #dc2626; }
 
 .player-status-panel p {
     margin: 5px 0;
-    font-size: 0.9em;
+    font-size: 0.675em;
 }
 
 .text-danger { color: #dc2626 !important; font-weight: bold; }
@@ -134,30 +111,30 @@ body {
 /* Progress Bars */
 .progress-bar-shell {
     position: relative;
-    height: 40px; 
+    height: 40px;
     border-radius: 5px;
     overflow: hidden;
-    background-color: #e9ecef; 
+    background-color: #e9ecef;
     display: flex;
     flex-direction: column;
     border: 1px solid #e5e7eb;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); 
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .progress-bar {
     position: relative;
-    height: 20px; 
+    height: 20px;
     line-height: 20px;
-    background-color: #3b82f6; 
+    background-color: #3b82f6;
     color: white;
     text-align: center;
-    font-size: 0.75em;
+    font-size: 0.5625em;
     font-weight: bold;
     border-radius: 5px 5px 0 0;
     transition: width 0.5s ease-out;
-    z-index: 2; 
-    white-space: nowrap; 
-    overflow: hidden; 
+    z-index: 2;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .jones-progress {
@@ -166,20 +143,20 @@ body {
     left: 0;
     height: 20px;
     line-height: 20px;
-    background-color: #ef4444 !important; 
+    background-color: #ef4444 !important;
     text-align: center;
-    font-size: 0.75em;
+    font-size: 0.5625em;
     font-weight: bold;
     border-radius: 0 0 5px 5px;
     transition: width 0.5s ease-out;
     z-index: 1;
-    white-space: nowrap; 
+    white-space: nowrap;
     overflow: hidden;
 }
 
 /* Inventory List */
 .inventory-list li {
-    background-color: #eff6ff; 
+    background-color: #eff6ff;
     border: 1px solid #bfdbfe;
     color: #1d4ed8;
     font-weight: 600;
@@ -187,7 +164,7 @@ body {
     margin-bottom: 5px;
     border-radius: 5px;
     list-style: none;
-    font-size: 0.9em;
+    font-size: 0.675em;
 }
 
 .inventory-list ul {
@@ -198,7 +175,7 @@ body {
 .empty-state {
     font-style: italic;
     color: #888;
-    font-size: 0.85em;
+    font-size: 0.6375em;
     padding: 10px;
     background-color: #f8f9fa;
     border-radius: 5px;
@@ -208,79 +185,46 @@ body {
 /* --- Location Board (Game Area) --- */
 .location-board {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
-    gap: 20px;
-    align-content: start; 
-}
-
-.location-tile {
-    background-color: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; 
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.location-tile:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.location-tile h3 {
-    font-size: 1.4em;
-    color: #1f2937;
-    font-weight: 600;
-    margin-top: 0;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.location-details {
-    color: #6b7280;
-    font-size: 0.85em;
-    margin-bottom: 20px;
-    flex-grow: 1; 
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 5px;
+    align-content: start;
 }
 
 .time-remaining {
-    font-size: 1.2em;
+    font-size: 0.9em;
     font-weight: 700;
-    color: #10b981; 
+    color: #10b981;
     margin-bottom: 25px;
     text-align: center;
 }
 
-/* Specific Tile Backgrounds */
-.tile-university { background-color: #f0fdf4; border-color: #d1fae5; }
-.tile-stock-market { background-color: #f7fee7; border-color: #d9f99d; }
-.tile-pawn-shop { background-color: #fffbeb; border-color: #fde68a; }
-.tile-shop { background-color: #fef2f2; border-color: #fecaca; }
-.tile-bank { background-color: #f3e8ff; border-color: #c4b5fd; }
+.submenu-content h3 {
+  font-size: 0.7em;
+}
 
+.submenu-content p {
+  font-size: 0.5em;
+}
+
+.submenu-content .btn-action {
+  font-size: 0.45em;
+}
 
 /* Buttons */
 .btn-action, .end-turn-button {
     color: white;
     border: none;
-    padding: 12px 15px;
+    padding: 9px 15px;
     border-radius: 8px;
-    font-size: 0.95em;
+    font-size: 0.7125em;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     cursor: pointer;
-    width: 100%; 
+    width: 100%;
     margin-top: 8px;
     transition: background-color 0.2s ease, transform 0.1s ease;
-    border-bottom: 3px solid rgba(0, 0, 0, 0.15); 
+    border-bottom: 3px solid rgba(0, 0, 0, 0.15);
 }
 
 .btn-action:hover:not(:disabled), .end-turn-button:hover:not(:disabled) {
@@ -290,7 +234,7 @@ body {
 
 .btn-action:active:not(:disabled), .end-turn-button:active:not(:disabled) {
     transform: translateY(2px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1); 
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .btn-action:disabled, .btn-disabled {
@@ -302,13 +246,13 @@ body {
 }
 
 .btn-primary { background-color: #1d4ed8; border-color: #1e40af; }
-.btn-buy { background-color: #10b981; border-color: #059669; } 
-.btn-sell { background-color: #ef4444; border-color: #dc2626; } 
-.btn-study { background-color: #f59e0b; border-color: #d97706; } 
+.btn-buy { background-color: #10b981; border-color: #059669; }
+.btn-sell { background-color: #ef4444; border-color: #dc2626; }
+.btn-study { background-color: #f59e0b; border-color: #d97706; }
 
 
 .end-turn-section {
-    grid-column: 1 / -1; 
+    grid-column: 1 / -1;
     text-align: center;
     margin-top: 20px;
     padding-top: 20px;
@@ -316,16 +260,16 @@ body {
 }
 
 .end-turn-button {
-    font-size: 1.2em;
+    font-size: 0.9em;
     max-width: 350px;
     margin: 0 auto;
-    display: block; 
+    display: block;
 }
 
 /* Game Log */
 .game-log {
     background-color: #f9fafb;
-    height: 100%; 
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -337,9 +281,9 @@ body {
     border-radius: 5px;
     padding: 15px;
     background-color: #fcfcfc;
-    font-size: 0.8em;
+    font-size: 0.6em;
     line-height: 1.4;
-    height: 300px; 
+    height: 300px;
 }
 
 .log-content p {
@@ -348,8 +292,8 @@ body {
     color: #4b5563;
 }
 
-p strong { color: #1d4ed8; font-weight: 700; } 
-p strong:contains("JOHN G") { color: #dc2626; } 
+p strong { color: #1d4ed8; font-weight: 700; }
+p strong:contains("JOHN G") { color: #dc2626; }
 p strong:contains("CRISIS") { color: #dc2626; }
 p strong:contains("ALERT") { color: #ef4444; }
 p strong:contains("SUCCESS") { color: #059669; }
@@ -368,7 +312,7 @@ p strong:contains("SUCCESS") { color: #059669; }
 .difficulty-selector h2 {
     color: #1d4ed8;
     font-weight: 700;
-    font-size: 2em;
+    font-size: 1.5em;
     margin-bottom: 30px;
 }
 
@@ -376,7 +320,7 @@ p strong:contains("SUCCESS") { color: #059669; }
     display: flex;
     justify-content: center;
     gap: 20px;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
 }
 
 .diff-button {
@@ -385,7 +329,7 @@ p strong:contains("SUCCESS") { color: #059669; }
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     min-width: 180px;
-    flex: 1; 
+    flex: 1;
 }
 
 .diff-button:hover {
@@ -395,18 +339,18 @@ p strong:contains("SUCCESS") { color: #059669; }
 
 .diff-button h3 {
     margin-top: 0;
-    font-size: 1.6em;
+    font-size: 1.2em;
     font-weight: 700;
     margin-bottom: 10px;
 }
 
 .diff-button p {
-    font-size: 0.9em;
+    font-size: 0.675em;
     margin: 5px 0;
 }
 
 .diff-start-info {
-    font-size: 0.85em;
+    font-size: 0.6375em;
     opacity: 0.9;
 }
 
@@ -435,7 +379,7 @@ p strong:contains("SUCCESS") { color: #059669; }
     grid-template-columns: 1fr; /* Stack columns on tablets */
   }
   .player-status-panel, .game-log {
-      order: -1; 
+      order: -1;
       margin-bottom: 20px;
   }
   .game-log {
@@ -455,13 +399,13 @@ p strong:contains("SUCCESS") { color: #059669; }
   }
 
   .game-header h1 {
-    font-size: 1.6em;
+    font-size: 1.2em;
   }
-  
+
   .btn-exit {
     right: 10px;
     padding: 6px 12px;
-    font-size: 0.8em;
+    font-size: 0.6em;
   }
 
   .status-grid {
@@ -473,9 +417,27 @@ p strong:contains("SUCCESS") { color: #059669; }
     gap: 10px;
     padding: 10px;
   }
-  
+
   .end-turn-button {
       padding: 10px 15px;
-      font-size: 1em;
+      font-size: 0.75em;
   }
+}
+
+/* Added styles for side-by-side layout */
+.side-by-side-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* Adds some space between the two columns */
+}
+
+.player-column,
+.jones-column {
+  width: 50%; /* Each column takes up half of the container's width */
+}
+
+.difficulty-subtitle {
+  font-size: 0.375em;
+  margin-top: -10px;
+  font-weight: normal;
 }
