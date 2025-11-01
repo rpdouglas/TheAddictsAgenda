@@ -1,60 +1,88 @@
 import React from 'react';
-// 1. Removed PuzzlePieceIcon to see if the icon name was the issue.
-import { ArrowLeftIcon, ShieldIcon, ZapIcon, UsersIcon, GridIcon } from '../utils/icons.jsx'; 
+// Corrected the import to include all necessary icons, assuming a generic 'PuzzleIcon' for the simulator
+import { ArrowLeftIcon, SparklesIcon, HeartIcon, ShieldIcon, ZapIcon, GameIcon, PuzzleIcon } from '../utils/icons.jsx'; 
 
 const CopingTools = ({ onNavigate, onBack }) => {
+
+    const tools = [
+        {
+            label: 'Coping Cards',
+            icon: <ShieldIcon className="w-8 h-8" />,
+            view: 'coping-cards',
+            color: 'blue',
+            description: 'Quick affirmations and strategies to manage cravings.'
+        },
+        {
+            label: 'Breathing Exercise',
+            icon: <ZapIcon className="w-8 h-8" />,
+            view: 'breathing-exercises',
+            color: 'teal',
+            description: 'A guided exercise to calm your mind and body.'
+        },
+        {
+            label: 'Yoga Walkthrough',
+            icon: <HeartIcon className="w-8 h-8" />,
+            view: 'yoga',
+            color: 'pink',
+            description: 'Simple yoga poses to help you find your center.'
+        },
+        {
+            label: 'Recovery Games',
+            icon: <SparklesIcon className="w-8 h-8" />,
+            view: 'recovery-games',
+            color: 'purple',
+            description: 'Engaging games to reinforce recovery concepts.'
+        },
+        {
+            label: 'Recovery Jeopardy',
+            icon: <GameIcon className="w-8 h-8" />,
+            view: 'recovery-jeopardy',
+            color: 'orange',
+            description: 'Test your recovery knowledge in a fun trivia game.'
+        },
+        {
+            label: 'Recovery Simulator',
+            icon: <PuzzleIcon className="w-8 h-8" />, // Using a placeholder PuzzleIcon
+            view: 'recovery-simulator',
+            color: 'green',
+            description: 'Navigate challenges in this interactive life simulator.'
+        }
+    ];
+
+    const colorVariants = {
+        teal: 'bg-serene-teal/10 text-serene-teal',
+        blue: 'bg-blue-100 text-blue-600',
+        pink: 'bg-pink-100 text-pink-600',
+        purple: 'bg-purple-100 text-purple-600',
+        orange: 'bg-orange-100 text-orange-600',
+        green: 'bg-green-100 text-green-600', // Added color for the new button
+    };
+
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
-                <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Dashboard</span>
+            <button onClick={onBack} className="flex items-center text-red-600 hover:text-red-700 mb-4 font-semibold flex-shrink-0">
+                <ArrowLeftIcon /><span className="ml-2">Back to Dashboard</span>
             </button>
+            <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Coping Tools</h2>
+            <p className="text-deep-charcoal/70 mb-6">Tools to help you through cravings and difficult moments.</p>
 
-            <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Coping Tools</h2>
-                <p className="text-gray-600 mb-6">Choose a tool to help you navigate cravings and difficult emotions.</p>
-            </div>
-
-            {/* Added overflow-y-auto in case the list grows */}
-            <div className="space-y-4 overflow-y-auto">
-                <button
-                    onClick={() => onNavigate('coping-cards')}
-                    className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 text-lg"
-                >
-                    <ShieldIcon className="w-6 h-6"/> Coping Cards
-                </button>
-
-                <button
-                    onClick={() => onNavigate('breathing-exercises')}
-                    className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-lg"
-                >
-                    <ZapIcon className="w-6 h-6"/> Breathing Exercises
-                </button>
-
-                <button
-                    onClick={() => onNavigate('yoga')}
-                    className="w-full bg-indigo-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 text-lg"
-                >
-                    <UsersIcon className="w-6 h-6"/> Yoga Poses
-                </button>
-                 <button
-                    onClick={() => onNavigate('recovery-games')}
-                    className="w-full bg-purple-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 text-lg"
-                >
-                    <GridIcon className="w-6 h-6"/> Recovery Games
-                </button>
-
-                {/* 2. This is the new button for your game */}
-                {/* 3. Used GridIcon as a placeholder to fix the import error */}
-                <button
-                    onClick={() => onNavigate('recovery-simulator')}
-                    className="w-full bg-green-600 text-white font-bold py-4 px-6 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-lg"
-                >
-                    <GridIcon className="w-6 h-6"/> Recovery Simulator
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 overflow-y-auto flex-grow">
+                {tools.map((tool) => (
+                    <button
+                        key={tool.view}
+                        onClick={() => onNavigate(tool.view)}
+                        className={`p-4 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-shadow ${colorVariants[tool.color] || 'bg-gray-100 text-gray-800'}`}
+                    >
+                        <div className="mb-2">
+                            {tool.icon}
+                        </div>
+                        <span className="font-semibold text-sm">{tool.label}</span>
+                        <p className="text-xs text-deep-charcoal/60 mt-1">{tool.description}</p>
+                    </button>
+                ))}
             </div>
         </div>
     );
 };
 
 export default CopingTools;
-

@@ -42,6 +42,7 @@ const YogaWalkthrough = lazy(() => import('/src/components/YogaWalkthrough.jsx')
 const RecoveryGames = lazy(() => import('/src/components/RecoveryGames.jsx'));
 // 1. IMPORT YOUR NEW GAME
 const RecoverySimulatorGame = lazy(() => import('/src/coping_tools/RecoveryGames/FastLaneGame/App.jsx'));
+const RecoveryJeopardy = lazy(() => import('/src/coping_tools/RecoveryGames/RecoveryJeopardy/RecoveryJeopardy.jsx'));
 
 
 // --- Main Application Component ---
@@ -254,6 +255,8 @@ const App = () => {
                 return <YogaWalkthrough onBack={() => setActiveView('coping-tools')} />;
             case 'recovery-games':
                 return <RecoveryGames onBack={() => setActiveViptool('coping-tools')} />;
+                case 'recovery-jeopardy':
+    return <RecoveryJeopardy onBack={() => setActiveView('coping-tools')} />;
             
             // 2. ADD THE CASE FOR YOUR NEW GAME
             case 'recovery-simulator':
