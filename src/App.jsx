@@ -54,6 +54,7 @@ const App = () => {
     const [journalTemplate, setJournalTemplate] = useState(''); // Holds pre-filled text for a new journal entry
     const [journalTags, setJournalTags] = useState([]); // Holds pre-filled tags for a new journal entry
     const [deferredPrompt, setDeferredPrompt] = useState(null); // Stores the PWA install prompt event to be triggered later
+    const [hasMadeJournalEntryToday, setHasMadeJournalEntryToday] = useState(false); // ADDED: Tracks if a journal entry was made today
     // --- New State for Header Text ---
     const DEFAULT_HEADER = 'You have been clean for';
     const [headerText, setHeaderText] = useState(DEFAULT_HEADER); // Default to the user's requested text
@@ -82,6 +83,12 @@ const App = () => {
                 // Set custom header or use the new default
                 setHeaderText(storedHeader || DEFAULT_HEADER); 
                 
+                // --- Check for Today's Journal Entry ---
+                const journalEntries = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
+                const today = new Date().toLocaleDateString();
+                const hasEntry = journalEntries.some(entry => new Date(entry.timestamp).toLocaleDateString() === today);
+                setHasMadeJournalEntryToday(hasEntry);
+
                 setIsDataLoading(false);
             } else {
                 // No session, so no user data to load.
@@ -199,7 +206,8 @@ const App = () => {
                             sobrietyStartDate={sobrietyStartDate} 
                             deferredPrompt={deferredPrompt} 
                             onInstallPWA={handleInstallPWA} 
-                            headerText={headerText} // PASS NEW PROP
+                            headerText={headerText}
+                            hasMadeJournalEntryToday={hasMadeJournalEntryToday} // PASS NEW PROP
                         />;
             case 'journal':
                 return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} journalTags={journalTags} setJournalTags={setJournalTags} />;
@@ -258,7 +266,8 @@ const App = () => {
                             sobrietyStartDate={sobrietyStartDate} 
                             deferredPrompt={deferredPrompt} 
                             onInstallPWA={handleInstallPWA} 
-                            headerText={headerText} // PASS NEW PROP
+                            headerText={headerText}
+                            hasMadeJournalEntryToday={hasMadeJournalEntryToday} // PASS NEW PROP
                         />;
         }
     };
@@ -290,4 +299,3 @@ const App = () => {
 };
 
 export default App;
-

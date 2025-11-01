@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'; // <-- ADDED useState and useEffect
-import { BookOpenIcon, CheckCircleIcon, ClipboardListIcon, GlobeIcon, HeartIcon, StarIcon, CollectionIcon } from '../utils/icons.jsx';
+import React, { useState, useEffect } from 'react'; 
+import { BookOpenIcon, CheckCircleIcon, ClipboardListIcon, GlobeIcon, HeartIcon, StarIcon, CollectionIcon, ExclamationIcon } from '../utils/icons.jsx';
 
 /**
  * A component that prompts the user to set their initial sobriety date.
@@ -48,9 +48,10 @@ export const SobrietyDataSetup = ({ onDateSet }) => {
  * @param {Date} props.sobrietyStartDate - The user's sobriety start date.
  * @param {object} props.deferredPrompt - The event for the PWA installation prompt.
  * @param {function} props.onInstallPWA - The function to call to trigger the PWA installation.
- * @param {string} props.headerText - The custom header text for the sobriety counter. // ADDED
+ * @param {string} props.headerText - The custom header text for the sobriety counter. 
+ * @param {boolean} props.hasMadeJournalEntryToday - Whether the user has made a journal entry today.
  */
-export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onInstallPWA, headerText }) => { // UPDATED
+export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onInstallPWA, headerText, hasMadeJournalEntryToday }) => { 
     
     /**
      * Calculates the sobriety duration in Days, Hours, Minutes, and Seconds.
@@ -102,7 +103,7 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
             color: 'teal'
         },
         {
-            label: 'Daily Journal',
+            label: 'Journal',
             icon: <ClipboardListIcon className="w-8 h-8" />,
             view: 'journal',
             color: 'blue'
@@ -208,8 +209,18 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
                     <button
                         key={button.view}
                         onClick={() => onNavigate(button.view)}
-                        className={`p-4 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-shadow ${colorVariants[button.color] || 'bg-gray-100 text-gray-800'}`}
+                        className={`relative p-4 rounded-xl flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-shadow ${colorVariants[button.color] || 'bg-gray-100 text-gray-800'}`}
                     >
+                        {button.view === 'journal' && !hasMadeJournalEntryToday && (
+                            <div className="absolute top-1 right-1">
+                                <div className="relative group">
+                                    <ExclamationIcon className="w-6 h-6 text-red-500" />
+                                    <div className="absolute bottom-full mb-2 right-0 w-max bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        You have not made a journal entry today
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         <div className="mb-2">
                             {button.icon}
                         </div>
