@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './App.css'; 
+import './App.css';
 import PlayerStatus from './PlayerStatus';
 import LocationBoard from './LocationBoard';
 import GameLog from './GameLog';
@@ -34,11 +34,11 @@ const RANDOM_EVENTS = [
     { type: 'positive', description: 'A positive connection reinforced your sobriety.', money: 200, wellbeing: 10 },
     { type: 'positive', description: 'Received unexpected support for your recovery efforts.', money: 500, wellbeing: 0 },
     { type: 'positive', description: 'You successfully practiced a difficult coping skill!', money: 0, wellbeing: 15 },
-    { type: 'positive', description: 'Stock dividend payout!', money: 100, wellbeing: 0 }, 
+    { type: 'positive', description: 'Stock dividend payout!', money: 100, wellbeing: 0 },
     { type: 'negative', description: 'You experienced unexpected stress and had to call a sponsor.', money: -150, wellbeing: -5 },
     { type: 'negative', description: 'An old habit flared up, costing you time and energy.', money: -50, wellbeing: 0 },
     { type: 'negative', description: 'An emergency bill arrived, stressing finances.', money: -250, wellbeing: -10 },
-    { type: 'negative', description: 'Negative thought patterns disrupted your day.', money: -200, wellbeing: -5 }, 
+    { type: 'negative', description: 'Negative thought patterns disrupted your day.', money: -200, wellbeing: -5 },
     { type: 'neutral', description: 'A quiet, uneventful week of routine maintenance.', money: 0, wellbeing: 0 },
     { type: 'neutral', description: 'Spent the weekend on simple, healthy leisure.', money: 0, wellbeing: 1 },
     { type: 'neutral', description: 'You kept your commitments and upheld structure.', money: 0, wellbeing: 0 },
@@ -55,23 +55,23 @@ const DIFFICULTY_LEVELS = {
         name: 'Stabilization',
         playerStartMoney: 1500,
         playerStartJob: 1,
-        goals: { wealth: 150000, career: 'Technical Role' }, 
-        jonesAdvantage: 0, 
+        goals: { wealth: 150000, career: 'Technical Role' },
+        jonesAdvantage: 0,
     },
     NORMAL: {
         name: 'Maintenance',
         playerStartMoney: 500,
         playerStartJob: 1,
         goals: { wealth: 250000, career: 'Leadership Role' },
-        jonesAdvantage: 1, 
+        jonesAdvantage: 1,
     },
     HARD: {
         name: 'Thriving',
         playerStartMoney: 100,
         playerStartJob: 1,
-        playerStartDebt: 500, 
+        playerStartDebt: 500,
         goals: { wealth: 500000, career: 'Leadership Role' },
-        jonesAdvantage: 2, 
+        jonesAdvantage: 2,
     },
 };
 
@@ -79,54 +79,54 @@ const getDefaultState = (levelKey) => {
     const level = DIFFICULTY_LEVELS[levelKey];
     const baseState = {
         week: 1,
-        timeRemaining: 40, 
+        timeRemaining: 40,
         money: level.playerStartMoney,
-        wellbeing: 60, 
-        education: 0, 
-        currentJob: JOB_DATA[level.playerStartJob - 1], 
-        rentDueIn: 4, 
-        rentCost: APARTMENT_TIERS[0].rent, 
-        livingSituation: APARTMENT_TIERS[0], 
-        loanAmount: level.playerStartDebt || 0, 
-        interestRate: 0.005, 
-        inventory: [], 
-        stockShares: 0, 
-        stockValue: 10.00, 
-        stressLevel: 0, 
-        inCrisis: false, 
+        wellbeing: 60,
+        education: 0,
+        currentJob: JOB_DATA[level.playerStartJob - 1],
+        rentDueIn: 4,
+        rentCost: APARTMENT_TIERS[0].rent,
+        livingSituation: APARTMENT_TIERS[0],
+        loanAmount: level.playerStartDebt || 0,
+        interestRate: 0.005,
+        inventory: [],
+        stockShares: 0,
+        stockValue: 10.00,
+        stressLevel: 0,
+        inCrisis: false,
     };
-    
+
     const jonesJobIndex = Math.min(JOB_DATA.length - 1, level.playerStartJob - 1 + level.jonesAdvantage);
     const jonesState = {
         ...baseState,
-        money: baseState.money * 1.5, 
-        wellbeing: 65, 
+        money: baseState.money * 1.5,
+        wellbeing: 65,
         currentJob: JOB_DATA[jonesJobIndex],
-        livingSituation: APARTMENT_TIERS[0], 
+        livingSituation: APARTMENT_TIERS[0],
     };
 
     return {
-        player: { 
+        player: {
             ...baseState,
-            log: [`Welcome to ${level.name} mode! Your goals are set for a path to recovery.`],
+            log: [`Welcome to ${level.name} mode! Your goals are set for a path to recovery.`]
         },
-        johnG: { 
+        johnG: {
             ...jonesState,
-            log: [], 
+            log: [],
         },
-        goals: { 
-            ...level.goals, 
-            education: 100, 
-            wellbeing: 100 
+        goals: {
+            ...level.goals,
+            education: 100,
+            wellbeing: 100
         },
         difficulty: levelKey,
     };
 };
 
 // --- START OF APP COMPONENT ---
-function RecoverySimulatorGame({ onExit }) { 
+function RecoverySimulatorGame({ onExit }) {
   const [gameState, setGameState] = useState(() => {
-    const savedState = localStorage.getItem('recoveryFastLaneSave'); 
+    const savedState = localStorage.getItem('recoveryFastLaneSave');
     if (savedState) {
       try {
         const parsedState = JSON.parse(savedState);
@@ -141,8 +141,9 @@ function RecoverySimulatorGame({ onExit }) {
         console.error("Error loading state from localStorage:", e);
       }
     }
-    return null; 
+    return null;
   });
+  const [activeTab, setActiveTab] = useState('status');
 
   // Effect 1: Auto-save the game state whenever it changes
   useEffect(() => {
@@ -159,26 +160,26 @@ function RecoverySimulatorGame({ onExit }) {
 
   // --- AI LOGIC ---
   const runJohnGTurn = () => {
-    let ai = gameState.johnG; 
+    let ai = gameState.johnG;
     const gameGoals = gameState.goals;
-    let logMessages = [`JOHN G'S TURN (Week ${ai.week}):`]; 
-    ai.timeRemaining = 40; 
+    let logMessages = [`JOHN G'S TURN (Week ${ai.week}):`];
+    ai.timeRemaining = 40;
     let actionsTaken = 0;
-    
+
     const getNextJob = (currentJobId) => JOB_DATA.find(j => j.id === currentJobId + 1);
 
     // AI Crisis Check
     const aiStress = Math.min(100, Math.max(0, 100 - ai.wellbeing + ai.loanAmount / 100 + ai.stressLevel));
     if (aiStress >= 100) {
-        logMessages.push(`JOHN G ENTERED A **CRISIS**! All plans are on hold for recovery.`); 
-        ai.wellbeing = 20; 
-        ai.stressLevel = 0; 
-        ai.inCrisis = true; 
+        logMessages.push(`JOHN G ENTERED A **CRISIS**! All plans are on hold for recovery.`);
+        ai.wellbeing = 20;
+        ai.stressLevel = 0;
+        ai.inCrisis = true;
     }
-    
+
     if (ai.inCrisis) {
-        logMessages.push(`John G spent the week focused entirely on **Stabilization**.`); 
-        ai.wellbeing = Math.min(gameGoals.wellbeing, ai.wellbeing + 15); 
+        logMessages.push(`John G spent the week focused entirely on **Stabilization**.`);
+        ai.wellbeing = Math.min(gameGoals.wellbeing, ai.wellbeing + 15);
         ai.inCrisis = false;
         ai.timeRemaining = 0;
     }
@@ -187,7 +188,7 @@ function RecoverySimulatorGame({ onExit }) {
     while (!ai.inCrisis && ai.timeRemaining > 10 && actionsTaken < 5) {
         actionsTaken++;
         let action = null;
-        
+
         const nextJob = getNextJob(ai.currentJob.id);
         const nextEducationReq = nextJob ? nextJob.educationReq : gameGoals.education;
         const needsEducation = ai.education < nextEducationReq;
@@ -195,18 +196,18 @@ function RecoverySimulatorGame({ onExit }) {
         // 1. CRITICAL: Self-Care/Rest if Wellbeing is Low
         if (ai.wellbeing < 50 && ai.timeRemaining >= ai.livingSituation.timeCost) {
             ai.timeRemaining -= ai.livingSituation.timeCost;
-            ai.wellbeing = Math.min(gameGoals.wellbeing, ai.wellbeing + 8); 
-            logMessages.push(`John G took **time for Self-Care/Meditation** due to low stability.`); 
+            ai.wellbeing = Math.min(gameGoals.wellbeing, ai.wellbeing + 8);
+            logMessages.push(`John G took **time for Self-Care/Meditation** due to low stability.`);
             action = 'rest';
-        } 
-        
+        }
+
         // 2. Efficiency Purchase (Fridge)
         if (action === null && !ai.inventory.includes('fridge') && ai.money >= 300 && ai.timeRemaining >= 1) {
             const item = SHOP_ITEMS.find(i => i.id === 'fridge');
             ai.timeRemaining -= 1;
             ai.money -= item.cost;
             ai.inventory.push(item.id);
-            logMessages.push(`John G invested in **Meal Prep Kit** for efficiency.`); 
+            logMessages.push(`John G invested in **Meal Prep Kit** for efficiency.`);
             action = 'buy_fridge';
         }
 
@@ -217,34 +218,34 @@ function RecoverySimulatorGame({ onExit }) {
             ai.money -= nextAptTier.cost;
             ai.livingSituation = nextAptTier;
             ai.rentCost = nextAptTier.rent;
-            logMessages.push(`John G upgraded to **${nextAptTier.name}** for ${nextAptTier.cost}!`); 
+            logMessages.push(`John G upgraded to **${nextAptTier.name}** for ${nextAptTier.cost}!`);
             action = 'upgrade_apt';
         }
-        
+
         // 4. Education/Skill Building
         if (action === null && needsEducation && ai.education < gameGoals.education) {
             const affordableCourses = UNIVERSITY_COURSES
                 .filter(c => ai.money >= c.cost && ai.timeRemaining >= c.time)
                 .sort((a, b) => b.educationGain - a.educationGain);
-            
+
             if (affordableCourses.length > 0) {
                 const course = affordableCourses[0];
                 ai.timeRemaining -= course.time;
                 ai.money -= course.cost;
                 ai.education = Math.min(100, ai.education + course.educationGain);
-                logMessages.push(`John G utilized **${course.name}** for skill-building.`); 
+                logMessages.push(`John G utilized **${course.name}** for skill-building.`);
                 action = 'study';
             }
-        } 
-        
+        }
+
         // 5. Promotion Check
         if (action === null && nextJob && ai.education >= nextJob.educationReq && ai.timeRemaining >= 2) {
             ai.timeRemaining -= 2;
             ai.currentJob = nextJob;
-            logMessages.push(`John G gained a promotion to **${nextJob.title_recovery}**!`); 
+            logMessages.push(`John G gained a promotion to **${nextJob.title_recovery}**!`);
             action = 'promote';
         }
-        
+
         // 6. Work (Default action)
         if (action === null) {
             const job = ai.currentJob;
@@ -252,15 +253,15 @@ function RecoverySimulatorGame({ onExit }) {
                 const moneyEarned = job.wage * job.timeCost;
                 ai.timeRemaining -= job.timeCost;
                 ai.money += moneyEarned;
-                logMessages.push(`John G performed **Healthy Engagement** as a **${job.title_recovery}** and earned $${moneyEarned}.`); 
+                logMessages.push(`John G performed **Healthy Engagement** as a **${job.title_recovery}** and earned $${moneyEarned}.`);
             } else {
-                break; 
+                break;
             }
         }
-    } 
+    }
 
     let moneyChange = 0;
-    let wellbeingChange = 0; 
+    let wellbeingChange = 0;
     let stressIncrease = 0;
 
     // End-of-Turn maintenance
@@ -268,50 +269,50 @@ function RecoverySimulatorGame({ onExit }) {
     const foodCostReduction = ai.inventory.includes('fridge') ? 50 : 0;
     const finalCostOfLiving = baseCostOfLiving - foodCostReduction;
     moneyChange -= finalCostOfLiving;
-    
+
     ai.rentDueIn -= 1;
     if (ai.rentDueIn === 0) {
         if (ai.money + moneyChange >= ai.rentCost) {
             moneyChange -= ai.rentCost;
         } else {
             wellbeingChange -= 5;
-            stressIncrease += 20; 
+            stressIncrease += 20;
         }
         ai.rentDueIn = 4;
     }
-    
+
     // Apply living situation bonus
     wellbeingChange += ai.livingSituation.wellbeingBonus;
 
     const eventIndex = Math.floor(Math.random() * RANDOM_EVENTS.length);
     const randomEvent = RANDOM_EVENTS[eventIndex];
     moneyChange += randomEvent.money;
-    wellbeingChange += randomEvent.wellbeing; 
-    logMessages.push(`John G's Unexpected Event: ${randomEvent.description}`); 
-    if (randomEvent.wellbeing < 0) stressIncrease += 10; 
+    wellbeingChange += randomEvent.wellbeing;
+    logMessages.push(`John G's Unexpected Event: ${randomEvent.description}`);
+    if (randomEvent.wellbeing < 0) stressIncrease += 10;
 
     ai.money += moneyChange;
-    ai.wellbeing = Math.min(gameGoals.wellbeing, Math.max(0, ai.wellbeing + wellbeingChange - 2)); 
+    ai.wellbeing = Math.min(gameGoals.wellbeing, Math.max(0, ai.wellbeing + wellbeingChange - 2));
     ai.week++;
-    ai.stressLevel = Math.min(100, ai.stressLevel + stressIncrease); 
+    ai.stressLevel = Math.min(100, ai.stressLevel + stressIncrease);
 
     let winMessage = null;
-    if (ai.money >= gameGoals.wealth && 
-        ai.wellbeing >= gameGoals.wellbeing && 
+    if (ai.money >= gameGoals.wealth &&
+        ai.wellbeing >= gameGoals.wellbeing &&
         ai.education >= gameGoals.education &&
         ai.currentJob.title === gameGoals.career) {
-            winMessage = `💔 JOHN G WINS! It took John G ${ai.week - 1} weeks! 💔`; 
+            winMessage = `💔 JOHN G WINS! It took John G ${ai.week - 1} weeks! 💔`;
     }
-    
-    setGameState(prev => ({ 
-        ...prev, 
-        johnG: {...ai}, 
-        player: { 
-            ...prev.player, 
-            log: [...prev.player.log, '', ...logMessages, ''] 
-        } 
+
+    setGameState(prev => ({
+        ...prev,
+        johnG: {...ai},
+        player: {
+            ...prev.player,
+            log: [...prev.player.log, '', ...logMessages, '']
+        }
     }));
-    
+
     if (winMessage) {
         alert(winMessage);
         return true;
@@ -343,23 +344,23 @@ function RecoverySimulatorGame({ onExit }) {
                 return { ...prev, player: { ...player, log: [...player.log, 'CRISIS MODE: You must focus on **Meditation/Rest** to stabilize!'] } };
             }
         }
-        
+
         let newPlayerState = { ...player };
         let newLog = [...player.log];
         let isActionValid = true;
 
-        const timeCost = item.time || 1; 
+        const timeCost = item.time || 1;
         if (newPlayerState.timeRemaining < timeCost) {
-            return prev; 
+            return prev;
         }
-        
+
         if (logic === 'work') {
             const job = player.currentJob;
             const moneyEarned = job.wage * job.timeCost;
             newPlayerState.timeRemaining -= job.timeCost;
             newPlayerState.money += moneyEarned;
-            newPlayerState.wellbeing = Math.max(0, player.wellbeing - 1); 
-            newPlayerState.stressLevel = Math.min(100, player.stressLevel + 5); 
+            newPlayerState.wellbeing = Math.max(0, player.wellbeing - 1);
+            newPlayerState.stressLevel = Math.min(100, player.stressLevel + 5);
             newLog.push(`Performed **Healthy Engagement** as a **${job.title_recovery}** and earned **$${moneyEarned}**.`)
         } else if (logic === 'study') {
             const course = item;
@@ -370,7 +371,7 @@ function RecoverySimulatorGame({ onExit }) {
                 newPlayerState.timeRemaining -= course.time;
                 newPlayerState.money -= course.cost;
                 newPlayerState.education = Math.min(100, player.education + course.educationGain);
-                newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + 2); 
+                newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + 2);
                 newLog.push(`Engaged in **Skill Building** using **${course.name}**, gaining ${course.educationGain}% education.`);
             }
         } else if (logic === 'purchase') {
@@ -385,11 +386,11 @@ function RecoverySimulatorGame({ onExit }) {
                 newPlayerState.timeRemaining -= 1;
                 newPlayerState.money -= itemToBuy.cost;
                 newPlayerState.inventory = [...player.inventory, itemToBuy.id];
-                newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + itemToBuy.wellbeing); 
+                newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + itemToBuy.wellbeing);
                 newLog.push(`Invested in **${itemToBuy.name}** for **$${itemToBuy.cost}**. Wellbeing +${itemToBuy.wellbeing}.`);
             }
         }
-        
+
         if (!isActionValid) return prev;
 
         return { ...prev, player: { ...newPlayerState, log: newLog } };
@@ -397,21 +398,21 @@ function RecoverySimulatorGame({ onExit }) {
   };
 
   const handleJobSearch = () => {
-    const jobSearchTime = 2; 
+    const jobSearchTime = 2;
     if (gameState.player.timeRemaining < jobSearchTime || gameState.player.inCrisis) return;
 
     setGameState(prev => {
         const player = prev.player;
         let newPlayerState = { ...player };
         let newLog = [...player.log];
-        
+
         const currentJobIndex = JOB_DATA.findIndex(j => j.id === player.currentJob.id);
         const nextJob = JOB_DATA[currentJobIndex + 1];
 
         newLog.push(`Spent ${jobSearchTime} hours reviewing career path options.`);
         newPlayerState.timeRemaining -= jobSearchTime;
-        newPlayerState.stressLevel = Math.min(100, player.stressLevel + 5); 
-        
+        newPlayerState.stressLevel = Math.min(100, player.stressLevel + 5);
+
         if (nextJob) {
             if (player.education >= nextJob.educationReq) {
                 newPlayerState.currentJob = nextJob;
@@ -428,46 +429,46 @@ function RecoverySimulatorGame({ onExit }) {
   };
 
   const handleShadyGig = () => {
-      const timeCost = 15; 
+      const timeCost = 15;
       if (gameState.player.timeRemaining < timeCost || gameState.player.inCrisis) return;
 
       setGameState(prev => {
           const player = prev.player;
           let newPlayerState = { ...player };
           let newLog = [...player.log];
-          
+
           const moneyEarned = 1500;
-          const stressGained = 30; 
-          const wellbeingLoss = 10; 
+          const stressGained = 30;
+          const wellbeingLoss = 10;
 
           newPlayerState.timeRemaining -= timeCost;
           newPlayerState.money += moneyEarned;
           newPlayerState.stressLevel = Math.min(100, player.stressLevel + stressGained);
           newPlayerState.wellbeing = Math.max(0, player.wellbeing - wellbeingLoss);
-          
+
           newLog.push(`💰 Performed **Shady Side Gig** for **$${moneyEarned}**.`);
           newLog.push(`🚨 WARNING: Stress +${stressGained}, Wellbeing -${wellbeingLoss}. This creates high risk.`);
 
           return { ...prev, player: { ...newPlayerState, log: newLog } };
       });
   };
-  
+
   const saveAndExit = () => {
     if (gameState) {
         localStorage.setItem('recoveryFastLaneSave', JSON.stringify(gameState));
     }
-    onExit(); 
+    onExit();
   };
 
   const endTurn = () => {
     const player = gameState.player;
     const gameGoals = gameState.goals;
-    
+
     const stockPortfolioValue = player.stockShares * player.stockValue;
     const totalWealth = player.money + stockPortfolioValue;
 
-    if (totalWealth >= gameGoals.wealth && 
-        player.wellbeing >= gameGoals.wellbeing && 
+    if (totalWealth >= gameGoals.wealth &&
+        player.wellbeing >= gameGoals.wellbeing &&
         player.education >= gameGoals.education &&
         player.currentJob.title === gameGoals.career) {
             alert(`🎉 YOU WIN! It took you ${player.week} weeks to achieve your goals! 🎉`);
@@ -475,23 +476,23 @@ function RecoverySimulatorGame({ onExit }) {
             setGameState(null);
             return;
     }
-    
+
     setGameState(prev => {
         let player = prev.player;
         let playerMoneyChange = 0;
-        let playerWellbeingChange = 0; 
+        let playerWellbeingChange = 0;
         let logMessages = [];
         let loanPrincipalIncrease = 0;
         let stressIncrease = 0;
         let inCrisisNextTurn = false;
-        
+
         // 1. **CRISIS CHECK:**
         const currentStress = Math.min(100, Math.max(0, 100 - player.wellbeing + player.loanAmount / 100 + player.stressLevel));
 
         if (currentStress >= 100 && !player.inCrisis) {
             logMessages.push('🚨 **CRISIS ALERT!** Your stress overwhelmed your stability.');
-            playerWellbeingChange -= 30; 
-            playerMoneyChange -= 200; 
+            playerWellbeingChange -= 30;
+            playerMoneyChange -= 200;
             inCrisisNextTurn = true;
         }
 
@@ -503,9 +504,9 @@ function RecoverySimulatorGame({ onExit }) {
         // 3. RANDOM EVENT
         const randomEvent = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
         playerMoneyChange += randomEvent.money;
-        playerWellbeingChange += randomEvent.wellbeing; 
+        playerWellbeingChange += randomEvent.wellbeing;
         logMessages.push(`Weekly Event: ${randomEvent.description}`);
-        if (randomEvent.wellbeing < 0) stressIncrease += 10; 
+        if (randomEvent.wellbeing < 0) stressIncrease += 10;
 
         // 4. MAINTENANCE
         if (player.inventory.includes('computer')) playerMoneyChange += 50;
@@ -515,8 +516,8 @@ function RecoverySimulatorGame({ onExit }) {
 
         // 5. LIVING SITUATION AND LOAN LOGIC
         const nextRentDueIn = player.rentDueIn - 1;
-        
-        if (nextRentDueIn === 0 && player.livingSituation.rent > 0) { 
+
+        if (nextRentDueIn === 0 && player.livingSituation.rent > 0) {
             if (player.money + playerMoneyChange >= player.rentCost) {
                 playerMoneyChange -= player.rentCost;
                 logMessages.push(`Rent Paid: **-$${player.rentCost}**.`);
@@ -526,18 +527,18 @@ function RecoverySimulatorGame({ onExit }) {
                 stressIncrease += 20;
             }
         }
-        
+
         if (player.loanAmount > 0) {
             const interestPaid = Math.ceil(player.loanAmount * player.interestRate);
             playerMoneyChange -= interestPaid;
             if (player.money + playerMoneyChange < 0) {
                 const shortage = (player.money + playerMoneyChange) * -1;
                 loanPrincipalIncrease = shortage;
-                playerMoneyChange += shortage; 
+                playerMoneyChange += shortage;
             }
             logMessages.push(`Paid **$${Math.ceil(player.loanAmount * player.interestRate)}** in high-risk interest.`);
         }
-        
+
         // Apply Living Situation Wellbeing Bonus
         playerWellbeingChange += player.livingSituation.wellbeingBonus;
 
@@ -550,34 +551,34 @@ function RecoverySimulatorGame({ onExit }) {
 
         if (player.inCrisis) {
             logMessages.push('**STABILIZING:** This week was dedicated to crisis management. Actions were limited.');
-            playerWellbeingChange = Math.max(0, playerWellbeingChange + 15); 
-            newStressLevel = 0; 
+            playerWellbeingChange = Math.max(0, playerWellbeingChange + 15);
+            newStressLevel = 0;
             newTimeRemaining = 0;
-            newInCrisis = false; 
+            newInCrisis = false;
         }
-        
+
         const updatedPlayer = {
             ...player,
             week: player.week + 1,
             timeRemaining: newTimeRemaining,
             money: player.money + playerMoneyChange,
-            wellbeing: Math.min(prev.goals.wellbeing, Math.max(0, player.wellbeing + playerWellbeingChange)), 
-            loanAmount: player.loanAmount + loanPrincipalIncrease, 
-            rentDueIn: nextRentDueIn === 0 ? 4 : nextRentDueIn, 
+            wellbeing: Math.min(prev.goals.wellbeing, Math.max(0, player.wellbeing + playerWellbeingChange)),
+            loanAmount: player.loanAmount + loanPrincipalIncrease,
+            rentDueIn: nextRentDueIn === 0 ? 4 : nextRentDueIn,
             stockValue: newStockValue,
             stressLevel: Math.min(100, newStressLevel),
-            inCrisis: newInCrisis, 
+            inCrisis: newInCrisis,
             log: [
-                ...player.log, 
+                ...player.log,
                 '--- YOUR WEEKLY REVIEW ---',
                 ...logMessages,
                 `--- Week ${player.week + 1} Starts ---`,
             ],
         };
-        
+
         const updatedGameState = { ...prev, player: updatedPlayer };
 
-        const johnGWon = runJohnGTurn(); 
+        const johnGWon = runJohnGTurn();
         if (johnGWon) {
             localStorage.removeItem('recoveryFastLaneSave');
             setGameState(null);
@@ -592,14 +593,14 @@ function RecoverySimulatorGame({ onExit }) {
 
   const DifficultySelector = () => {
     const hasSave = localStorage.getItem('recoveryFastLaneSave') !== null;
-    
+
     const loadGame = () => {
         const savedState = localStorage.getItem('recoveryFastLaneSave');
         if (savedState) {
             setGameState(JSON.parse(savedState));
         }
     };
-    
+
     const startNewGame = (levelKey) => {
         localStorage.removeItem('recoveryFastLaneSave');
         setGameState(getDefaultState(levelKey));
@@ -609,7 +610,7 @@ function RecoverySimulatorGame({ onExit }) {
         <div className="difficulty-selector">
             <h2>🧠 Life Management Simulation</h2>
             {hasSave && (
-                <button 
+                <button
                     onClick={loadGame}
                     className="diff-button diff-load"
                     style={{marginBottom: '20px', backgroundColor: '#007bff'}}
@@ -617,14 +618,14 @@ function RecoverySimulatorGame({ onExit }) {
                     **LOAD SAVED GAME**
                 </button>
             )}
-            
+
             <h3>Select Level:</h3>
             <div className="difficulty-buttons">
             {Object.keys(DIFFICULTY_LEVELS).map(key => {
                 const level = DIFFICULTY_LEVELS[key];
                 return (
-                <button 
-                    key={key} 
+                <button
+                    key={key}
                     onClick={() => startNewGame(key)}
                     className={`diff-button diff-${key.toLowerCase()}`}
                 >
@@ -652,42 +653,46 @@ function RecoverySimulatorGame({ onExit }) {
 
   return (
     <div className="App">
-      <div className="game-layout">
-        <PlayerStatus 
-            status={gameState.player} 
-            opponentStatus={gameState.johnG} 
-            goals={gameState.goals} 
-            shopItems={SHOP_ITEMS}
-            difficulty={DIFFICULTY_LEVELS[gameState.difficulty].name}
-        />
-        
-        <LocationBoard 
-          gameState={gameState.player} 
-          handleWork={createPlayerAction('work')}
-          handleStudy={(course) => createPlayerAction('study')(course)}
-          handleJobSearch={handleJobSearch}
-          handlePurchase={(item) => createPlayerAction('purchase')(item)}
-          handlePurchaseApartment={handleAction(handlePurchaseApartmentLogic)} 
-          handleOtherAction={handleAction(handleOtherActionLogic, 'Rest')}
-          handleTakeLoan={handleAction(handleTakeLoanLogic)}
-          handleRepayLoan={handleAction(handleRepayLoanLogic)}
-          handleSellItem={handleAction(handleSellItemLogic)}
-          handleInvest={handleAction(handleInvestLogic)}
-          handleCashOut={handleAction(handleCashOutLogic)}
-          handleShadyGig={handleShadyGig} 
-          handleMeetingAttendance={handleAction(handleMeetingAttendanceLogic)} 
-          endTurn={endTurn}
-          courses={UNIVERSITY_COURSES} 
-          shopItems={SHOP_ITEMS}      
-          apartmentTiers={APARTMENT_TIERS} 
-        />
-        
-        <GameLog log={gameState.player.log} />
-      </div>
-      
-      <footer className="game-footer">
-        <p>Goal: First to reach all targets!</p>
-      </footer>
+        <div className="tab-nav">
+            <button onClick={() => setActiveTab('status')} className={activeTab === 'status' ? 'active' : ''}>Player Status</button>
+            <button onClick={() => setActiveTab('planner')} className={activeTab === 'planner' ? 'active' : ''}>Weekly Planner</button>
+            <button onClick={() => setActiveTab('log')} className={activeTab === 'log' ? 'active' : ''}>Game Log</button>
+        </div>
+
+        <div className="tab-content">
+            {activeTab === 'status' && (
+                <PlayerStatus
+                    status={gameState.player}
+                    opponentStatus={gameState.johnG}
+                    goals={gameState.goals}
+                    shopItems={SHOP_ITEMS}
+                    difficulty={DIFFICULTY_LEVELS[gameState.difficulty].name}
+                />
+            )}
+            {activeTab === 'planner' && (
+                <LocationBoard
+                  gameState={gameState.player}
+                  handleWork={createPlayerAction('work')}
+                  handleStudy={(course) => createPlayerAction('study')(course)}
+                  handleJobSearch={handleJobSearch}
+                  handlePurchase={(item) => createPlayerAction('purchase')(item)}
+                  handlePurchaseApartment={handleAction(handlePurchaseApartmentLogic)}
+                  handleOtherAction={handleAction(handleOtherActionLogic, 'Rest')}
+                  handleTakeLoan={handleAction(handleTakeLoanLogic)}
+                  handleRepayLoan={handleAction(handleRepayLoanLogic)}
+                  handleSellItem={handleAction(handleSellItemLogic)}
+                  handleInvest={handleAction(handleInvestLogic)}
+                  handleCashOut={handleAction(handleCashOutLogic)}
+                  handleShadyGig={handleShadyGig}
+                  handleMeetingAttendance={handleAction(handleMeetingAttendanceLogic)}
+                  endTurn={endTurn}
+                  courses={UNIVERSITY_COURSES}
+                  shopItems={SHOP_ITEMS}
+                  apartmentTiers={APARTMENT_TIERS}
+                />
+            )}
+            {activeTab === 'log' && <GameLog log={gameState.player.log} />}
+        </div>
     </div>
   );
 }
@@ -701,7 +706,7 @@ const handleTakeLoanLogic = (player, amount) => {
         timeRemaining: player.timeRemaining - timeCost,
         money: player.money + amount,
         loanAmount: player.loanAmount + amount,
-        stressLevel: Math.min(100, player.stressLevel + 10), 
+        stressLevel: Math.min(100, player.stressLevel + 10),
         log: [...player.log, `Took out **High-Risk Stress** for **$${amount}**. Current debt: $${player.loanAmount + amount}.`],
     };
 };
@@ -709,7 +714,7 @@ const handleTakeLoanLogic = (player, amount) => {
 const handleRepayLoanLogic = (player, amount) => {
     const timeCost = 1;
     const repayableAmount = Math.min(amount, player.loanAmount, player.money);
-    
+
     if (repayableAmount <= 0) {
         return {
             ...player,
@@ -722,7 +727,7 @@ const handleRepayLoanLogic = (player, amount) => {
         timeRemaining: player.timeRemaining - timeCost,
         money: player.money - repayableAmount,
         loanAmount: player.loanAmount - repayableAmount,
-        stressLevel: Math.max(0, player.stressLevel - 10), 
+        stressLevel: Math.max(0, player.stressLevel - 10),
         log: [...player.log, `Repaid **$${repayableAmount}** of the High-Risk Stress. Remaining debt: $${player.loanAmount - repayableAmount}.`],
     };
 };
@@ -730,10 +735,10 @@ const handleRepayLoanLogic = (player, amount) => {
 const handleSellItemLogic = (player, itemId) => {
     const timeCost = 1;
     const item = SHOP_ITEMS.find(i => i.id === itemId);
-    
-    if (!item || !player.inventory.includes(itemId)) return player; 
 
-    const sellPrice = Math.floor(item.cost / 2); 
+    if (!item || !player.inventory.includes(itemId)) return player;
+
+    const sellPrice = Math.floor(item.cost / 2);
     const inventoryUpdate = player.inventory.filter(id => id !== itemId);
 
     return {
@@ -741,14 +746,14 @@ const handleSellItemLogic = (player, itemId) => {
         timeRemaining: player.timeRemaining - timeCost,
         money: player.money + sellPrice,
         inventory: inventoryUpdate,
-        wellbeing: Math.max(0, player.wellbeing - item.wellbeing), 
-        stressLevel: Math.min(100, player.stressLevel + 15), 
+        wellbeing: Math.max(0, player.wellbeing - item.wellbeing),
+        stressLevel: Math.min(100, player.stressLevel + 15),
         log: [...player.log, `Sold **${item.name}** for **$${sellPrice}**. Wellbeing -${item.wellbeing} (Loss of Stability).`],
     };
 };
 
-const handleOtherActionLogic = (player, timeCost, moneyChange, wellbeingChange, logMessage, name) => { 
-    if (player.money < -moneyChange) { 
+const handleOtherActionLogic = (player, timeCost, moneyChange, wellbeingChange, logMessage, name) => {
+    if (player.money < -moneyChange) {
         return {
             ...player,
             log: [...player.log, `ERROR: Not enough cash for this purchase!`],
@@ -757,11 +762,11 @@ const handleOtherActionLogic = (player, timeCost, moneyChange, wellbeingChange, 
 
     let stressChange = 0;
     if (name === 'Rest') {
-        stressChange = -15; 
-        wellbeingChange = 8; 
-        timeCost = player.livingSituation.timeCost; 
+        stressChange = -15;
+        wellbeingChange = 8;
+        timeCost = player.livingSituation.timeCost;
     } else if (name === 'Quick Fix') {
-        stressChange = 5; 
+        stressChange = 5;
         wellbeingChange = 5;
         timeCost = 1;
     }
@@ -770,7 +775,7 @@ const handleOtherActionLogic = (player, timeCost, moneyChange, wellbeingChange, 
         ...player,
         timeRemaining: player.timeRemaining - timeCost,
         money: player.money + moneyChange,
-        wellbeing: player.wellbeing + wellbeingChange, 
+        wellbeing: player.wellbeing + wellbeingChange,
         stressLevel: Math.max(0, player.stressLevel + stressChange),
         log: [...player.log, logMessage],
     };
@@ -778,19 +783,19 @@ const handleOtherActionLogic = (player, timeCost, moneyChange, wellbeingChange, 
 
 const handleInvestLogic = (player, amount) => {
     const timeCost = 1;
-    if (player.money < amount) return player; 
+    if (player.money < amount) return player;
 
     const sharesBought = Math.floor(amount / player.stockValue);
     const cost = sharesBought * player.stockValue;
 
-    if (sharesBought === 0) return player; 
+    if (sharesBought === 0) return player;
 
     return {
         ...player,
         timeRemaining: player.timeRemaining - timeCost,
         money: player.money - cost,
         stockShares: player.stockShares + sharesBought,
-        stressLevel: Math.min(100, player.stressLevel + 10), 
+        stressLevel: Math.min(100, player.stressLevel + 10),
         log: [...player.log, `Invested $${cost.toFixed(2)}. Bought **${sharesBought}** shares of high-risk assets.`],
     };
 };
@@ -798,7 +803,7 @@ const handleInvestLogic = (player, amount) => {
 const handleCashOutLogic = (player, sharesToSell) => {
     const timeCost = 1;
     if (player.stockShares === 0 || sharesToSell > player.stockShares) return player;
-    
+
     const revenue = sharesToSell * player.stockValue;
 
     return {
@@ -806,7 +811,7 @@ const handleCashOutLogic = (player, sharesToSell) => {
         timeRemaining: player.timeRemaining - timeCost,
         money: player.money + revenue,
         stockShares: player.stockShares - sharesToSell,
-        stressLevel: Math.max(0, player.stressLevel - 5), 
+        stressLevel: Math.max(0, player.stressLevel - 5),
         log: [...player.log, `Cashed out **${sharesToSell}** shares for **$${revenue.toFixed(2)}**.`],
     };
 };
@@ -817,7 +822,7 @@ const handlePurchaseApartmentLogic = (player, tier) => {
     if (player.money < tier.cost) {
         return { ...player, log: [...player.log, `ERROR: Not enough funds ($${tier.cost}) to secure ${tier.name}!`] };
     }
-    
+
     const wellbeingGain = tier.wellbeingBonus - player.livingSituation.wellbeingBonus;
 
     return {
@@ -826,14 +831,14 @@ const handlePurchaseApartmentLogic = (player, tier) => {
         money: player.money - tier.cost,
         livingSituation: tier,
         rentCost: tier.rent,
-        wellbeing: Math.min(player.goals.wellbeing, player.wellbeing + wellbeingGain * 2), 
+        wellbeing: Math.min(player.goals.wellbeing, player.wellbeing + wellbeingGain * 2),
         log: [...player.log, `Upgraded living situation to **${tier.name}** for **$${tier.cost}**. Rent is now $${tier.rent}/4 weeks.`],
     };
 };
 
 const handleMeetingAttendanceLogic = (player) => {
-    const timeCost = 3; 
-    const stressReduction = 20; 
+    const timeCost = 3;
+    const stressReduction = 20;
     const wellbeingBoost = 5;
 
     return {
@@ -845,10 +850,10 @@ const handleMeetingAttendanceLogic = (player) => {
     };
 };
 
-const updateStockValue = (currentValue) => { 
-    const change = (Math.random() * 0.10) - 0.05; 
+const updateStockValue = (currentValue) => {
+    const change = (Math.random() * 0.10) - 0.05;
     let newValue = currentValue * (1 + change);
-    newValue = Math.max(1.00, newValue); 
+    newValue = Math.max(1.00, newValue);
     return newValue;
 };
 

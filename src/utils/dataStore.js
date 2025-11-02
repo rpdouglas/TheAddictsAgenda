@@ -15,7 +15,13 @@ const DataStore = {
 
     // Expose all methods, which will dynamically call the active store
     get KEYS() {
-        return activeStore.KEYS;
+        const baseKeys = activeStore.KEYS;
+        return {
+            // Ensure existing keys (like SOBRIETY) are preserved
+            ...(baseKeys || {}),
+            // Add new key for custom header text
+            HEADER_TEXT: 'soberHeaderText',
+        };
     },
     loadAll: (...args) => activeStore.loadAll(...args),
     save: (...args) => activeStore.save(...args),
