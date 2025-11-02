@@ -7,7 +7,10 @@ const JeopardyBoard = ({ categories, round, onSelectQuestion, answeredQuestions 
         <div className="grid grid-cols-6 gap-2 text-center">
             {/* Category Headers */}
             {categories.slice(0, 6).map((cat) => (
-                <div key={cat.name} className="bg-blue-800 text-white p-4 font-bold h-24 flex items-center justify-center">
+                <div 
+                    key={cat.name} 
+                    className="bg-blue-800 text-white p-4 font-bold h-24 flex items-center justify-center text-sm" // Reduced font size
+                >
                     {cat.name}
                 </div>
             ))}
@@ -32,7 +35,7 @@ const JeopardyBoard = ({ categories, round, onSelectQuestion, answeredQuestions 
                                 onClick={() => !isAnswered && onSelectQuestion(cat, question)}
                                 className={`p-4 h-24 flex items-center justify-center cursor-pointer ${
                                     isAnswered ? 'bg-gray-500 text-gray-500' : 'bg-blue-600 hover:bg-blue-700'
-                                } text-white text-2xl font-bold transition-colors`}
+                                } text-white text-xl font-bold transition-colors`} // Reduced font size from 2xl to xl
                             >
                                 {isAnswered ? '' : `$${value}`}
                             </div>
