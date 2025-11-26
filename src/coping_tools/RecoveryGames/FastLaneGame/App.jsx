@@ -340,7 +340,7 @@ function RecoverySimulatorGame({ onExit }) {
         const gameGoals = prev.goals;
 
         if (player.inCrisis) {
-            if (logic === 'other' && item.name === 'Rest') {} else {
+            if (logic === 'other' && item && item.name === 'Rest') {} else {
                 return { ...prev, player: { ...player, log: [...player.log, 'CRISIS MODE: You must focus on **Meditation/Rest** to stabilize!'] } };
             }
         }
@@ -349,47 +349,57 @@ function RecoverySimulatorGame({ onExit }) {
         let newLog = [...player.log];
         let isActionValid = true;
 
-        const timeCost = item.time || 1;
-        if (newPlayerState.timeRemaining < timeCost) {
-            return prev;
-        }
-
+        // --- START OF FIX ---
+        // Handle 'work' logic first, as it does not use an 'item'
         if (logic === 'work') {
             const job = player.currentJob;
+            if (newPlayerState.timeRemaining < job.timeCost) {
+                return prev; // Not enough time
+            }
             const moneyEarned = job.wage * job.timeCost;
             newPlayerState.timeRemaining -= job.timeCost;
             newPlayerState.money += moneyEarned;
             newPlayerState.wellbeing = Math.max(0, player.wellbeing - 1);
             newPlayerState.stressLevel = Math.min(100, player.stressLevel + 5);
             newLog.push(`Performed **Healthy Engagement** as a **${job.title_recovery}** and earned **$${moneyEarned}**.`)
-        } else if (logic === 'study') {
-            const course = item;
-            if (player.money < course.cost) {
-                newLog.push(`ERROR: Not enough funds for **${course.name}** (Cost: $${course.cost})!`);
-                isActionValid = false;
-            } else {
-                newPlayerState.timeRemaining -= course.time;
-                newPlayerState.money -= course.cost;
-                newPlayerState.education = Math.min(100, player.education + course.educationGain);
-                newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + 2);
-                newLog.push(`Engaged in **Skill Building** using **${course.name}**, gaining ${course.educationGain}% education.`);
+        
+        } else {
+            // All other actions (study, purchase) use an 'item'
+            const timeCost = item.time || 1;
+            if (newPlayerState.timeRemaining < timeCost) {
+                return prev; // Not enough time
             }
-        } else if (logic === 'purchase') {
-            const itemToBuy = item;
-            if (player.money < itemToBuy.cost) {
-                newLog.push(`ERROR: Not enough funds to buy **${itemToBuy.name}** (Cost: $${itemToBuy.cost})!`);
-                isActionValid = false;
-            } else if (player.inventory.includes(itemToBuy.id)) {
-                newLog.push(`You already own **${itemToBuy.name}**!`);
-                isActionValid = false;
-            } else {
-                newPlayerState.timeRemaining -= 1;
-                newPlayerState.money -= itemToBuy.cost;
-                newPlayerState.inventory = [...player.inventory, itemToBuy.id];
-                newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + itemToBuy.wellbeing);
-                newLog.push(`Invested in **${itemToBuy.name}** for **$${itemToBuy.cost}**. Wellbeing +${itemToBuy.wellbeing}.`);
+
+            if (logic === 'study') {
+                const course = item;
+                if (player.money < course.cost) {
+                    newLog.push(`ERROR: Not enough funds for **${course.name}** (Cost: $${course.cost})!`);
+                    isActionValid = false;
+                } else {
+                    newPlayerState.timeRemaining -= course.time;
+                    newPlayerState.money -= course.cost;
+                    newPlayerState.education = Math.min(100, player.education + course.educationGain);
+                    newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + 2);
+                    newLog.push(`Engaged in **Skill Building** using **${course.name}**, gaining ${course.educationGain}% education.`);
+                }
+            } else if (logic === 'purchase') {
+                const itemToBuy = item;
+                if (player.money < itemToBuy.cost) {
+                    newLog.push(`ERROR: Not enough funds to buy **${itemToBuy.name}** (Cost: $${itemToBuy.cost})!`);
+                    isActionValid = false;
+                } else if (player.inventory.includes(itemToBuy.id)) {
+                    newLog.push(`You already own **${itemToBuy.name}**!`);
+                    isActionValid = false;
+                } else {
+                    newPlayerState.timeRemaining -= 1; // Purchase time is 1 hr
+                    newPlayerState.money -= itemToBuy.cost;
+                    newPlayerState.inventory = [...player.inventory, itemToBuy.id];
+                    newPlayerState.wellbeing = Math.min(gameGoals.wellbeing, player.wellbeing + itemToBuy.wellbeing);
+                    newLog.push(`Invested in **${itemToBuy.name}** for **$${itemToBuy.cost}**. Wellbeing +${itemToBuy.wellbeing}.`);
+                }
             }
         }
+        // --- END OF FIX ---
 
         if (!isActionValid) return prev;
 

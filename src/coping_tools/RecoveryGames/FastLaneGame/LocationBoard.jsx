@@ -63,10 +63,10 @@ const LocationBoard = ({
         <div className="submenu-content">
           <h3>🏢 At Work</h3>
           <p className="location-details">Engage in healthy work to earn money and build your career path.</p>
-          <button onClick={() => handleActionAndReturn(handleWork)} disabled={timeRemaining < gameState.currentJob.timeCost} className="btn-action btn-primary">
+          <button onClick={() => handleActionAndReturn(handleWork)} disabled={timeRemaining < gameState.currentJob.timeCost} className="btn-action btn-primary text-2xl">
             Work Your Job ({gameState.currentJob.timeCost} hrs)
           </button>
-          <button onClick={() => handleActionAndReturn(handleJobSearch)} disabled={timeRemaining < 2} className="btn-action btn-study">
+          <button onClick={() => handleActionAndReturn(handleJobSearch)} disabled={timeRemaining < 2} className="btn-action btn-study text-2xl">
             Search for Better Job (2 hrs)
           </button>
         </div>
@@ -83,7 +83,7 @@ const LocationBoard = ({
               key={course.name}
               onClick={() => handleActionAndReturn(handleStudy, course)}
               disabled={timeRemaining < course.time || gameState.money < course.cost}
-              className="btn-action btn-study"
+              className="btn-action btn-study text-2xl"
             >
               {course.name} (${course.cost}, {course.time} hrs)
             </button>
