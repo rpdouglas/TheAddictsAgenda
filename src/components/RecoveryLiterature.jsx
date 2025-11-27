@@ -3,6 +3,7 @@ import { literatureManifest, getLiteratureBook } from '../utils/data.js';
 import { ArrowLeftIcon, ArrowRightIcon, DownloadIcon, PenIcon, HighlighterIcon } from '../utils/icons.jsx';
 import { Spinner } from './common.jsx';
 
+// --- SUB-COMPONENT: BOOK READER (The Text View) ---
 const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [highlightedText, setHighlightedText] = useState('');
@@ -100,7 +101,7 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
     );
 };
 
-// --- Helper Component for Collapsible Sections ---
+// --- HELPER: COLLAPSIBLE CHAPTER SECTION ---
 const ChapterSection = ({ title, chapters, onSelect }) => (
     <details className="group bg-pure-white/60 rounded-lg shadow-sm ring-1 ring-black/5 open:bg-white open:shadow-md transition-all duration-200 mb-3">
         <summary className="list-none flex justify-between items-center p-4 cursor-pointer select-none">
@@ -125,6 +126,7 @@ const ChapterSection = ({ title, chapters, onSelect }) => (
     </details>
 );
 
+// --- MAIN COMPONENT ---
 const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
     const [selectedBook, setSelectedBook] = useState(null); 
     const [selectedChapter, setSelectedChapter] = useState(null);
@@ -154,6 +156,7 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
 
     const formatContent = (content) => content.split('\n\n').map((paragraph, index) => <p key={index} className="mb-4 whitespace-pre-wrap">{paragraph.trim()}</p>);
     
+    // --- RENDER: CHAPTER READER VIEW ---
     if (selectedChapter) {
         if (selectedChapter.pages) {
             return <BookReader 
@@ -172,13 +175,10 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         ); 
     }
 
+    // --- RENDER: BOOK TABLE OF CONTENTS VIEW ---
     if (selectedBook) { 
-        // --- CUSTOM RENDER FOR BIG BOOK 4TH EDITION ---
+        // 1. AA Big Book (4th Edition) Layout
         if (selectedBook.key === 'aa_big_book_v4') {
-            // Indices based on our parser structure:
-            // 0-4: Prefaces (5 items)
-            // 5-16: The Chapters (12 items)
-            // 17+: Personal Stories (42 items)
             const prefaces = selectedBook.chapters.slice(0, 5);
             const coreChapters = selectedBook.chapters.slice(5, 17);
             const personalStories = selectedBook.chapters.slice(17);
@@ -192,18 +192,40 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
                     
                     <div className="space-y-4">
                         <ChapterSection title="Prefaces & Forewords" chapters={prefaces} onSelect={setSelectedChapter} />
-                        
-                        {/* Open "The Chapters" by default by adding the 'open' attribute if desired, 
-                            but for now we leave them closed for tidiness */}
                         <ChapterSection title="The Chapters" chapters={coreChapters} onSelect={setSelectedChapter} />
-                        
                         <ChapterSection title="Personal Stories" chapters={personalStories} onSelect={setSelectedChapter} />
                     </div>
                 </div>
             );
         }
 
-        // --- STANDARD RENDER FOR OTHER BOOKS ---
+        // 2. Recovery Dharma Guidebook Layout
+        if (selectedBook.key === 'recovery_dharma_guidebook') {
+            // Slices based on parser manifest order:
+            // 0-24: Basics (Preface -> Recovery is Possible)
+            // 25-38: Personal Stories (Amy -> Eunsung)
+            // 39+: Appendix (Meditations -> Dedication)
+            const basics = selectedBook.chapters.slice(0, 25);
+            const stories = selectedBook.chapters.slice(25, 39);
+            const appendix = selectedBook.chapters.slice(39);
+
+            return (
+                <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
+                    <button onClick={() => setSelectedBook(null)} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Library</span></button>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-deep-charcoal">{selectedBook.title}</h2>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <ChapterSection title="Practice & Principles" chapters={basics} onSelect={setSelectedChapter} />
+                        <ChapterSection title="Personal Stories" chapters={stories} onSelect={setSelectedChapter} />
+                        <ChapterSection title="Appendix & Meditations" chapters={appendix} onSelect={setSelectedChapter} />
+                    </div>
+                </div>
+            );
+        }
+
+        // 3. Default Layout (Flat List)
         return ( 
             <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in"> 
                 <button onClick={() => setSelectedBook(null)} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Library</span></button> 
@@ -218,6 +240,7 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         ); 
     }
     
+    // --- RENDER: MAIN LIBRARY LIST ---
     return ( 
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
             <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Recovery Literature</h2>

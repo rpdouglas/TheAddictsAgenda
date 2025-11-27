@@ -6,16 +6,12 @@ import workbookData from '../data/workbook.json';
 
 // --- DYNAMIC LITERATURE LOADING ---
 export const literatureManifest = {
-  aa_big_book: {
-    key: 'aa_big_book',
-    title: 'The Big Book (Alcoholics Anonymous)',
-    pdfLink: 'https://www.aa.org/sites/default/files/2021-11/en_bigbook_personalstories_1st.pdf',
-  },
-  // NEW: Added 4th Edition
+  // 1. UPDATED: The 4th Edition is now the main Big Book entry
+  // I have applied the PDF link from the deleted entry to this one.
   aa_big_book_v4: {
     key: 'aa_big_book_v4',
     title: 'The Big Book (4th Edition)',
-    pdfLink: '#', 
+    pdfLink: 'https://www.aa.org/sites/default/files/2021-11/en_bigbook_personalstories_1st.pdf', 
   },
   na_basic_text: {
     key: 'na_basic_text',
@@ -36,9 +32,7 @@ export const literatureManifest = {
 
 export const getLiteratureBook = (bookKey) => {
   switch (bookKey) {
-    case 'aa_big_book':
-      return import('../data/aa_big_book.json');
-    // NEW: Added case for 4th Edition
+    // 2. UPDATED: Removed the old 'aa_big_book' case
     case 'aa_big_book_v4':
       return import('../data/aa_big_book_v4.json');
     case 'na_basic_text':
@@ -130,7 +124,7 @@ export const APP_VERSIONS = {
     GOALS: '1.1.1', 
     COPING: '2.1.0', 
     WORKBOOK: '1.4.1',
-    LITERATURE: '1.1.0',
+    LITERATURE: '1.2.0',
     RESOURCES: '1.0.0',
     SETTINGS: '1.0.1',
     MEETINGFINDER: '1.0.0',
