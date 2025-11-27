@@ -1,3 +1,5 @@
+// src/utils/data.js
+
 // --- IMPORT JSON DATA ---
 // Vite automatically loads the contents of these JSON files as JavaScript objects.
 import workbookData from '../data/workbook.json';
@@ -8,6 +10,12 @@ export const literatureManifest = {
     key: 'aa_big_book',
     title: 'The Big Book (Alcoholics Anonymous)',
     pdfLink: 'https://www.aa.org/sites/default/files/2021-11/en_bigbook_personalstories_1st.pdf',
+  },
+  // NEW: Added 4th Edition
+  aa_big_book_v4: {
+    key: 'aa_big_book_v4',
+    title: 'The Big Book (4th Edition)',
+    pdfLink: '#', 
   },
   na_basic_text: {
     key: 'na_basic_text',
@@ -30,6 +38,9 @@ export const getLiteratureBook = (bookKey) => {
   switch (bookKey) {
     case 'aa_big_book':
       return import('../data/aa_big_book.json');
+    // NEW: Added case for 4th Edition
+    case 'aa_big_book_v4':
+      return import('../data/aa_big_book_v4.json');
     case 'na_basic_text':
       return import('../data/na_basic_text.json');
     case 'twelve_and_twelve':
@@ -68,7 +79,6 @@ export const journalTemplates = [
 ];
 
 // --- Coping Cards Data ---
-// THIS SECTION IS NOW CORRECTLY POPULATED
 export const copingStrategies = [
     // --- GROUNDING ---
     { title: "Deep Breathing", description: "Inhale for 4s, hold for 7s, exhale for 8s. Repeat 3-5 times.", category: "Grounding", color: "from-serene-teal/20 to-healing-green/20", icon: "MapPinIcon" },

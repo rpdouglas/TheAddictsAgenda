@@ -1,8 +1,8 @@
+// src/App.jsx
 // Import Core React hooks and utilities
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 
 // Import authentication context and data storage utility
-// Changed all imports to be absolute paths from the /src/ root
 import { useAuth } from '/src/AuthContext.jsx';
 import DataStore from '/src/utils/dataStore.js';
 
@@ -13,10 +13,6 @@ import Login from '/src/components/Login.jsx';
 import { Dashboard, SobrietyDataSetup } from '/src/components/Dashboard.jsx';
 
 // --- Lazy-loaded Components ---
-// This splits the code into smaller chunks that are loaded only when needed,
-// improving initial app performance. The Suspense component will show a fallback UI while they load.
-
-// Core Feature Components
 const DailyJournal = lazy(() => import('/src/components/DailyJournal.jsx'));
 const Goals = lazy(() => import('/src/components/Goals.jsx'));
 const RecoveryWorkbook = lazy(() => import('/src/components/RecoveryWorkbook.jsx'));
@@ -29,8 +25,7 @@ const MeetingTracker = lazy(() => import('/src/components/MeetingTracker.jsx'));
 const DailyReadings = lazy(() => import('/src/components/DailyReadings.jsx'));
 const JustForToday = lazy(() => import('/src/components/JustForToday.jsx'));
 
-
-// Components exported as named exports require a special '.then()' syntax for lazy loading
+// Components exported as named exports
 const Resources = lazy(() => import('/src/components/Resources.jsx').then(module => ({ default: module.Resources })));
 const MeetingManagement = lazy(() => import('/src/components/Resources.jsx').then(module => ({ default: module.MeetingManagement })));
 
@@ -40,51 +35,41 @@ const CopingCards = lazy(() => import('/src/components/CopingCards.jsx'));
 const BreathingExercise = lazy(() => import('/src/components/BreathingExercise.jsx'));
 const YogaWalkthrough = lazy(() => import('/src/components/YogaWalkthrough.jsx'));
 const RecoveryGames = lazy(() => import('/src/components/RecoveryGames.jsx'));
-// 1. IMPORT YOUR NEW GAME
 const RecoverySimulatorGame = lazy(() => import('/src/coping_tools/RecoveryGames/FastLaneGame/App.jsx'));
 const RecoveryJeopardy = lazy(() => import('/src/coping_tools/RecoveryGames/RecoveryJeopardy/RecoveryJeopardy.jsx'));
-
 
 // --- Main Application Component ---
 const App = () => {
     // --- State Management ---
-    const { session, loading: authLoading, logout } = useAuth(); // Authentication state from context
-    const [activeView, setActiveView] = useState('dashboard'); // Controls which component/view is currently displayed
-    const [sobrietyStartDate, setSobrietyStartDate] = useState(null); // Stores the user's sobriety date
-    const [isDataLoading, setIsDataLoading] = useState(true); // Tracks loading state for user data (like sobriety date)
-    const [journalTemplate, setJournalTemplate] = useState(''); // Holds pre-filled text for a new journal entry
-    const [journalTags, setJournalTags] = useState([]); // Holds pre-filled tags for a new journal entry
-    const [deferredPrompt, setDeferredPrompt] = useState(null); // Stores the PWA install prompt event to be triggered later
-    const [hasMadeJournalEntryToday, setHasMadeJournalEntryToday] = useState(false); // ADDED: Tracks if a journal entry was made today
-    // --- New State for Header Text ---
+    const { session, loading: authLoading, logout } = useAuth();
+    const [activeView, setActiveView] = useState('dashboard');
+    const [sobrietyStartDate, setSobrietyStartDate] = useState(null);
+    const [isDataLoading, setIsDataLoading] = useState(true);
+    const [journalTemplate, setJournalTemplate] = useState('');
+    const [journalTags, setJournalTags] = useState([]);
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const [hasMadeJournalEntryToday, setHasMadeJournalEntryToday] = useState(false);
+    
     const DEFAULT_HEADER = 'You have been clean for';
-    const [headerText, setHeaderText] = useState(DEFAULT_HEADER); // Default to the user's requested text
+    const [headerText, setHeaderText] = useState(DEFAULT_HEADER);
 
     // --- Effects ---
-
-    // Effect to initialize data storage and load user data when the session changes (e.g., on login/logout).
     useEffect(() => {
-        // Set the storage engine (localStorage for guests or Firestore for authenticated users).
         DataStore.setStorageEngine(session?.type);
 
         const loadUserData = async () => {
             if (session) {
                 setIsDataLoading(true);
-                // Load the sobriety start date from the data store.
                 const storedDate = await DataStore.load(DataStore.KEYS.SOBRIETY);
                 if (storedDate) {
                     setSobrietyStartDate(new Date(storedDate));
                 } else {
-                    // If no date is set, the user will be prompted to set one.
                     setSobrietyStartDate(null);
                 }
                 
-                // --- Load Custom Header Text ---
                 const storedHeader = await DataStore.load(DataStore.KEYS.HEADER_TEXT);
-                // Set custom header or use the new default
                 setHeaderText(storedHeader || DEFAULT_HEADER); 
                 
-                // --- Check for Today's Journal Entry ---
                 const journalEntries = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
                 const today = new Date().toLocaleDateString();
                 const hasEntry = journalEntries.some(entry => new Date(entry.timestamp).toLocaleDateString() === today);
@@ -92,57 +77,35 @@ const App = () => {
 
                 setIsDataLoading(false);
             } else {
-                // No session, so no user data to load.
                 setIsDataLoading(false);
             }
         };
         loadUserData();
-    }, [session]); // This effect re-runs whenever the 'session' object changes.
+    }, [session]);
 
-    // Effect to listen for the browser's PWA installation prompt event.
     useEffect(() => {
         const handler = (e) => {
-            // Prevent the default browser prompt from appearing immediately.
             e.preventDefault();
-            // Save the event so it can be triggered later by a custom button click.
             setDeferredPrompt(e);
         };
-
         window.addEventListener('beforeinstallprompt', handler);
-
-        // Cleanup function to remove the event listener when the component unmounts.
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handler);
-        };
+        return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
     // --- Event Handlers ---
-
-    /**
-     * Handles saving a new or updated sobriety date to the data store.
-     * @param {Date} newDate - The new sobriety date to save.
-     */
     const handleSobrietyDateUpdate = async (newDate) => {
-        if (!newDate || isNaN(newDate.getTime())) return; // Validate date before saving
+        if (!newDate || isNaN(newDate.getTime())) return;
         setSobrietyStartDate(newDate);
         await DataStore.save(DataStore.KEYS.SOBRIETY, newDate.toISOString());
     };
 
-    /**
-     * Creates a journal template when a user wants to journal about a coping card.
-     * @param {object} card - The coping card object with title and description.
-     */
     const handleJournalFromCopingCard = (card) => {
         const template = `Coping Card Reflection: "${card.title}"\n\n**Strategy:** ${card.description}\n\n**My Application Plan:**\n\n`;
         setJournalTemplate(template);
         setJournalTags(['Coping Skills']);
-        setActiveView('journal'); // Navigate to the journal view
+        setActiveView('journal');
     };
 
-    /**
-     * Creates a journal template from a daily reflection.
-     * @param {object} reflection - The reflection object with title and quote.
-     */
     const handleJournalFromReflection = (reflection) => {
         if (!reflection) return;
         const template = `Reflection on "${reflection.title}"\n\n> ${reflection.quote.replace(/\n/g, '\n> ')}\n\nMy thoughts:\n\n`;
@@ -151,10 +114,6 @@ const App = () => {
         setActiveView('journal');
     };
 
-    /**
-     * Creates a journal template from a "Just for Today" meditation.
-     * @param {object} meditation - The meditation object with title and quote.
-     */
     const handleJournalFromMeditation = (meditation) => {
         if (!meditation) return;
         const template = `Meditation on "${meditation.title}"\n\n> "${meditation.quote}"\n\nMy thoughts:\n\n`;
@@ -163,124 +122,124 @@ const App = () => {
         setActiveView('journal');
     };
 
-    /**
-     * Triggers the saved PWA installation prompt when the user clicks the "Install App" button.
-     */
     const handleInstallPWA = async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            // Wait for the user to respond to the prompt.
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
                 console.log('User accepted the PWA install prompt.');
             }
-            // The prompt can only be used once, so clear it.
             setDeferredPrompt(null);
         }
     };
 
-
-
     // --- Render Logic ---
 
-    // Show a full-screen spinner while checking authentication status or loading initial data.
     if (authLoading || isDataLoading) {
         return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
     }
 
-    // If there's no user session, show the login page.
     if (!session) {
         return <Login />;
     }
 
-    // If a user is logged in but has no sobriety date set, force them to set one.
     if (!sobrietyStartDate) {
         return <SobrietyDataSetup onDateSet={handleSobrietyDateUpdate} />;
     }
 
-    // Main navigation router: determines which component to display based on `activeView` state.
-    const renderContent = () => {
-        switch (activeView) {
-            case 'dashboard':
-                return <Dashboard 
-                            onNavigate={setActiveView} 
-                            sobrietyStartDate={sobrietyStartDate} 
-                            deferredPrompt={deferredPrompt} 
-                            onInstallPWA={handleInstallPWA} 
-                            headerText={headerText}
-                            hasMadeJournalEntryToday={hasMadeJournalEntryToday} // PASS NEW PROP
-                        />;
-            case 'journal':
-                return <DailyJournal journalTemplate={journalTemplate} setJournalTemplate={setJournalTemplate} journalTags={journalTags} setJournalTags={setJournalTags} />;
-            case 'goals':
-                return <Goals />;
-            case 'workbook':
-                return <RecoveryWorkbook />;
-            case 'literature':
-                return <RecoveryLiterature onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
-            case 'resources':
-                return <Resources />;
-            case 'settings':
-                return <Settings
-                    currentStartDate={sobrietyStartDate}
-                    handleSobrietyDateUpdate={handleSobrietyDateUpdate}
-                    onBack={() => setActiveView('dashboard')}
-                    onLogout={logout}
-                    currentHeaderText={headerText} // PASS NEW PROP
-                    onHeaderTextUpdate={setHeaderText} // PASS NEW PROP
-                />;
-            case 'finder':
-                return <MeetingManagement onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
-            case 'daily-readings':
-                return <DailyReadings onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} />;
-            case 'reflection':
-                return <DailyReflection onBack={() => setActiveView('daily-readings')} onJournal={handleJournalFromReflection} />;
-            case 'just-for-today':
-                return <JustForToday onBack={() => setActiveView('daily-readings')} onJournal={handleJournalFromMeditation} />;
-            case 'challenge':
-                return <NinetyDayChallenge onBack={() => setActiveView('dashboard')} onNavigate={setActiveView} setJournalTemplate={setJournalTemplate} />;
-            case 'homegroup':
-                return <Homegroup onBack={() => setActiveView('finder')} onNavigate={setActiveView} />;
-            case 'meetingTracker':
-                return <MeetingTracker onBack={() => setActiveView('homegroup')} />;
-
-            // Coping Tools Navigation
-            case 'coping-tools':
-                return <CopingTools onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />;
-            case 'coping-cards':
-                return <CopingCards onJournal={handleJournalFromCopingCard} onBack={() => setActiveView('coping-tools')} />;
-            case 'breathing-exercises':
-                return <BreathingExercise onBack={() => setActiveView('coping-tools')} />;
-            case 'yoga':
-                return <YogaWalkthrough onBack={() => setActiveView('coping-tools')} />;
-            case 'recovery-games':
-                return <RecoveryGames onBack={() => setActiveViptool('coping-tools')} />;
-                case 'recovery-jeopardy':
-    return <RecoveryJeopardy onBack={() => setActiveView('coping-tools')} />;
-            
-            // 2. ADD THE CASE FOR YOUR NEW GAME
-            case 'recovery-simulator':
-                return <RecoverySimulatorGame onBack={() => setActiveView('coping-tools')} />;
-
-            // Default case to prevent errors, falls back to the dashboard.
-            default:
-                return <Dashboard 
-                            onNavigate={setActiveView} 
-                            sobrietyStartDate={sobrietyStartDate} 
-                            deferredPrompt={deferredPrompt} 
-                            onInstallPWA={handleInstallPWA} 
-                            headerText={headerText}
-                            hasMadeJournalEntryToday={hasMadeJournalEntryToday} // PASS NEW PROP
-                        />;
-        }
+    // --- REFACTORED ROUTING ---
+    // Instead of a switch statement, we define a mapping of views to components.
+    const routes = {
+        'dashboard': (
+            <Dashboard 
+                onNavigate={setActiveView} 
+                sobrietyStartDate={sobrietyStartDate} 
+                deferredPrompt={deferredPrompt} 
+                onInstallPWA={handleInstallPWA} 
+                headerText={headerText}
+                hasMadeJournalEntryToday={hasMadeJournalEntryToday}
+            />
+        ),
+        'journal': (
+            <DailyJournal 
+                journalTemplate={journalTemplate} 
+                setJournalTemplate={setJournalTemplate} 
+                journalTags={journalTags} 
+                setJournalTags={setJournalTags} 
+            />
+        ),
+        'goals': <Goals />,
+        'workbook': <RecoveryWorkbook />,
+        'literature': (
+            <RecoveryLiterature 
+                onNavigate={setActiveView} 
+                setJournalTemplate={setJournalTemplate} 
+            />
+        ),
+        'resources': <Resources />,
+        'settings': (
+            <Settings
+                currentStartDate={sobrietyStartDate}
+                handleSobrietyDateUpdate={handleSobrietyDateUpdate}
+                onBack={() => setActiveView('dashboard')}
+                onLogout={logout}
+                currentHeaderText={headerText}
+                onHeaderTextUpdate={setHeaderText}
+            />
+        ),
+        'finder': (
+            <MeetingManagement 
+                onNavigate={setActiveView} 
+                onBack={() => setActiveView('dashboard')} 
+            />
+        ),
+        'daily-readings': (
+            <DailyReadings 
+                onBack={() => setActiveView('dashboard')} 
+                onNavigate={setActiveView} 
+            />
+        ),
+        'reflection': (
+            <DailyReflection 
+                onBack={() => setActiveView('daily-readings')} 
+                onJournal={handleJournalFromReflection} 
+            />
+        ),
+        'just-for-today': (
+            <JustForToday 
+                onBack={() => setActiveView('daily-readings')} 
+                onJournal={handleJournalFromMeditation} 
+            />
+        ),
+        'challenge': (
+            <NinetyDayChallenge 
+                onBack={() => setActiveView('dashboard')} 
+                onNavigate={setActiveView} 
+                setJournalTemplate={setJournalTemplate} 
+            />
+        ),
+        'homegroup': (
+            <Homegroup 
+                onBack={() => setActiveView('finder')} 
+                onNavigate={setActiveView} 
+            />
+        ),
+        'meetingTracker': <MeetingTracker onBack={() => setActiveView('homegroup')} />,
+        
+        // Coping Tools
+        'coping-tools': <CopingTools onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />,
+        'coping-cards': <CopingCards onJournal={handleJournalFromCopingCard} onBack={() => setActiveView('coping-tools')} />,
+        'breathing-exercises': <BreathingExercise onBack={() => setActiveView('coping-tools')} />,
+        'yoga': <YogaWalkthrough onBack={() => setActiveView('coping-tools')} />,
+        'recovery-games': <RecoveryGames onBack={() => setActiveView('coping-tools')} />,
+        'recovery-jeopardy': <RecoveryJeopardy onBack={() => setActiveView('coping-tools')} />,
+        'recovery-simulator': <RecoverySimulatorGame onBack={() => setActiveView('coping-tools')} />,
     };
 
     // --- Main JSX Layout ---
     return (
         <div className="bg-gray-100 h-screen w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4">
-            {/* Header section with navigation buttons and app title */}
             <header className="flex-shrink-0 w-full max-w-2xl mx-auto flex items-center justify-between p-4">
-                {/* Conditional header button: Shows 'Resources' on dashboard, otherwise a 'Back' arrow */}
                 {activeView === 'dashboard' ? (
                     <button onClick={() => setActiveView('resources')} className="text-red-500 hover:text-red-700 p-1" title="Emergency Resources"><LifeBuoyIcon className="w-6 h-6" /></button>
                 ) : (
@@ -290,11 +249,10 @@ const App = () => {
                 <button onClick={() => setActiveView('settings')} className="text-gray-500 hover:text-teal-600 p-1" title="Settings"><SettingsIcon className="w-6 h-6" /></button>
             </header>
 
-            {/* Main content area where the active component is rendered */}
             <main className="flex-grow w-full max-w-2xl mx-auto overflow-y-auto pb-4">
-                {/* Suspense provides a fallback UI (Spinner) while lazy-loaded components are being fetched */}
                 <Suspense fallback={<Spinner />}>
-                    {renderContent()}
+                    {/* Render the component for the active view, or default to Dashboard */}
+                    {routes[activeView] || routes['dashboard']}
                 </Suspense>
             </main>
         </div>
