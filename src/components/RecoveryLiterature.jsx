@@ -100,6 +100,31 @@ const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
     );
 };
 
+// --- Helper Component for Collapsible Sections ---
+const ChapterSection = ({ title, chapters, onSelect }) => (
+    <details className="group bg-pure-white/60 rounded-lg shadow-sm ring-1 ring-black/5 open:bg-white open:shadow-md transition-all duration-200 mb-3">
+        <summary className="list-none flex justify-between items-center p-4 cursor-pointer select-none">
+            <h3 className="font-bold text-deep-charcoal text-lg">{title}</h3>
+            <span className="transform group-open:rotate-90 transition-transform duration-200 text-serene-teal">
+                <ArrowRightIcon className="w-5 h-5" />
+            </span>
+        </summary>
+        <ul className="px-2 pb-2 space-y-1 border-t border-gray-100">
+            {chapters.map((chapter, index) => (
+                <li key={index}>
+                    <button 
+                        onClick={() => onSelect(chapter)} 
+                        className="w-full text-left p-3 hover:bg-serene-teal/10 rounded-md transition-colors flex items-center justify-between group/item"
+                    >
+                        <span className="text-deep-charcoal/80 font-medium">{chapter.title}</span>
+                        <ArrowRightIcon className="w-4 h-4 text-gray-300 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                    </button>
+                </li>
+            ))}
+        </ul>
+    </details>
+);
+
 const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
     const [selectedBook, setSelectedBook] = useState(null); 
     const [selectedChapter, setSelectedChapter] = useState(null);
@@ -109,7 +134,6 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         setIsLoading(true);
         try {
             const bookData = await getLiteratureBook(bookKey);
-            // The imported JSON module might have a 'default' property if it's treated as a module
             setSelectedBook({ ...(bookData.default || bookData), key: bookKey });
         } catch (error) {
             console.error("Failed to load literature:", error);
@@ -149,6 +173,37 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
     }
 
     if (selectedBook) { 
+        // --- CUSTOM RENDER FOR BIG BOOK 4TH EDITION ---
+        if (selectedBook.key === 'aa_big_book_v4') {
+            // Indices based on our parser structure:
+            // 0-4: Prefaces (5 items)
+            // 5-16: The Chapters (12 items)
+            // 17+: Personal Stories (42 items)
+            const prefaces = selectedBook.chapters.slice(0, 5);
+            const coreChapters = selectedBook.chapters.slice(5, 17);
+            const personalStories = selectedBook.chapters.slice(17);
+
+            return (
+                <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
+                    <button onClick={() => setSelectedBook(null)} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Library</span></button>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-deep-charcoal">{selectedBook.title}</h2>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <ChapterSection title="Prefaces & Forewords" chapters={prefaces} onSelect={setSelectedChapter} />
+                        
+                        {/* Open "The Chapters" by default by adding the 'open' attribute if desired, 
+                            but for now we leave them closed for tidiness */}
+                        <ChapterSection title="The Chapters" chapters={coreChapters} onSelect={setSelectedChapter} />
+                        
+                        <ChapterSection title="Personal Stories" chapters={personalStories} onSelect={setSelectedChapter} />
+                    </div>
+                </div>
+            );
+        }
+
+        // --- STANDARD RENDER FOR OTHER BOOKS ---
         return ( 
             <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in"> 
                 <button onClick={() => setSelectedBook(null)} className="flex items-center text-serene-teal hover:text-serene-teal mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Library</span></button> 
