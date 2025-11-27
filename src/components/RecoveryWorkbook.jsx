@@ -13,11 +13,10 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses, onUpdat
     const [saveStatus, setSaveStatus] = useState('');
     const isInitialLoad = useRef(true);
 
-    // Initialize state from props (only once or when key changes)
     useEffect(() => {
         setResponse(initialResponses[questionKey] || '');
         isInitialLoad.current = true;
-    }, [questionKey]); // Removed initialResponses from dependency to prevent overwrite during typing
+    }, [questionKey]); 
 
     useEffect(() => {
         if (isInitialLoad.current) {
@@ -25,8 +24,6 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses, onUpdat
             return;
         }
         
-        // Don't save if content hasn't changed from what's already saved (optimization)
-        // We check against the PROP 'initialResponses' which holds the committed state
         if (response === (initialResponses[questionKey] || '')) {
             return;
         }
@@ -34,12 +31,10 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses, onUpdat
         setSaveStatus('Saving...');
         const delayDebounceFn = setTimeout(async () => {
             try {
-                // 1. Save to Persistence Layer
                 const currentWorkbookData = await DataStore.load(DataStore.KEYS.WORKBOOK) || {};
                 const updatedData = { ...currentWorkbookData, [questionKey]: response };
                 await DataStore.save(DataStore.KEYS.WORKBOOK, updatedData);
                 
-                // 2. Notify Parent to Update Global State (Fix for Stale State)
                 onUpdate(questionKey, response);
                 
                 setSaveStatus('Saved');
@@ -47,7 +42,7 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses, onUpdat
                 console.error("Error saving workbook response:", error);
                 setSaveStatus('Error');
             }
-        }, 1500); // 1.5s debounce
+        }, 1500);
 
         return () => clearTimeout(delayDebounceFn);
     }, [response, questionKey, onUpdate, initialResponses]);
@@ -71,7 +66,6 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
     const [isCollapsed, setIsCollapsed] = useState(true);
     const contentRef = useRef(null);
     
-    // UPDATED: Use stable section ID instead of title char
     const keyPrefix = `${stepId}-${section.id}`; 
     
     useEffect(() => {
@@ -116,7 +110,6 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
 
 const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
     
-    // NEW: Export to PDF Feature
     const handleExportPDF = () => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -124,12 +117,10 @@ const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
         const maxTextWidth = pageWidth - (margin * 2);
         let yPos = 20;
 
-        // Title
         doc.setFontSize(18);
         doc.text(topic.title, margin, yPos);
         yPos += 15;
 
-        // Quote (if any)
         if (topic.quote) {
             doc.setFontSize(12);
             doc.setFont(undefined, 'italic');
@@ -139,35 +130,30 @@ const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
             doc.setFont(undefined, 'normal');
         }
 
-        // Iterate through content
         const addContent = (question, key) => {
-            // Check for page break
             if (yPos > 270) {
                 doc.addPage();
                 yPos = 20;
             }
 
-            // Question
             doc.setFontSize(11);
-            doc.setTextColor(50); // Dark Gray
+            doc.setTextColor(50); 
             const splitQ = doc.splitTextToSize(question, maxTextWidth);
             doc.text(splitQ, margin, yPos);
             yPos += (splitQ.length * 6) + 2;
 
-            // Answer
             const answer = initialResponses[key] || "(No answer provided)";
             doc.setFontSize(10);
-            doc.setTextColor(0); // Black
+            doc.setTextColor(0); 
             const splitA = doc.splitTextToSize(answer, maxTextWidth - 5);
-            doc.text(splitA, margin + 5, yPos); // Indent answer
-            yPos += (splitA.length * 6) + 10; // Extra spacing after item
+            doc.text(splitA, margin + 5, yPos); 
+            yPos += (splitA.length * 6) + 10; 
         };
 
         if (topic.sections) {
             topic.sections.forEach(section => {
                 const keyPrefix = `${topic.id}-${section.id}`;
                 
-                // Section Title
                 if (yPos > 270) { doc.addPage(); yPos = 20; }
                 doc.setFontSize(14);
                 doc.setFont(undefined, 'bold');
@@ -300,7 +286,6 @@ const RecoveryWorkbook = () => {
         loadWorkbookData();
     }, []);
 
-    // NEW: Callback to sync state from children immediately (Recommendation #1)
     const handleResponseUpdate = (key, value) => {
         setWorkbookResponses(prev => ({
             ...prev,
@@ -308,28 +293,39 @@ const RecoveryWorkbook = () => {
         }));
     };
 
+    // --- UPDATED LOGIC FOR 100% COMPLETION ---
     const completedTopicIds = useMemo(() => {
         const completed = new Set();
         Object.values(workbookData).forEach(category => {
             if (category && category.topics) {
                 category.topics.forEach(topic => {
-                    let topicHasContent = false;
+                    let isComplete = true; // Assume complete
+
                     if (topic.sections) {
+                        // Complex Topic (e.g., Steps): Check EVERY question in EVERY section
                         for (const section of topic.sections) {
                             for (let i = 0; i < section.questions.length; i++) {
-                                // UPDATED: Key generation now uses stable 'section.id' (Recommendation #2)
                                 const key = `${topic.id}-${section.id}-${i + 1}`;
-                                if (workbookResponses[key] && workbookResponses[key].trim().length > 0) {
-                                    topicHasContent = true;
-                                    break;
+                                const response = workbookResponses[key];
+                                // If ANY question is missing/empty, fail completion
+                                if (!response || response.trim().length === 0) {
+                                    isComplete = false;
+                                    break; 
                                 }
                             }
-                            if (topicHasContent) break;
+                            if (!isComplete) break; // Fail fast
                         }
-                    } else if (workbookResponses[topic.id] && workbookResponses[topic.id].trim().length > 0) {
-                        topicHasContent = true;
+                    } else {
+                        // Simple Topic: Check single prompt
+                        const response = workbookResponses[topic.id];
+                        if (!response || response.trim().length === 0) {
+                            isComplete = false;
+                        }
                     }
-                    if (topicHasContent) completed.add(topic.id);
+
+                    if (isComplete) {
+                        completed.add(topic.id);
+                    }
                 });
             }
         });
@@ -386,7 +382,7 @@ const RecoveryWorkbook = () => {
                                 topic={selectedTopic} 
                                 onBack={() => setSelectedTopic(null)} 
                                 initialResponses={workbookResponses} 
-                                onUpdate={handleResponseUpdate} // Pass sync function down
+                                onUpdate={handleResponseUpdate} 
                               />;
     if (activeCategory) return <WorkbookCategory category={activeCategory} onSelectTopic={setSelectedTopic} onBack={() => setActiveCategory(null)} completedTopicIds={completedTopicIds} />;
     
