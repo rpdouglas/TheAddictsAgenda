@@ -3,8 +3,40 @@ import DataStore from '../utils/dataStore.js';
 import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
 import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon } from '../utils/icons.jsx';
+import { model } from '../firebase.jsx'; // Import the AI model
 
-// --- Sub-Components (Color Scheme Updated) ---
+// --- Sub-Components ---
+
+// Reusable Insights Modal (Same as Workbook)
+const InsightsModal = ({ onClose, isLoading, insights }) => (
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg space-y-4 flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center flex-shrink-0">
+                <h3 className="text-xl font-bold text-deep-charcoal flex items-center gap-2">
+                    <SparklesIcon className="text-blue-600 w-6 h-6"/> AI Journal Analysis
+                </h3>
+                <button onClick={onClose} className="text-deep-charcoal/60 hover:text-deep-charcoal text-2xl">&times;</button>
+            </div>
+            <div className="flex-grow overflow-y-auto pr-2 -mr-2">
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
+                        <Spinner />
+                        <p className="mt-4 text-deep-charcoal/70">Reading your entries to find patterns...</p>
+                    </div>
+                ) : (
+                    <div className="text-deep-charcoal/80 space-y-4 whitespace-pre-wrap">
+                        {insights.split('\n\n').map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+                    </div>
+                )}
+            </div>
+            <div className="flex-shrink-0">
+                <button onClick={onClose} className="w-full bg-light-stone/50 text-deep-charcoal/80 font-semibold py-2 px-4 rounded-lg hover:bg-light-stone/70">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+);
 
 const MoodGraphView = ({ items, onBack }) => {
     const moodData = useMemo(() => {
@@ -81,7 +113,7 @@ const MoodGraphView = ({ items, onBack }) => {
 };
 
 
-const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit, handleDeleteItem, setViewMode }) => (
+const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit, handleDeleteItem, setViewMode, onGenerateInsights }) => (
     <div className="flex-grow overflow-y-auto pr-2 -mr-2 mt-4">
         <div className="flex gap-2 mb-6">
             <button
@@ -89,6 +121,14 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
                 className="flex-grow bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
             >
                 Add New Entry
+            </button>
+            {/* NEW: AI Insights Button */}
+            <button
+                onClick={onGenerateInsights}
+                className="flex-shrink-0 bg-white border border-light-stone text-blue-600 font-bold py-3 px-4 rounded-lg shadow-md hover:bg-soft-linen transition-colors"
+                title="Get AI Analysis"
+            >
+                <SparklesIcon className="w-5 h-5"/>
             </button>
              <button
                 onClick={() => setViewMode('graph')}
@@ -248,7 +288,7 @@ const JournalForm = ({
 );
 
 
-// --- Main Component (No Functional Changes) ---
+// --- Main Component ---
 
 const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJournalTags }) => {
     const [items, setItems] = useState([]);
@@ -258,6 +298,11 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const [currentMood, setCurrentMood] = useState(5);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
+
+    // NEW: AI Insights State
+    const [showInsightsModal, setShowInsightsModal] = useState(false);
+    const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+    const [aiInsights, setAiInsights] = useState('');
 
     // Editing state
     const [isEditing, setIsEditing] = useState(false);
@@ -347,6 +392,51 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         const templateObj = journalTemplates.find(t => t.id === selectedTemplateId);
         if (templateObj) setNewItemText(templateObj.template);
         setSelectedTemplateId('');
+    };
+
+    // --- NEW: AI Analysis Handler ---
+    const handleGenerateInsights = async () => {
+        setIsGeneratingInsights(true);
+        setShowInsightsModal(true);
+        setAiInsights('');
+
+        // 1. Prepare Context: Get last 20 entries to save tokens
+        const recentEntries = items.slice(0, 20);
+        
+        if (recentEntries.length === 0) {
+            setAiInsights("You haven't written any journal entries yet. Start writing, and I can help you analyze your patterns!");
+            setIsGeneratingInsights(false);
+            return;
+        }
+
+        // Format for AI
+        const entriesText = recentEntries.map(entry => 
+            `Date: ${new Date(entry.timestamp).toLocaleDateString()}\nMood: ${entry.mood}/10\nTags: ${entry.tags?.join(', ')}\nContent: "${entry.text}"`
+        ).join('\n---\n');
+
+        const prompt = `You are an empathetic recovery companion. Analyze the following journal entries from a user in recovery. 
+        
+        Please provide a supportive summary that includes:
+        1. **Emotional Themes:** What recurring feelings or moods stand out?
+        2. **Triggers & Wins:** Identify any potential triggers mentioned or moments of resilience/gratitude.
+        3. **Gentle Encouragement:** A brief motivating thought based on their recent journey.
+
+        Do not give medical advice. Keep the tone warm, non-judgmental, and hopeful.
+
+        Journal Entries:
+        ${entriesText}`;
+
+        try {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            setAiInsights(text);
+        } catch (error) {
+            console.error("Error generating journal insights:", error);
+            setAiInsights("Sorry, I was unable to analyze your entries at this time. Please check your connection and try again.");
+        } finally {
+            setIsGeneratingInsights(false);
+        }
     };
 
     // --- Tag Handlers ---
@@ -442,12 +532,20 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                     handleStartEdit={handleStartEdit}
                     handleDeleteItem={handleDeleteItem}
                     setViewMode={setViewMode}
+                    onGenerateInsights={handleGenerateInsights} // Pass the handler
                 />;
         }
     };
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
+            {showInsightsModal && (
+                <InsightsModal 
+                    onClose={() => setShowInsightsModal(false)}
+                    isLoading={isGeneratingInsights}
+                    insights={aiInsights}
+                />
+            )}
             <h2 className="text-2xl font-bold text-deep-charcoal mb-4">Daily Journal</h2>
             <p className="text-deep-charcoal/70 mb-6">How are you feeling? You can write about your day, feelings, or things you are grateful for.</p>
             {renderContent()}
