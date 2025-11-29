@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import DataStore from '../utils/dataStore.js';
 import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
-import { ArrowLeftIcon, ChevronDown, ChevronUp, CheckCircleIcon, SparklesIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ChevronDown, ChevronUp, CheckCircleIcon, SparklesIcon, DownloadIcon } from '../utils/icons.jsx';
 import { model } from '../firebase.jsx';
+import jsPDF from 'jspdf';
 
 // --- Sub-Components ---
 
-const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
+const WorkbookQuestion = ({ questionText, questionKey, initialResponses, onUpdate }) => {
     const [response, setResponse] = useState('');
     const [saveStatus, setSaveStatus] = useState('');
     const isInitialLoad = useRef(true);
@@ -15,30 +16,36 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
     useEffect(() => {
         setResponse(initialResponses[questionKey] || '');
         isInitialLoad.current = true;
-    }, [questionKey, initialResponses]);
+    }, [questionKey]); 
 
     useEffect(() => {
         if (isInitialLoad.current) {
             isInitialLoad.current = false;
             return;
         }
+        
         if (response === (initialResponses[questionKey] || '')) {
             return;
         }
+
         setSaveStatus('Saving...');
         const delayDebounceFn = setTimeout(async () => {
             try {
                 const currentWorkbookData = await DataStore.load(DataStore.KEYS.WORKBOOK) || {};
                 const updatedData = { ...currentWorkbookData, [questionKey]: response };
                 await DataStore.save(DataStore.KEYS.WORKBOOK, updatedData);
+                
+                onUpdate(questionKey, response);
+                
                 setSaveStatus('Saved');
             } catch (error) {
                 console.error("Error saving workbook response:", error);
                 setSaveStatus('Error');
             }
         }, 1500);
+
         return () => clearTimeout(delayDebounceFn);
-    }, [response, questionKey, initialResponses]);
+    }, [response, questionKey, onUpdate, initialResponses]);
 
     return (
         <div className="mb-4 pb-2">
@@ -55,11 +62,11 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses }) => {
     );
 };
 
-const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
+const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdate }) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const contentRef = useRef(null);
     
-    const keyPrefix = `${stepId}-${section.title.charAt(0)}`; 
+    const keyPrefix = `${stepId}-${section.id}`; 
     
     useEffect(() => {
         if (contentRef.current) {
@@ -91,6 +98,7 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
                                 questionText={question}
                                 questionKey={questionKey}
                                 initialResponses={initialResponses}
+                                onUpdate={onUpdate}
                             />
                         );
                     })}
@@ -100,12 +108,85 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses }) => {
     );
 };
 
-const WorkbookTopic = ({ topic, onBack, initialResponses }) => {
+const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
+    
+    const handleExportPDF = () => {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        const maxTextWidth = pageWidth - (margin * 2);
+        let yPos = 20;
+
+        doc.setFontSize(18);
+        doc.text(topic.title, margin, yPos);
+        yPos += 15;
+
+        if (topic.quote) {
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'italic');
+            const splitQuote = doc.splitTextToSize(`"${topic.quote}"`, maxTextWidth);
+            doc.text(splitQuote, margin, yPos);
+            yPos += (splitQuote.length * 7) + 10;
+            doc.setFont(undefined, 'normal');
+        }
+
+        const addContent = (question, key) => {
+            if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(11);
+            doc.setTextColor(50); 
+            const splitQ = doc.splitTextToSize(question, maxTextWidth);
+            doc.text(splitQ, margin, yPos);
+            yPos += (splitQ.length * 6) + 2;
+
+            const answer = initialResponses[key] || "(No answer provided)";
+            doc.setFontSize(10);
+            doc.setTextColor(0); 
+            const splitA = doc.splitTextToSize(answer, maxTextWidth - 5);
+            doc.text(splitA, margin + 5, yPos); 
+            yPos += (splitA.length * 6) + 10; 
+        };
+
+        if (topic.sections) {
+            topic.sections.forEach(section => {
+                const keyPrefix = `${topic.id}-${section.id}`;
+                
+                if (yPos > 270) { doc.addPage(); yPos = 20; }
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text(section.title, margin, yPos);
+                doc.setFont(undefined, 'normal');
+                yPos += 10;
+
+                section.questions.forEach((q, i) => {
+                    const key = `${keyPrefix}-${i + 1}`;
+                    addContent(q, key);
+                });
+            });
+        } else {
+            addContent(topic.prompt, topic.id);
+        }
+
+        doc.save(`${topic.title.replace(/\s+/g, '_')}_Workbook.pdf`);
+    };
+
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 mb-4 font-semibold flex-shrink-0"><ArrowLeftIcon /><span className="ml-2">Back to Topics</span></button>
+            <div className="flex justify-between items-start mb-4 flex-shrink-0">
+                <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back</span></button>
+                <button 
+                    onClick={handleExportPDF}
+                    className="flex items-center gap-2 bg-gray-100 text-deep-charcoal text-sm font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
+                    title="Download this topic as a PDF"
+                >
+                    <DownloadIcon className="w-4 h-4" /> Export PDF
+                </button>
+            </div>
             
-            <h3 className="text-2xl font-bold text-deep-charcoal mb-2">{topic.title}</h3>
+            <h3 className="text-2xl font-bold text-deep-charcoal mb-2 flex-shrink-0">{topic.title}</h3>
             
             {topic.quote && (
                 <div className="step-quote">
@@ -121,10 +202,16 @@ const WorkbookTopic = ({ topic, onBack, initialResponses }) => {
                             section={section} 
                             stepId={topic.id} 
                             initialResponses={initialResponses}
+                            onUpdate={onUpdate}
                         />
                     ))
                 ) : (
-                    <WorkbookQuestion questionText={topic.prompt} questionKey={topic.id} initialResponses={initialResponses} />
+                    <WorkbookQuestion 
+                        questionText={topic.prompt} 
+                        questionKey={topic.id} 
+                        initialResponses={initialResponses} 
+                        onUpdate={onUpdate}
+                    />
                 )}
             </div>
         </div>
@@ -199,27 +286,46 @@ const RecoveryWorkbook = () => {
         loadWorkbookData();
     }, []);
 
+    const handleResponseUpdate = (key, value) => {
+        setWorkbookResponses(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    // --- UPDATED LOGIC FOR 100% COMPLETION ---
     const completedTopicIds = useMemo(() => {
         const completed = new Set();
         Object.values(workbookData).forEach(category => {
             if (category && category.topics) {
                 category.topics.forEach(topic => {
-                    let topicHasContent = false;
+                    let isComplete = true; // Assume complete
+
                     if (topic.sections) {
+                        // Complex Topic (e.g., Steps): Check EVERY question in EVERY section
                         for (const section of topic.sections) {
                             for (let i = 0; i < section.questions.length; i++) {
-                                const key = `${topic.id}-${section.title.charAt(0)}-${i + 1}`;
-                                if (workbookResponses[key] && workbookResponses[key].trim().length > 0) {
-                                    topicHasContent = true;
-                                    break;
+                                const key = `${topic.id}-${section.id}-${i + 1}`;
+                                const response = workbookResponses[key];
+                                // If ANY question is missing/empty, fail completion
+                                if (!response || response.trim().length === 0) {
+                                    isComplete = false;
+                                    break; 
                                 }
                             }
-                            if (topicHasContent) break;
+                            if (!isComplete) break; // Fail fast
                         }
-                    } else if (workbookResponses[topic.id] && workbookResponses[topic.id].trim().length > 0) {
-                        topicHasContent = true;
+                    } else {
+                        // Simple Topic: Check single prompt
+                        const response = workbookResponses[topic.id];
+                        if (!response || response.trim().length === 0) {
+                            isComplete = false;
+                        }
                     }
-                    if (topicHasContent) completed.add(topic.id);
+
+                    if (isComplete) {
+                        completed.add(topic.id);
+                    }
                 });
             }
         });
@@ -272,7 +378,12 @@ const RecoveryWorkbook = () => {
     };
     
     if (isLoading) return <Spinner />;
-    if (selectedTopic) return <WorkbookTopic topic={selectedTopic} onBack={() => setSelectedTopic(null)} initialResponses={workbookResponses} />;
+    if (selectedTopic) return <WorkbookTopic 
+                                topic={selectedTopic} 
+                                onBack={() => setSelectedTopic(null)} 
+                                initialResponses={workbookResponses} 
+                                onUpdate={handleResponseUpdate} 
+                              />;
     if (activeCategory) return <WorkbookCategory category={activeCategory} onSelectTopic={setSelectedTopic} onBack={() => setActiveCategory(null)} completedTopicIds={completedTopicIds} />;
     
     return ( 

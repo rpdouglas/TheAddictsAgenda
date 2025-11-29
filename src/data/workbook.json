@@ -45,6 +45,7 @@
         "quote": "We admitted we were powerless over our addiction, that our lives had become unmanageable.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. The Problem of Powerlessness",
             "questions": [
               "1. In your own words, what does 'powerlessness over addiction' mean today?",
@@ -55,6 +56,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. The Result of Unmanageability",
             "questions": [
               "6. List three key areas of your life that have become unmanageable (e.g., finances, relationships, work).",
@@ -65,6 +67,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Acceptance and Surrender",
             "questions": [
               "11. What action are you willing to take today that you were unwilling to take before?",
@@ -82,6 +85,7 @@
         "quote": "Came to believe that a Power greater than ourselves could restore us to sanity.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. The Need for Restoration",
             "questions": [
               "1. In what ways do you feel or believe your thinking has been 'insane' during your addiction?",
@@ -93,6 +97,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Defining a Higher Power",
             "questions": [
               "7. What characteristics would your ideal 'Power greater than yourself' possess (e.g., loving, guiding, honest)?",
@@ -103,6 +108,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. The Role of Hope and Faith",
             "questions": [
               "12. What specific hope do you have for your life one year from now?",
@@ -119,6 +125,7 @@
         "quote": "Made a decision to turn our will and our lives over to the care of God as we understood Him.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Decision Making",
             "questions": [
               "1. What areas of your life are you still trying to control completely?",
@@ -129,6 +136,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Understanding Care",
             "questions": [
               "6. What does 'God as we understood Him' mean to you today?",
@@ -139,6 +147,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. The Practice of Surrender",
             "questions": [
               "11. Write out the Step Three prayer and what each sentence means to you.",
@@ -155,6 +164,7 @@
         "quote": "Made a searching and fearless moral inventory of ourselves.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Search and Fearlessness",
             "questions": [
               "1. What does it mean to be truly 'fearless' in this process?",
@@ -165,6 +175,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Resentments and Harms",
             "questions": [
               "6. List five major resentments you hold, and identify what part of your self-esteem (pride, security, ambition) was injured by each one.",
@@ -175,6 +186,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Self-Examination",
             "questions": [
               "11. List 5 things you genuinely like about yourself.",
@@ -192,6 +204,7 @@
         "quote": "Admitted to God, to ourselves, and to another human being the exact nature of our wrongs.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Admission to God and Self",
             "questions": [
               "1. What does the word 'exact' imply about the depth of this admission?",
@@ -201,6 +214,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Admission to Another Human Being",
             "questions": [
               "5. Why is it necessary to admit your wrongs to another person?",
@@ -210,6 +224,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Freedom and Humility",
             "questions": [
               "9. What relief did you gain by breaking secrecy?",
@@ -226,6 +241,7 @@
         "quote": "Were entirely ready to have God remove all these defects of character.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Identifying Defects",
             "questions": [
               "1. List your top five most persistent character defects (e.g., pride, dishonesty, impatience).",
@@ -235,6 +251,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Readiness and Resistance",
             "questions": [
               "5. What does 'entirely ready' mean to you? Is it perfect willingness or an honest effort?",
@@ -244,6 +261,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Surrender of Self-Will",
             "questions": [
               "9. What is the difference between asking God to remove a defect (Step 7) and being ready (Step 6)?",
@@ -260,6 +278,7 @@
         "quote": "Humbly asked Him to remove our shortcomings.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Understanding Humility",
             "questions": [
               "1. What is your understanding of humility (what it IS and IS NOT)?",
@@ -269,6 +288,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. The Act of Asking",
             "questions": [
               "5. What does 'shortcomings' encompass for you?",
@@ -278,6 +298,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Prayer and Action",
             "questions": [
               "9. Write out the Step Seven prayer in your own words.",
@@ -294,6 +315,7 @@
         "quote": "Made a list of all persons we had harmed, and became willing to make amends to them all.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Making the List",
             "questions": [
               "1. Who is the person you harmed the most, and why?",
@@ -304,6 +326,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Willingness, Not Action",
             "questions": [
               "6. What is the difference between 'making the list' and 'being willing' to make amends?",
@@ -314,6 +337,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Consequences and Freedom",
             "questions": [
               "11. What consequences are you willing to accept from the people on your list?",
@@ -330,6 +354,7 @@
         "quote": "Made direct amends to such people wherever possible, except when to do so would injure them or others.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Defining Direct Amends",
             "questions": [
               "1. What is the difference between an apology and an amends?",
@@ -339,6 +364,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. The Amends Process",
             "questions": [
               "5. Who is the first person you will make amends to, and what will the amends consist of?",
@@ -348,6 +374,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Results and Freedom",
             "questions": [
               "9. Describe a specific amends you have successfully completed and how you felt afterward.",
@@ -364,6 +391,7 @@
         "quote": "Continued to take personal inventory and when we were wrong promptly admitted it.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Daily Inventory",
             "questions": [
               "1. Why is continuing inventory essential for staying clean/sober?",
@@ -374,6 +402,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Prompt Admission",
             "questions": [
               "6. What does 'promptly admitted it' mean? (How quickly is prompt?)",
@@ -384,6 +413,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Practice and Growth",
             "questions": [
               "11. How will you make this Step a natural part of your daily life, not a chore?",
@@ -400,6 +430,7 @@
         "quote": "Sought through prayer and meditation to improve our conscious contact with God as we understood Him, praying only for knowledge of His will for us and the power to carry that out.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Improving Conscious Contact",
             "questions": [
               "1. How do you define 'conscious contact' with your Higher Power?",
@@ -410,6 +441,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Prayer for Guidance",
             "questions": [
               "6. What is the significance of praying 'only for knowledge of His will'?",
@@ -420,6 +452,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Action and Outcome",
             "questions": [
               "11. What is one concrete action you will take today based on the guidance you received?",
@@ -436,6 +469,7 @@
         "quote": "Having had a spiritual awakening as the result of these steps, we tried to carry this message to alcoholics, and to practice these principles in all our affairs.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "A. Spiritual Awakening",
             "questions": [
               "1. Describe your spiritual awakening (it can be sudden or gradual).",
@@ -445,6 +479,7 @@
             ]
           },
           {
+            "id": "sec_b",
             "title": "B. Carrying the Message",
             "questions": [
               "5. How do you 'carry the message' to others who still suffer?",
@@ -455,6 +490,7 @@
             ]
           },
           {
+            "id": "sec_c",
             "title": "C. Practice in All Affairs",
             "questions": [
               "10. How do you apply the principles (Honesty, Hope, Trust) in your professional life?",
@@ -477,6 +513,7 @@
         "quote": "We acknowledge the reality of our suffering without judgment.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "Inquiry & Reflection",
             "questions": [
               "In what specific ways has addiction caused suffering in my life? (Consider relationships, finances, physical health, mental health, and spiritual well-being.)",
@@ -492,6 +529,7 @@
         "quote": "We investigate the cycle of craving, aversion, and ignorance that fuels our addiction.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "Inquiry & Reflection",
             "questions": [
               "What are my primary cravings? (These can be for substances, but also for validation, control, distraction, or specific feelings.)",
@@ -507,6 +545,7 @@
         "quote": "We embrace the hope that freedom from the cycle of craving is possible.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "Inquiry & Reflection",
             "questions": [
               "What would freedom from the obsession of addiction look and feel like for me? Describe a day in that life.",
@@ -521,6 +560,7 @@
         "quote": "We commit to the Eightfold Path as our program for recovery.",
         "sections": [
           {
+            "id": "sec_a",
             "title": "Inquiry & Reflection",
             "questions": [
               "Looking at the Eightfold Path, which area feels most challenging for me right now? Which feels most accessible?",
