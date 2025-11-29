@@ -1,9 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { GoogleGenerativeAI } from "@google/generative-ai"; // Import the new SDK
+import { GoogleGenerativeAI } from "@google/generative-ai"; 
 
-// Your existing Firebase config
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -15,12 +14,15 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 // Initialize Generative AI
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const generativeModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+//const genAI = new GoogleGenerativeAI(API_KEY);
 
-// Your existing exports
+// UPDATED: Use standard alias. This will work once the API is enabled.
+const generativeModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+// Authentication & Database
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
