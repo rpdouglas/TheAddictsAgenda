@@ -161,51 +161,12 @@ export const ArrowRightIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg"
  * @returns {JSX.Element} SVG for Log Out.
  */
 export const LogOutIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
-
-/**
- * Icon for highlighting text (accepts props for styling).
- * @param {object} props - Props passed to the SVG element.
- * @returns {JSX.Element} SVG for Highlighter.
- */
 export const HighlighterIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9.5 11.5l6.5-6.5c1.25-1.25 2.75-1.25 4 0s1.25 2.75 0 4l-6.5 6.5l-4 4l-4-4l4-4z"/><path d="M12 2L4 10l9 9l8-8l-9-9z"/></svg>;
-
-// --- New and Corrected Icons for Dashboard/Features ---
-
-/**
- * Icon for coping tools or heart health.
- * @returns {JSX.Element} SVG for Heart.
- */
 export const HeartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>;
-
-/**
- * Icon for a globe, representing meeting finder or resources (accepts props for styling).
- * @param {object} props - Props passed to the SVG element.
- * @returns {JSX.Element} SVG for Globe.
- */
 export const GlobeIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
-
-/**
- * Icon for the Recovery Workbook or collection of tasks (accepts props for styling).
- * @param {object} props - Props passed to the SVG element.
- * @returns {JSX.Element} SVG for Collection.
- */
 export const CollectionIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>;
-
-/**
- * Icon for sharing content with social media or other apps.
- * @returns {JSX.Element} SVG for Share.
- */
 export const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v1a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3v-1M12 18V6M9 9l3-3 3 3"/></svg>;
-
-/**
- * Icon for Sun, representing "Just for Today" or daily focus.
- * @returns {JSX.Element} SVG for Sun.
- */
 export const SunIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
-
-
-// --- Icons from previous set, still in use ---
-
 export const UserIcon = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -266,12 +227,7 @@ export const SearchIcon = ({ className = "w-5 h-5", ...props }) => (
     </svg>
 );
 
-// ADDED FOR RECOVERY GAMES
-/**
- * Icon for games and interactive tools.
- * @param {object} props - Props passed to the SVG element.
- * @returns {JSX.Element} SVG for Game Controller.
- */
+
 export const GameIcon = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <path d="M18 6L6 18" />
@@ -288,12 +244,6 @@ export const PuzzleIcon = (props) => (
         <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V5H4c-1.1 0-2 .9-2 2v3.5h1.5c.83 0 1.5.67 1.5 1.5S6.33 13.5 5.5 13.5H4V17c0 1.1.9 2 2 2h4v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h4c1.1 0 2-.9 2-2v-3.5h-1.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5z"/>
     </svg>
 );
-
-/**
- * Icon for filtering content.
- * @param {object} props - Props passed to the SVG element.
- * @returns {JSX.Element} SVG for Filter.
- */
 export const FilterIcon = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
