@@ -1,4 +1,4 @@
-````markdown
+
 <p align="center">
   <img src="docs/banner.png" alt="My Recovery Toolkit Banner" width="100%" />
 </p>
