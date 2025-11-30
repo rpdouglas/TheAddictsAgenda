@@ -11,6 +11,7 @@ import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from '/src/utils/icons.jsx'
 import { Spinner } from '/src/components/common.jsx';
 import Login from '/src/components/Login.jsx';
 import { Dashboard, SobrietyDataSetup } from '/src/components/Dashboard.jsx';
+import EncryptionUnlock from '/src/components/EncryptionUnlock.jsx'; // NEW: Import the unlock screen
 
 // --- Lazy-loaded Components ---
 const DailyJournal = lazy(() => import('/src/components/DailyJournal.jsx'));
@@ -50,6 +51,9 @@ const App = () => {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [hasMadeJournalEntryToday, setHasMadeJournalEntryToday] = useState(false);
     
+    // NEW: State to track if the account is currently locked due to encryption
+    const [isLocked, setIsLocked] = useState(false);
+
     const DEFAULT_HEADER = 'You have been clean for';
     const [headerText, setHeaderText] = useState(DEFAULT_HEADER);
 
@@ -59,6 +63,20 @@ const App = () => {
 
         const loadUserData = async () => {
             if (session) {
+                // --- NEW ENCRYPTION CHECK ---
+                // 1. Check if the user has enabled encryption (flag stored in DB)
+                const isEncrypted = await DataStore.load('is_account_encrypted');
+                // 2. Check if we already have the key in this browser session
+                const hasSessionKey = sessionStorage.getItem('USER_ENCRYPTION_KEY');
+
+                // If encrypted and NO key, lock the app and stop loading data
+                if (isEncrypted && !hasSessionKey) {
+                    setIsLocked(true);
+                    setIsDataLoading(false);
+                    return;
+                }
+                // -----------------------------
+
                 setIsDataLoading(true);
                 const storedDate = await DataStore.load(DataStore.KEYS.SOBRIETY);
                 if (storedDate) {
@@ -81,7 +99,7 @@ const App = () => {
             }
         };
         loadUserData();
-    }, [session]);
+    }, [session, isLocked]); // Re-run this effect when session changes OR when lock status changes
 
     useEffect(() => {
         const handler = (e) => {
@@ -133,7 +151,19 @@ const App = () => {
         }
     };
 
+    // NEW: Handler for when the user successfully unlocks the app
+    const handleUnlock = () => {
+        setIsLocked(false); 
+        // Setting this to false triggers the useEffect above to re-run,
+        // which will now find the key in sessionStorage and proceed to load data.
+    };
+
     // --- Render Logic ---
+
+    // 1. If Locked, show the Unlock Screen immediately
+    if (isLocked) {
+        return <EncryptionUnlock onUnlock={handleUnlock} />;
+    }
 
     if (authLoading || isDataLoading) {
         return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
