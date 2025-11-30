@@ -97,17 +97,7 @@ export const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18
  * @returns {JSX.Element} SVG for Settings.
  */
 export const SettingsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 0-2 0l-.15-.09a2 2 0 0 0-2.73 2.73l.09.15a2 2 0 0 0 0 2l-.25.43a2 2 0 0 1-1.73 1H2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.43a2 2 0 0 0 0 2l-.09.15a2 2 0 0 0 2.73 2.73l.15-.09a2 2 0 0 1 2 0l.43.25a2 2 0 0 0 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 0 2 0l.15.09a2 2 0 0 0 2.73-2.73l-.09-.15a2 2 0 0 0 0-2l.25-.43a2 2 0 0 1 1.73-1H22v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1-1.73l-.25-.43a2 2 0 0 0 0-2l.09-.15a2 2 0 0 0-2.73-2.73l-.15.09a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V2a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
-
-/**
- * Icon for locating meetings or places.
- * @returns {JSX.Element} SVG for Map Pin.
- */
 export const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21.7c-4.4-4.4-8-8.2-8-11.7C4 5.3 7.6 2 12 2s8 3.3 8 8C20 13.5 16.4 17.3 12 21.7z"/><circle cx="12" cy="10" r="3"/></svg>;
-
-/**
- * Icon for phone numbers or contacting support.
- * @returns {JSX.Element} SVG for Phone.
- */
 export const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3.08a2 2 0 0 1-2 2A20 20 0 0 1 2 4a2 2 0 0 1 2-2h3.08a2 2 0 0 1 2 2v3.08a2 2 0 0 1-2 2l-1.08-1.08a10 10 0 0 0 6.9 6.9l-1.08-1.08a2 2 0 0 1 2 2z"/></svg>;
 
 /**
