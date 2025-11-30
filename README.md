@@ -1,7 +1,3 @@
-Based on the code provided (specifically `App.jsx`, `package.json`, and `CHANGELOG.md`), several significant features and technical updates are missing from the current `README.md`.
-
-Here is the updated `README.md`. I have added sections for **Recovery Games**, **Somatic Tools (Yoga/Breathing)**, **Meeting Management**, and **Testing**, while also updating the **Tech Stack** to reflect the new dependencies (Vitest, Firebase, Google Generative AI).
-
 ````markdown
 <p align="center">
   <img src="docs/banner.png" alt="My Recovery Toolkit Banner" width="100%" />
