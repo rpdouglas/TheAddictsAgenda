@@ -28,7 +28,8 @@ const Login = () => {
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100 p-4">
             <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-center space-y-6">
                 <BookOpenIcon className="w-12 h-12 mx-auto text-teal-600" />
-                <h1 className="text-3xl font-bold text-gray-800">The Addict's Agenda</h1>
+                {/* UPDATED: Changed Title */}
+                <h1 className="text-3xl font-bold text-gray-800">My Recovery Toolkit</h1>
                 <p className="text-gray-600">Sign in to sync your data across devices, or continue offline.</p>
                 <div className="space-y-4 pt-4">
                     <button onClick={handleGoogleSignIn} className="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors">

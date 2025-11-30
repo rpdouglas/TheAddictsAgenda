@@ -390,7 +390,21 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
 
     const handleApplyTemplate = () => {
         const templateObj = journalTemplates.find(t => t.id === selectedTemplateId);
-        if (templateObj) setNewItemText(templateObj.template);
+        if (templateObj) {
+            setNewItemText(templateObj.template);
+            
+            // UPDATED: Centralized logic for auto-tagging
+            let tagsToAdd = [];
+            if (templateObj.name === '3-Part Gratitude Check') tagsToAdd.push('gratitude');
+            if (templateObj.name === 'Resentment Filter') tagsToAdd.push('resentments');
+
+            if (tagsToAdd.length > 0) {
+                setCurrentEntryTags(prev => {
+                    const newTags = tagsToAdd.filter(t => !prev.includes(t));
+                    return [...prev, ...newTags];
+                });
+            }
+        }
         setSelectedTemplateId('');
     };
 
