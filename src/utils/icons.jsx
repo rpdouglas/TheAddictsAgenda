@@ -352,3 +352,14 @@ export const PuzzleIcon = (props) => (
         <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V5H4c-1.1 0-2 .9-2 2v3.5h1.5c.83 0 1.5.67 1.5 1.5S6.33 13.5 5.5 13.5H4V17c0 1.1.9 2 2 2h4v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h4c1.1 0 2-.9 2-2v-3.5h-1.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5z"/>
     </svg>
 );
+
+/**
+ * Icon for filtering content.
+ * @param {object} props - Props passed to the SVG element.
+ * @returns {JSX.Element} SVG for Filter.
+ */
+export const FilterIcon = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+    </svg>
+);S
