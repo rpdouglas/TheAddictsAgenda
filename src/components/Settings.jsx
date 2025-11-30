@@ -3,7 +3,7 @@ import DataStore from '../utils/dataStore.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, DownloadIcon, FileTextIcon, LockIcon, UnlockIcon, LogOutIcon } from '../utils/icons.jsx';
 
-const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout, currentHeaderText, onHeaderTextUpdate }) => { // UPDATED PROPS
+const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout, currentHeaderText, onHeaderTextUpdate }) => { 
     // --- Sobriety Date State ---
     const initialDateString = useMemo(() => {
         if (currentStartDate instanceof Date && !isNaN(currentStartDate)) {
@@ -50,7 +50,7 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
     };
 
 
-    // --- PIN Management State & Logic ---
+    // --- PIN / Encryption Management State & Logic ---
     const [isPinSet, setIsPinSet] = useState(false);
     const [isLoadingPin, setIsLoadingPin] = useState(true);
     const [pin, setPin] = useState('');
@@ -62,11 +62,11 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
     useEffect(() => {
         const checkPinStatus = async () => {
             setIsLoadingPin(true);
-            const storedPin = await DataStore.load(DataStore.KEYS.PIN);
-            setIsPinSet(!!storedPin);
+            // UPDATED: Check for the encryption flag instead of a stored PIN
+            const isEncrypted = await DataStore.load('is_account_encrypted');
+            setIsPinSet(!!isEncrypted);
             setIsLoadingPin(false);
         };
-        // Removed loadHeaderText since App.jsx handles it via props
         checkPinStatus();
     }, []);
 
@@ -81,24 +81,80 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
             return;
         }
 
-        await DataStore.save(DataStore.KEYS.PIN, pin);
-        setIsPinSet(true);
-        setPin('');
-        setConfirmPin('');
-        setPinMessage('Application lock PIN saved! It will be required on next launch.');
-        setTimeout(() => setPinMessage(''), 3000);
+        try {
+            // --- ENCRYPTION ENABLE LOGIC ---
+            
+            // 1. Set the key in the session so storage.js can use it immediately
+            sessionStorage.setItem('USER_ENCRYPTION_KEY', pin);
+
+            // 2. Load CURRENT data (which is currently plain text)
+            // We trigger a load so we have the full objects in memory
+            const journal = await DataStore.load(DataStore.KEYS.JOURNAL);
+            const workbook = await DataStore.load(DataStore.KEYS.WORKBOOK);
+
+            // 3. Force-Save it back. 
+            // Because 'USER_ENCRYPTION_KEY' is now in sessionStorage, 
+            // storage.js will automatically encrypt these sensitive fields when saving.
+            if (journal) await DataStore.save(DataStore.KEYS.JOURNAL, journal);
+            if (workbook) await DataStore.save(DataStore.KEYS.WORKBOOK, workbook);
+
+            // 4. Set the public flag saying "This account is encrypted"
+            // We do NOT save the PIN itself to the database.
+            await DataStore.save('is_account_encrypted', true);
+            
+            // 5. Cleanup: Ensure any old insecure PIN is removed if it existed
+            await DataStore.save(DataStore.KEYS.PIN, null);
+
+            setIsPinSet(true);
+            setPin('');
+            setConfirmPin('');
+            setPinMessage('Encryption enabled! Your data is now secured with this PIN.');
+            setTimeout(() => setPinMessage(''), 3000);
+
+        } catch (error) {
+            console.error("Encryption setup failed:", error);
+            setPinMessage('Error enabling encryption. Please try again.');
+            sessionStorage.removeItem('USER_ENCRYPTION_KEY');
+        }
     };
 
     const handleConfirmRemovePin = async () => {
         setPinMessage('');
-        const storedPinValue = await DataStore.load(DataStore.KEYS.PIN);
+        
+        // We compare against the session key because that represents the current valid PIN
+        const currentSessionKey = sessionStorage.getItem('USER_ENCRYPTION_KEY');
 
-        if (removalPinAttempt === storedPinValue) {
-            await DataStore.save(DataStore.KEYS.PIN, null);
-            setIsPinSet(false);
-            setIsRemovingPin(false);
-            setRemovalPinAttempt('');
-            setPinMessage('PIN lock successfully removed.');
+        if (removalPinAttempt === currentSessionKey) {
+            try {
+                // --- ENCRYPTION DISABLE LOGIC ---
+
+                // 1. Load current (encrypted) data -> Decrypts to object using current session key
+                const journal = await DataStore.load(DataStore.KEYS.JOURNAL);
+                const workbook = await DataStore.load(DataStore.KEYS.WORKBOOK);
+
+                // 2. Remove key from session so next save is plain text
+                sessionStorage.removeItem('USER_ENCRYPTION_KEY');
+
+                // 3. Save data back -> Saves as plain text because key is gone
+                if (journal) await DataStore.save(DataStore.KEYS.JOURNAL, journal);
+                if (workbook) await DataStore.save(DataStore.KEYS.WORKBOOK, workbook);
+
+                // 4. Update flag
+                await DataStore.save('is_account_encrypted', false);
+
+                // 5. Cleanup: Double check to ensure old PINs are nullified
+                await DataStore.save(DataStore.KEYS.PIN, null);
+
+                setIsPinSet(false);
+                setIsRemovingPin(false);
+                setRemovalPinAttempt('');
+                setPinMessage('Encryption removed. Data is now stored in plain text.');
+            } catch (error) {
+                console.error("Encryption removal failed:", error);
+                setPinMessage('Error removing encryption.');
+                // Restore key if it failed halfway to prevent lockout
+                if (currentSessionKey) sessionStorage.setItem('USER_ENCRYPTION_KEY', currentSessionKey);
+            }
         } else {
             setPinMessage('Incorrect PIN. Removal canceled.');
             setRemovalPinAttempt('');
@@ -126,6 +182,8 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
 
     const handleLogout = async () => {
         try {
+            // Clear session key on logout for security
+            sessionStorage.removeItem('USER_ENCRYPTION_KEY');
             await onLogout();
         } catch (error) {
             console.error("Error during logout:", error);
@@ -170,20 +228,22 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                 <div className="p-4 bg-serene-teal/10 rounded-lg border border-teal-100">
                     <h3 className="flex items-center gap-2 text-lg font-bold text-serene-teal mb-2">
                         {isPinSet ? <LockIcon className="w-5 h-5" /> : <UnlockIcon className="w-5 h-5" />}
-                        Application PIN Lock
+                        End-to-End Encryption
                     </h3>
                     <p className="text-sm text-deep-charcoal/80 mb-4">
-                        Protect your journal and progress by setting a PIN required to open the app.
+                        {isPinSet 
+                            ? "Your journal and workbook are currently encrypted. You will need your PIN to access them on any device." 
+                            : "Secure your journal and workbook with a PIN. This encrypts your data so only you can read it."}
                     </p>
 
                     {isLoadingPin ? <Spinner small /> : (
                         <>
                             {isPinSet ? (
                                 <div className="space-y-2">
-                                    <p className="font-semibold text-serene-teal">PIN lock is currently active.</p>
+                                    <p className="font-semibold text-serene-teal">Account is encrypted.</p>
                                     {isRemovingPin ? (
                                         <form onSubmit={(e) => { e.preventDefault(); handleConfirmRemovePin(); }} className="space-y-3 p-3 bg-hopeful-coral/10 rounded-lg">
-                                            <p className="text-sm font-bold text-red-700">Confirm PIN to Remove Lock:</p>
+                                            <p className="text-sm font-bold text-red-700">Confirm PIN to Remove Encryption:</p>
                                             <input
                                                 type="password"
                                                 inputMode="numeric"
@@ -196,11 +256,11 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                                             />
                                             <div className="flex gap-2">
                                                 <button type="button" onClick={() => { setIsRemovingPin(false); setRemovalPinAttempt(''); setPinMessage(''); }} className="flex-grow bg-pure-white/600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-gray-600">Cancel</button>
-                                                <button type="submit" disabled={removalPinAttempt.length < 4} className="flex-grow bg-hopeful-coral text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 disabled:bg-gray-400">Confirm Removal</button>
+                                                <button type="submit" disabled={removalPinAttempt.length < 4} className="flex-grow bg-hopeful-coral text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 disabled:bg-gray-400">Decrypt & Remove</button>
                                             </div>
                                         </form>
                                     ) : (
-                                        <button onClick={() => setIsRemovingPin(true)} className="w-full mt-2 bg-hopeful-coral text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-hopeful-coral">Remove PIN Lock</button>
+                                        <button onClick={() => setIsRemovingPin(true)} className="w-full mt-2 bg-hopeful-coral text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-hopeful-coral">Remove Encryption</button>
                                     )}
                                 </div>
                             ) : (
@@ -209,7 +269,7 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                                         type="password"
                                         inputMode="numeric"
                                         pattern="[0-9]*"
-                                        placeholder="Set new PIN (4+ digits)"
+                                        placeholder="Set Encryption PIN (4+ digits)"
                                         value={pin}
                                         onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
                                         className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500"
@@ -219,18 +279,19 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                                         type="password"
                                         inputMode="numeric"
                                         pattern="[0-9]*"
-                                        placeholder="Confirm new PIN"
+                                        placeholder="Confirm PIN"
                                         value={confirmPin}
                                         onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
                                         className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500"
                                         maxLength={6}
                                     />
-                                    <button onClick={handleSetPin} disabled={pin.length < 4 || pin !== confirmPin} className="w-full bg-serene-teal text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 disabled:bg-gray-400">Set PIN Lock</button>
+                                    <p className="text-xs text-red-500 font-semibold">Warning: If you forget this PIN, your data cannot be recovered.</p>
+                                    <button onClick={handleSetPin} disabled={pin.length < 4 || pin !== confirmPin} className="w-full bg-serene-teal text-white font-bold py-3 px-8 rounded-lg shadow-md hover:brightness-95 disabled:bg-gray-400">Encrypt My Data</button>
                                 </div>
                             )}
                         </>
                     )}
-                    {pinMessage && <p className={`mt-3 text-sm text-center ${pinMessage.includes('successfully') || pinMessage.includes('saved') ? 'text-green-600' : 'text-hopeful-coral'}`}>{pinMessage}</p>}
+                    {pinMessage && <p className={`mt-3 text-sm text-center ${pinMessage.includes('successfully') || pinMessage.includes('enabled') || pinMessage.includes('removed') ? 'text-green-600' : 'text-hopeful-coral'}`}>{pinMessage}</p>}
                 </div>
 
                 {/* Sobriety Date Picker */}

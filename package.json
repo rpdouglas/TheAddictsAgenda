@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "crypto-js": "^4.2.0",
     "firebase": "^12.4.0",
     "jspdf": "^3.0.4",
     "react": "^19.1.1",
