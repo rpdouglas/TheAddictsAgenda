@@ -142,6 +142,9 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                 // 4. Update flag
                 await DataStore.save('is_account_encrypted', false);
 
+                // 5. Cleanup: Double check to ensure old PINs are nullified
+                await DataStore.save(DataStore.KEYS.PIN, null);
+
                 setIsPinSet(false);
                 setIsRemovingPin(false);
                 setRemovalPinAttempt('');
