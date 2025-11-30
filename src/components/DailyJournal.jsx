@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { Spinner, DebouncedTextarea, GeminiJournalHelper } from './common.jsx';
 import { journalTemplates } from '../utils/data.js';
-import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, EditIcon, TrashIcon, SparklesIcon, CheckIcon, XIcon, TrendingUpIcon, CalendarIcon, FilterIcon } from '../utils/icons.jsx';
 import { model } from '../firebase.jsx'; // Import the AI model
 
 // --- Sub-Components ---
@@ -37,6 +37,109 @@ const InsightsModal = ({ onClose, isLoading, insights }) => (
         </div>
     </div>
 );
+
+// NEW: Analysis Configuration Modal
+const AnalysisConfigModal = ({ isOpen, onClose, onAnalyze, allTags }) => {
+    // Default to last 30 days
+    const [startDate, setStartDate] = useState(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        return d.toISOString().split('T')[0];
+    });
+    const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [selectedTags, setSelectedTags] = useState([]);
+
+    if (!isOpen) return null;
+
+    const toggleTag = (tag) => {
+        if (selectedTags.includes(tag)) {
+            setSelectedTags(selectedTags.filter(t => t !== tag));
+        } else {
+            setSelectedTags([...selectedTags, tag]);
+        }
+    };
+
+    const handleAnalyzeClick = () => {
+        onAnalyze(startDate, endDate, selectedTags);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md space-y-6">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-deep-charcoal flex items-center gap-2">
+                        <FilterIcon className="text-blue-600 w-6 h-6"/> Filter Analysis
+                    </h3>
+                    <button onClick={onClose} className="text-deep-charcoal/60 hover:text-deep-charcoal text-2xl">&times;</button>
+                </div>
+
+                <div className="space-y-4">
+                    {/* Date Range Selection */}
+                    <div>
+                        <label className="block text-sm font-bold text-deep-charcoal/80 mb-2">Date Range</label>
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <span className="text-xs text-deep-charcoal/60 block mb-1">From</span>
+                                <input 
+                                    type="date" 
+                                    value={startDate} 
+                                    onChange={(e) => setStartDate(e.target.value)} 
+                                    className="w-full p-2 border border-light-stone rounded-lg text-sm"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <span className="text-xs text-deep-charcoal/60 block mb-1">To</span>
+                                <input 
+                                    type="date" 
+                                    value={endDate} 
+                                    onChange={(e) => setEndDate(e.target.value)} 
+                                    className="w-full p-2 border border-light-stone rounded-lg text-sm"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Tag Selection */}
+                    <div>
+                        <label className="block text-sm font-bold text-deep-charcoal/80 mb-2">Filter by Tags (Optional)</label>
+                        <div className="max-h-32 overflow-y-auto border border-light-stone rounded-lg p-2 flex flex-wrap gap-2">
+                            {allTags.length > 0 ? (
+                                allTags.map(tag => (
+                                    <button
+                                        key={tag}
+                                        onClick={() => toggleTag(tag)}
+                                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors border ${
+                                            selectedTags.includes(tag) 
+                                                ? 'bg-blue-600 text-white border-blue-600' 
+                                                : 'bg-white text-deep-charcoal border-light-stone hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {tag} {selectedTags.includes(tag) && '✓'}
+                                    </button>
+                                ))
+                            ) : (
+                                <p className="text-xs text-deep-charcoal/60 italic p-1">No tags created yet.</p>
+                            )}
+                        </div>
+                        <p className="text-xs text-deep-charcoal/60 mt-1">
+                            {selectedTags.length === 0 ? "Analyzing all entries in range." : `Analyzing only entries with: ${selectedTags.join(', ')}`}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-light-stone/30">
+                    <button onClick={onClose} className="px-4 py-2 text-deep-charcoal/70 font-semibold hover:text-deep-charcoal">Cancel</button>
+                    <button 
+                        onClick={handleAnalyzeClick} 
+                        className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <SparklesIcon className="w-4 h-4" /> Start Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const MoodGraphView = ({ items, onBack }) => {
     const moodData = useMemo(() => {
@@ -113,7 +216,7 @@ const MoodGraphView = ({ items, onBack }) => {
 };
 
 
-const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit, handleDeleteItem, setViewMode, onGenerateInsights }) => (
+const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit, handleDeleteItem, setViewMode, onOpenAnalysisConfig }) => (
     <div className="flex-grow overflow-y-auto pr-2 -mr-2 mt-4">
         <div className="flex gap-2 mb-6">
             <button
@@ -122,9 +225,9 @@ const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit,
             >
                 Add New Entry
             </button>
-            {/* NEW: AI Insights Button */}
+            {/* AI Insights Button - Opens Config Modal */}
             <button
-                onClick={onGenerateInsights}
+                onClick={onOpenAnalysisConfig}
                 className="flex-shrink-0 bg-white border border-light-stone text-blue-600 font-bold py-3 px-4 rounded-lg shadow-md hover:bg-soft-linen transition-colors"
                 title="Get AI Analysis"
             >
@@ -300,7 +403,8 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
 
     // NEW: AI Insights State
-    const [showInsightsModal, setShowInsightsModal] = useState(false);
+    const [showConfigModal, setShowConfigModal] = useState(false); // Controls the new config modal
+    const [showInsightsModal, setShowInsightsModal] = useState(false); // Controls the results modal
     const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
     const [aiInsights, setAiInsights] = useState('');
 
@@ -390,21 +494,62 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
 
     const handleApplyTemplate = () => {
         const templateObj = journalTemplates.find(t => t.id === selectedTemplateId);
-        if (templateObj) setNewItemText(templateObj.template);
+        if (templateObj) {
+            setNewItemText(templateObj.template);
+            
+            // Centralized logic for auto-tagging
+            let tagsToAdd = [];
+            if (templateObj.name === '3-Part Gratitude Check') tagsToAdd.push('gratitude');
+            if (templateObj.name === 'Resentment Filter') tagsToAdd.push('resentments');
+
+            if (tagsToAdd.length > 0) {
+                setCurrentEntryTags(prev => {
+                    const newTags = tagsToAdd.filter(t => !prev.includes(t));
+                    return [...prev, ...newTags];
+                });
+            }
+        }
         setSelectedTemplateId('');
     };
 
-    // --- NEW: AI Analysis Handler ---
-    const handleGenerateInsights = async () => {
+    // --- AI Analysis Logic ---
+
+    // 1. Open the configuration modal instead of running immediately
+    const handleOpenAnalysisConfig = () => {
+        setShowConfigModal(true);
+    };
+
+    // 2. Perform the analysis with the user's selected filters
+    const handleRunAnalysis = async (startDate, endDate, selectedTags) => {
+        setShowConfigModal(false); // Close config
         setIsGeneratingInsights(true);
-        setShowInsightsModal(true);
+        setShowInsightsModal(true); // Open results modal
         setAiInsights('');
 
-        // 1. Prepare Context: Get last 20 entries to save tokens
-        const recentEntries = items.slice(0, 20);
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
+        // Filter the entries
+        const filteredEntries = items.filter(item => {
+            const itemDate = new Date(item.timestamp);
+            const matchesDate = itemDate >= start && itemDate <= end;
+            
+            // If tags are selected, item must have at least one of them. 
+            // If no tags selected, ignore this filter (matches all).
+            const matchesTags = selectedTags.length === 0 
+                ? true 
+                : item.tags?.some(t => selectedTags.includes(t));
+
+            return matchesDate && matchesTags;
+        });
+        
+        // Limit to 20 for token usage, even after filtering
+        const recentEntries = filteredEntries.slice(0, 20);
         
         if (recentEntries.length === 0) {
-            setAiInsights("You haven't written any journal entries yet. Start writing, and I can help you analyze your patterns!");
+            setAiInsights("I couldn't find any journal entries matching your selected date range and tags. Try adjusting your filters!");
             setIsGeneratingInsights(false);
             return;
         }
@@ -423,7 +568,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
 
         Do not give medical advice. Keep the tone warm, non-judgmental, and hopeful.
 
-        Journal Entries:
+        Journal Entries (${recentEntries.length} found):
         ${entriesText}`;
 
         try {
@@ -532,13 +677,22 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                     handleStartEdit={handleStartEdit}
                     handleDeleteItem={handleDeleteItem}
                     setViewMode={setViewMode}
-                    onGenerateInsights={handleGenerateInsights} // Pass the handler
+                    onOpenAnalysisConfig={handleOpenAnalysisConfig} // Pass the NEW handler
                 />;
         }
     };
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
+            {/* 1. Config Modal */}
+            <AnalysisConfigModal 
+                isOpen={showConfigModal}
+                onClose={() => setShowConfigModal(false)}
+                onAnalyze={handleRunAnalysis}
+                allTags={allTags}
+            />
+
+            {/* 2. Results Modal */}
             {showInsightsModal && (
                 <InsightsModal 
                     onClose={() => setShowInsightsModal(false)}
@@ -546,6 +700,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                     insights={aiInsights}
                 />
             )}
+            
             <h2 className="text-2xl font-bold text-deep-charcoal mb-4">Daily Journal</h2>
             <p className="text-deep-charcoal/70 mb-6">How are you feeling? You can write about your day, feelings, or things you are grateful for.</p>
             {renderContent()}

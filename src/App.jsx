@@ -11,7 +11,7 @@ import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from '/src/utils/icons.jsx'
 import { Spinner } from '/src/components/common.jsx';
 import Login from '/src/components/Login.jsx';
 import { Dashboard, SobrietyDataSetup } from '/src/components/Dashboard.jsx';
-import EncryptionUnlock from '/src/components/EncryptionUnlock.jsx'; // NEW: Import the unlock screen
+import EncryptionUnlock from '/src/components/EncryptionUnlock.jsx';
 
 // --- Lazy-loaded Components ---
 const DailyJournal = lazy(() => import('/src/components/DailyJournal.jsx'));
@@ -51,7 +51,7 @@ const App = () => {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [hasMadeJournalEntryToday, setHasMadeJournalEntryToday] = useState(false);
     
-    // NEW: State to track if the account is currently locked due to encryption
+    // State to track if the account is currently locked due to encryption
     const [isLocked, setIsLocked] = useState(false);
 
     const DEFAULT_HEADER = 'You have been clean for';
@@ -63,19 +63,16 @@ const App = () => {
 
         const loadUserData = async () => {
             if (session) {
-                // --- NEW ENCRYPTION CHECK ---
-                // 1. Check if the user has enabled encryption (flag stored in DB)
+                // 1. Check if the user has enabled encryption
                 const isEncrypted = await DataStore.load('is_account_encrypted');
-                // 2. Check if we already have the key in this browser session
                 const hasSessionKey = sessionStorage.getItem('USER_ENCRYPTION_KEY');
 
-                // If encrypted and NO key, lock the app and stop loading data
+                // 2. If encrypted and NO key -> lock the app
                 if (isEncrypted && !hasSessionKey) {
                     setIsLocked(true);
                     setIsDataLoading(false);
                     return;
                 }
-                // -----------------------------
 
                 setIsDataLoading(true);
                 const storedDate = await DataStore.load(DataStore.KEYS.SOBRIETY);
@@ -99,7 +96,7 @@ const App = () => {
             }
         };
         loadUserData();
-    }, [session, isLocked]); // Re-run this effect when session changes OR when lock status changes
+    }, [session, isLocked]);
 
     useEffect(() => {
         const handler = (e) => {
@@ -151,16 +148,12 @@ const App = () => {
         }
     };
 
-    // NEW: Handler for when the user successfully unlocks the app
     const handleUnlock = () => {
         setIsLocked(false); 
-        // Setting this to false triggers the useEffect above to re-run,
-        // which will now find the key in sessionStorage and proceed to load data.
     };
 
     // --- Render Logic ---
 
-    // 1. If Locked, show the Unlock Screen immediately
     if (isLocked) {
         return <EncryptionUnlock onUnlock={handleUnlock} />;
     }
@@ -177,8 +170,6 @@ const App = () => {
         return <SobrietyDataSetup onDateSet={handleSobrietyDateUpdate} />;
     }
 
-    // --- REFACTORED ROUTING ---
-    // Instead of a switch statement, we define a mapping of views to components.
     const routes = {
         'dashboard': (
             <Dashboard 
@@ -255,8 +246,6 @@ const App = () => {
             />
         ),
         'meetingTracker': <MeetingTracker onBack={() => setActiveView('homegroup')} />,
-        
-        // Coping Tools
         'coping-tools': <CopingTools onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />,
         'coping-cards': <CopingCards onJournal={handleJournalFromCopingCard} onBack={() => setActiveView('coping-tools')} />,
         'breathing-exercises': <BreathingExercise onBack={() => setActiveView('coping-tools')} />,
@@ -266,9 +255,9 @@ const App = () => {
         'recovery-simulator': <RecoverySimulatorGame onBack={() => setActiveView('coping-tools')} />,
     };
 
-    // --- Main JSX Layout ---
     return (
-        <div className="bg-gray-100 h-screen w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4">
+        // UPDATED: Use h-[100dvh] for dynamic viewport height and overflow-hidden to prevent body scroll
+        <div className="bg-gray-100 h-[100dvh] w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4 overflow-hidden">
             <header className="flex-shrink-0 w-full max-w-2xl mx-auto flex items-center justify-between p-4">
                 {activeView === 'dashboard' ? (
                     <button onClick={() => setActiveView('resources')} className="text-red-500 hover:text-red-700 p-1" title="Emergency Resources"><LifeBuoyIcon className="w-6 h-6" /></button>
@@ -281,7 +270,6 @@ const App = () => {
 
             <main className="flex-grow w-full max-w-2xl mx-auto overflow-y-auto pb-4">
                 <Suspense fallback={<Spinner />}>
-                    {/* Render the component for the active view, or default to Dashboard */}
                     {routes[activeView] || routes['dashboard']}
                 </Suspense>
             </main>
