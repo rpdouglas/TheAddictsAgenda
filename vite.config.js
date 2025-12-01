@@ -53,6 +53,40 @@ export default defineConfig(({ mode }) => {
     ],
       
     base: getBase(mode),
+    
+    // --- ADDED: Build Optimization to fix chunk size warning ---
+    build: {
+      chunkSizeWarningLimit: 1000, // Optional: Increase limit to 1MB to silence minor warnings
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Split node_modules into separate chunks
+            if (id.includes('node_modules')) {
+              // 1. Separate large PDF libraries
+              if (id.includes('jspdf') || id.includes('html2canvas')) {
+                return 'pdf-libs';
+              }
+              // 2. Separate Recharts (Charting library)
+              if (id.includes('recharts')) {
+                return 'recharts';
+              }
+              // 3. Separate Firebase
+              if (id.includes('firebase')) {
+                return 'firebase';
+              }
+              // 4. Separate React and core vendor libs
+              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+                return 'vendor-react';
+              }
+              
+              // Fallback for other node_modules
+              return 'vendor'; 
+            }
+          }
+        }
+      }
+    },
+
     // Vitest configuration
     test: {
       globals: true,
