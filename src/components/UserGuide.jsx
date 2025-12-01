@@ -1,214 +1,358 @@
 // src/components/UserGuide.jsx
-import React, { useEffect, useRef } from 'react';
-import { ArrowLeftIcon } from '../utils/icons.jsx';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeftIcon, ChevronDown, ChevronUp, BookOpenIcon } from '../utils/icons.jsx';
+
+// --- Helper Component for Collapsible Sections ---
+const CollapsibleSection = ({ id, title, children, isOpen, onToggle, sectionRef }) => (
+    <section ref={sectionRef} id={id} className="border-b border-gray-200 last:border-0 scroll-mt-20">
+        <button
+            onClick={() => onToggle(id)}
+            className="w-full flex justify-between items-center py-6 text-left group focus:outline-none"
+        >
+            <h2 className="text-2xl font-bold text-teal-700 group-hover:text-teal-800 transition-colors">
+                {title}
+            </h2>
+            <div className={`p-2 rounded-full transition-colors ${isOpen ? 'bg-teal-100 text-teal-700' : 'bg-gray-50 text-gray-400 group-hover:bg-gray-100'}`}>
+                {isOpen ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+            </div>
+        </button>
+        
+        {isOpen && (
+            <div className="pb-8 animate-fade-in text-gray-700 leading-relaxed">
+                {children}
+            </div>
+        )}
+    </section>
+);
 
 const UserGuide = ({ onBack, targetSection }) => {
-    // Refs for each section to enable auto-scrolling
-    const sections = {
-        'dashboard': useRef(null),
-        'journal': useRef(null),
-        'coping': useRef(null),
-        'workbook': useRef(null),
-        'literature': useRef(null),
-        'goals': useRef(null),
-        'resources': useRef(null),
-        'meetings': useRef(null),
+    // --- Refs for Scrolling ---
+    const dashboardRef = useRef(null);
+    const journalRef = useRef(null);
+    const copingRef = useRef(null);
+    const workbookRef = useRef(null);
+    const literatureRef = useRef(null);
+    const goalsRef = useRef(null);
+    const meetingsRef = useRef(null);
+    const resourcesRef = useRef(null);
+    const settingsRef = useRef(null);
+
+    const sectionRefs = {
+        'dashboard': dashboardRef,
+        'journal': journalRef,
+        'coping': copingRef,
+        'workbook': workbookRef,
+        'literature': literatureRef,
+        'goals': goalsRef,
+        'meetings': meetingsRef,
+        'resources': resourcesRef,
+        'settings': settingsRef,
     };
 
-    // Scroll to target section on mount
+    // --- State for Expanded Sections ---
+    // Initialize all as false (collapsed) by default
+    const [expandedSections, setExpandedSections] = useState({
+        'dashboard': false,
+        'journal': false,
+        'coping': false,
+        'workbook': false,
+        'literature': false,
+        'goals': false,
+        'meetings': false,
+        'resources': false,
+        'settings': false,
+    });
+
+    const toggleSection = (id) => {
+        setExpandedSections(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    };
+
+    const expandAndScrollTo = (id) => {
+        // 1. Expand the section
+        setExpandedSections(prev => ({ ...prev, [id]: true }));
+        
+        // 2. Scroll to it (small timeout to allow render)
+        setTimeout(() => {
+            if (sectionRefs[id] && sectionRefs[id].current) {
+                sectionRefs[id].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+    };
+
+    // --- Effect: Handle Deep Linking ---
     useEffect(() => {
-        if (targetSection && sections[targetSection] && sections[targetSection].current) {
-            sections[targetSection].current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (targetSection && sectionRefs[targetSection]) {
+            expandAndScrollTo(targetSection);
         } else {
+            // Optional: Open the first section by default if no target
+            setExpandedSections(prev => ({ ...prev, 'dashboard': true }));
             window.scrollTo(0, 0);
         }
     }, [targetSection]);
 
+    // --- TOC Data ---
+    const tocItems = [
+        { id: 'dashboard', label: 'Dashboard & Sobriety' },
+        { id: 'journal', label: 'Daily Journal' },
+        { id: 'coping', label: 'Coping Tools' },
+        { id: 'workbook', label: 'Recovery Workbook' },
+        { id: 'literature', label: 'Literature Library' },
+        { id: 'goals', label: 'Goals & Milestones' },
+        { id: 'meetings', label: 'Meeting Management' },
+        { id: 'resources', label: 'Emergency Resources' },
+        { id: 'settings', label: 'Settings & Data' },
+    ];
+
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col overflow-y-auto">
-             <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
-                <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to App</span>
-            </button>
+             <div className="flex items-center justify-between mb-6 flex-shrink-0">
+                <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 font-semibold">
+                    <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to App</span>
+                </button>
+                <h1 className="text-2xl font-bold text-gray-800">User Guide</h1>
+            </div>
 
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">User Guide</h1>
-            <p className="text-gray-600 mb-8">Learn how to get the most out of your recovery toolkit.</p>
+            <p className="text-gray-600 mb-8">
+                Welcome to <strong>My Recovery Toolkit</strong>. This guide covers all features designed to support your journey of self-discovery, structure, and sobriety.
+            </p>
 
-            <div className="space-y-12">
+            {/* --- TABLE OF CONTENTS --- */}
+            <nav className="mb-10 p-5 bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-deep-charcoal border-b border-gray-200 pb-2">
+                    <BookOpenIcon className="w-5 h-5 text-teal-600"/>
+                    <h2 className="font-bold text-lg">Table of Contents</h2>
+                </div>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    {tocItems.map(item => (
+                        <li key={item.id}>
+                            <button 
+                                onClick={() => expandAndScrollTo(item.id)}
+                                className="text-left text-teal-600 hover:text-teal-800 hover:underline text-sm font-medium transition-colors"
+                            >
+                                {item.label}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+
+            <div className="space-y-2">
                 
                 {/* --- DASHBOARD SECTION --- */}
-                <section ref={sections['dashboard']} id="dashboard" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Dashboard & Sobriety Tracker</h2>
-                    <p className="mb-4">The Dashboard is your central command center. It displays your current sobriety counter and daily inspiration.</p>
-                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                        <li><strong>Sobriety Counter:</strong> Tracks your time in recovery down to the second. You can reset this in Settings if needed.</li>
-                        <li><strong>Daily Quote:</strong> A new motivational quote appears every day to start your morning right.</li>
-                        <li><strong>Quick Actions:</strong> Use the grid of buttons to navigate to other tools like the Journal, Goals, or Literature.</li>
-                    </ul>
-                </section>
-
-                {/* --- JOURNAL SECTION --- */}
-                <section ref={sections['journal']} id="journal" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Daily Journal</h2>
-                    <p className="mb-6">The Daily Journal is your safe space for honest reflection. It combines traditional journaling with AI-powered insights to help you spot patterns in your recovery.</p>
-                    
-                    <h3 className="text-xl font-bold text-gray-800 mb-3">Feature Walkthroughs</h3>
-
-                    <div className="space-y-6">
-                        {/* 1. Creating an Entry */}
+                <CollapsibleSection 
+                    id="dashboard" 
+                    title="Dashboard & Sobriety" 
+                    isOpen={expandedSections['dashboard']} 
+                    onToggle={toggleSection} 
+                    sectionRef={dashboardRef}
+                >
+                    <p className="mb-6">The Dashboard is your home base. It provides an at-a-glance view of your progress and quick access to all recovery tools.</p>
+                    <h3 className="text-lg font-bold text-gray-800 mb-3">Features</h3>
+                    <div className="space-y-4">
                         <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">📝 How to Create a New Entry</h4>
-                            <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                                <li>Tap the big blue <strong>"Add New Entry"</strong> button at the top of the list.</li>
-                                <li><strong>Write:</strong> Type your thoughts in the text area.</li>
-                                <li><strong>Mood Check:</strong> Slide the Mood Slider (1-10) to record how you feel right now.</li>
-                                <li><strong>Tagging:</strong> Type a tag (e.g., "Anxiety", "Meeting") in the input box and press Enter or click "Add". Tags help you filter your entries later.</li>
-                                <li>Tap <strong>"Add New Entry"</strong> to save.</li>
-                            </ol>
-                        </div>
-
-                        {/* 2. Using Templates */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">📋 Using Templates</h4>
-                            <p className="text-sm text-gray-600 mb-2">Don't know what to write? Use a structured template.</p>
-                            <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                                <li>In the "New Entry" screen, look for the dropdown menu labeled <strong>"Select a Template..."</strong>.</li>
-                                <li>Choose a template like <strong>"3-Part Gratitude Check"</strong> or <strong>"The H.A.L.T. Check"</strong>.</li>
-                                <li>Tap the <strong>"Apply"</strong> button.</li>
-                                <li>The text box will fill with questions, and relevant tags (like "gratitude") will be automatically added.</li>
-                            </ol>
-                        </div>
-
-                        {/* 3. AI Analysis */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">✨ Using AI Analysis</h4>
-                            <p className="text-sm text-gray-600 mb-2">Let AI summarize your emotional trends over time.</p>
-                            <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                                <li>On the main Journal list, tap the white button with the <span className="inline-block bg-white border rounded px-1">Sparkles Icon</span>.</li>
-                                <li><strong>Filter:</strong> A menu will appear. Select a date range (e.g., last 30 days) and optionally select tags to filter by (e.g., analyze only entries tagged "Family").</li>
-                                <li>Tap <strong>"Start Analysis"</strong>.</li>
-                                <li>The AI will read your selected entries and generate a report on your <strong>Emotional Themes</strong>, <strong>Triggers & Wins</strong>, and offer <strong>Encouragement</strong>.</li>
-                            </ol>
-                        </div>
-
-                        {/* 4. Mood Graph */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">📈 Viewing Your Mood Graph</h4>
-                            <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                                <li>On the main Journal list, tap the white button with the <span className="inline-block bg-white border rounded px-1">Graph Icon</span>.</li>
-                                <li>You will see a line chart of your mood ratings (1-10) over time.</li>
-                                <li>Tap any dot on the line to see the specific date and score for that entry.</li>
-                                <li><em>Note: You need at least 2 entries with mood ratings for the graph to appear.</em></li>
-                            </ol>
-                        </div>
-
-                         {/* 5. AI Writing Helper */}
-                         <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">💡 Using the AI Writing Helper</h4>
-                            <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                                <li>If you are staring at a blank page, tap <strong>"Get Idea with AI"</strong> below the text box.</li>
-                                <li>A helper will appear asking how you feel or what you want to focus on.</li>
-                                <li>Type a brief thought (e.g., "I'm feeling restless") and the AI will generate a specific writing prompt to get you started.</li>
-                            </ol>
-                        </div>
-                    </div>
-                </section>
-
-                {/* --- COPING TOOLS SECTION --- */}
-                <section ref={sections['coping']} id="coping" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Coping Tools</h2>
-                    <p className="mb-4">A collection of strategies to help you manage cravings and high-stress moments.</p>
-                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                        <li><strong>Coping Cards:</strong> Swipe through random cards to find a quick affirmation or action to take immediately.</li>
-                        <li><strong>Breathing Exercises:</strong> Follow the visual guide for Box Breathing or 4-7-8 Breathing to regulate your nervous system.</li>
-                        <li><strong>Recovery Jeopardy:</strong> Distract yourself and test your knowledge with a recovery-themed trivia game.</li>
-                    </ul>
-                </section>
-
-                {/* --- WORKBOOK SECTION --- */}
-                <section ref={sections['workbook']} id="workbook" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Recovery Workbook</h2>
-                    <p className="mb-4">Interactive exercises to work through the Steps and Recovery Dharma inquiries.</p>
-                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                        <li><strong>Step Work:</strong> Select a Step (1-12) to see specific questions and writing prompts.</li>
-                        <li><strong>Exporting:</strong> You can export your answers to a PDF to share with your sponsor or mentor.</li>
-                    </ul>
-                </section>
-
-                {/* --- LITERATURE SECTION (UPDATED) --- */}
-                <section ref={sections['literature']} id="literature" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Literature Library</h2>
-                    <p className="mb-6">Read the foundational texts of Alcoholics Anonymous, Narcotics Anonymous, and Recovery Dharma directly in the app. The reader is designed for study and reflection.</p>
-                    
-                    <h3 className="text-xl font-bold text-gray-800 mb-3">How to Use the Reader</h3>
-                    <div className="space-y-6">
-                        
-                        {/* 1. Browsing */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">📚 Browsing Books & Chapters</h4>
-                            <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                                <li>On the main Literature screen, tap <strong>"Read in App"</strong> below any book title (e.g., "The Big Book").</li>
-                                <li>You will see a Table of Contents. For larger books like the Big Book, chapters are grouped into sections like <strong>"The Chapters"</strong> and <strong>"Personal Stories"</strong>.</li>
-                                <li>Tap a section to expand it, then tap any chapter title to start reading.</li>
-                            </ol>
-                        </div>
-
-                        {/* 2. Reading & Navigation */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">📖 Reading Mode</h4>
-                            <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
-                                <li><strong>Pagination:</strong> Long chapters are split into pages. Use the <strong>"Next"</strong> and <strong>"Previous"</strong> buttons at the bottom to navigate.</li>
-                                <li><strong>Progress:</strong> The page indicator (e.g., "Page 3 of 12") helps you keep your place.</li>
+                            <h4 className="font-bold text-teal-600 mb-2">⏱️ The Sobriety Counter</h4>
+                            <p className="text-sm mb-2">Tracks your clean time down to the second.</p>
+                            <ul className="list-disc pl-5 space-y-1 text-sm">
+                                <li><strong>Real-Time Updates:</strong> Watch the seconds tick by as a reminder of your accumulating success.</li>
+                                <li><strong>Milestones:</strong> The counter breaks down your time into Days, Hours, Minutes, and Seconds.</li>
+                                <li><strong>Resetting/Editing:</strong> Need to change your start date? Tap the <strong>Settings Icon (Gear)</strong> in the top right corner.</li>
                             </ul>
                         </div>
-
-                        {/* 3. Highlighting & Journaling */}
                         <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">🖊️ Highlighting & Journaling</h4>
-                            <p className="text-sm text-gray-600 mb-2">Found a passage that speaks to you? You can save it instantly.</p>
-                            <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                                <li><strong>Highlight Text:</strong> Long-press (on mobile) or click and drag (on desktop) to select any text on the page.</li>
-                                <li><strong>Save to Journal:</strong> A customized button labeled <strong>"Journal Highlight"</strong> will appear. Tap it to automatically create a new journal entry containing your selected quote.</li>
-                                <li><strong>Reflect on Page:</strong> Even without selecting text, you can tap <strong>"Journal about this page"</strong> to start a blank entry tagged with the current book and chapter title.</li>
+                            <h4 className="font-bold text-teal-600 mb-2">📅 Daily Accountability</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-sm">
+                                <li><strong>Red Exclamation Mark (<span className="text-red-500 font-bold">!</span>):</strong> Appears on the Journal button if you haven't made an entry today.</li>
+                                <li><strong>Clear the Alert:</strong> Tap the Journal button and write an entry to remove the badge.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </CollapsibleSection>
+
+                {/* --- JOURNAL SECTION --- */}
+                <CollapsibleSection 
+                    id="journal" 
+                    title="Daily Journal" 
+                    isOpen={expandedSections['journal']} 
+                    onToggle={toggleSection} 
+                    sectionRef={journalRef}
+                >
+                    <p className="mb-6">Your safe space for honest reflection, combining traditional journaling with AI-powered insights.</p>
+                    <h3 className="text-lg font-bold text-gray-800 mb-3">Feature Walkthroughs</h3>
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">📝 Creating Entries</h4>
+                            <ol className="list-decimal pl-5 space-y-1 text-sm">
+                                <li>Tap <strong>"Add New Entry"</strong>.</li>
+                                <li><strong>Mood Check:</strong> Slide the slider (1-10) to record how you feel.</li>
+                                <li><strong>Tagging:</strong> Add tags like "Anxiety" or "Meeting" to filter entries later.</li>
                             </ol>
                         </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">✨ AI Analysis</h4>
+                            <ol className="list-decimal pl-5 space-y-1 text-sm">
+                                <li>Tap the <span className="inline-block bg-white border rounded px-1 text-xs">Sparkles Icon</span> on the main list.</li>
+                                <li>Select a date range or filter by specific tags.</li>
+                                <li>Tap <strong>"Start Analysis"</strong> to get a report on your emotional themes, triggers, and wins.</li>
+                            </ol>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">💡 AI Writing Helper</h4>
+                            <p className="text-sm">Stuck? Tap <strong>"Get Idea with AI"</strong> below the text box. Tell it briefly how you feel, and it will generate a personalized writing prompt.</p>
+                        </div>
+                    </div>
+                </CollapsibleSection>
 
-                        {/* 4. PDF Download */}
+                {/* --- COPING TOOLS SECTION --- */}
+                <CollapsibleSection 
+                    id="coping" 
+                    title="Coping Tools" 
+                    isOpen={expandedSections['coping']} 
+                    onToggle={toggleSection} 
+                    sectionRef={copingRef}
+                >
+                    <p className="mb-6">Interactive tools designed to help you manage cravings, anxiety, and high-stress moments immediately.</p>
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🛡️ Coping Cards</h4>
+                            <p className="text-sm">Quick strategies for immediate perspective shifts. Tap <strong>"Journal on This"</strong> to record your victory if a strategy works.</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🌬️ Breathing Room</h4>
+                            <p className="text-sm">Guided visual breathing (Box Breathing or 4-7-8). Uses <strong>haptic vibration</strong> on mobile so you can close your eyes and follow the buzz.</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🎮 Recovery Games</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-sm">
+                                <li><strong>Jeopardy:</strong> Test your knowledge of recovery history and slogans.</li>
+                                <li><strong>Simulator:</strong> A life-management game. Manage Stress, Money, and Wellbeing to build a stable life without burning out.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </CollapsibleSection>
+
+                {/* --- WORKBOOK SECTION --- */}
+                <CollapsibleSection 
+                    id="workbook" 
+                    title="Recovery Workbook" 
+                    isOpen={expandedSections['workbook']} 
+                    onToggle={toggleSection} 
+                    sectionRef={workbookRef}
+                >
+                    <p className="mb-6">A structured environment to work the Steps and explore Recovery Dharma inquiries.</p>
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">✍️ Working the Steps</h4>
+                            <p className="text-sm">Select a Step or Inquiry. Questions are auto-saved as you type. Look for the <strong>"Saved"</strong> indicator.</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">📄 Export to PDF</h4>
+                            <p className="text-sm">Tap <strong>"Export PDF"</strong> inside any topic to download a clean document of your questions and answers—perfect for sharing with a sponsor.</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🧠 AI Feedback</h4>
+                            <p className="text-sm">Tap <strong>"Get AI Insights on Your Work"</strong> on the main workbook screen to receive an objective summary of key themes in your answers.</p>
+                        </div>
+                    </div>
+                </CollapsibleSection>
+
+                {/* --- LITERATURE SECTION --- */}
+                <CollapsibleSection 
+                    id="literature" 
+                    title="Literature Library" 
+                    isOpen={expandedSections['literature']} 
+                    onToggle={toggleSection} 
+                    sectionRef={literatureRef}
+                >
+                    <p className="mb-6">Read the Big Book, Basic Text, and Recovery Dharma. Designed for study and reflection.</p>
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🖊️ Highlighting & Journaling</h4>
+                            <ol className="list-decimal pl-5 space-y-1 text-sm">
+                                <li><strong>Highlight:</strong> Select any text on a page.</li>
+                                <li><strong>Save:</strong> Tap the <strong>"Journal Highlight"</strong> button that appears to create an entry quoting that text.</li>
+                                <li><strong>Reflect:</strong> Tap "Journal about this page" to start a blank entry linked to the current chapter.</li>
+                            </ol>
+                        </div>
                         <div className="bg-gray-50 p-4 rounded-lg">
                             <h4 className="font-bold text-teal-600 mb-2">⬇️ PDF Downloads</h4>
-                            <p className="text-sm text-gray-600">
-                                Need a copy for offline sharing? Tap the green <strong>"PDF"</strong> button next to any book title on the main list to open the official PDF version in your browser.
-                            </p>
+                            <p className="text-sm">Tap the green <strong>"PDF"</strong> button next to any book title to open the official PDF version for offline use.</p>
                         </div>
-
                     </div>
-                </section>
+                </CollapsibleSection>
 
                 {/* --- GOALS SECTION --- */}
-                <section ref={sections['goals']} id="goals" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Goals & Milestones</h2>
+                <CollapsibleSection 
+                    id="goals" 
+                    title="Goals & Milestones" 
+                    isOpen={expandedSections['goals']} 
+                    onToggle={toggleSection} 
+                    sectionRef={goalsRef}
+                >
                     <p className="mb-4">Set manageable goals for your recovery, health, and personal life.</p>
-                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                    <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
                         <li><strong>Tracking:</strong> Mark goals as "In Progress" or "Completed" to visualize your achievements.</li>
                         <li><strong>Categories:</strong> Organize goals by type (e.g., Spiritual, Physical, Financial).</li>
                     </ul>
-                </section>
+                </CollapsibleSection>
                 
                  {/* --- MEETINGS SECTION --- */}
-                 <section ref={sections['meetings']} id="meetings" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Meeting Management</h2>
+                 <CollapsibleSection 
+                    id="meetings" 
+                    title="Meeting Management" 
+                    isOpen={expandedSections['meetings']} 
+                    onToggle={toggleSection} 
+                    sectionRef={meetingsRef}
+                >
                     <p className="mb-4">Keep track of your meeting attendance and service commitments.</p>
-                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                    <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
                         <li><strong>Tracker:</strong> Log every meeting you attend to build a history of your commitment.</li>
                         <li><strong>Homegroup:</strong> Store details about your homegroup, including business meeting notes and group conscience decisions.</li>
                     </ul>
-                </section>
+                </CollapsibleSection>
 
                  {/* --- RESOURCES SECTION --- */}
-                 <section ref={sections['resources']} id="resources" className="border-b pb-8">
-                    <h2 className="text-2xl font-bold text-teal-700 mb-4">Emergency Resources</h2>
+                 <CollapsibleSection 
+                    id="resources" 
+                    title="Emergency Resources" 
+                    isOpen={expandedSections['resources']} 
+                    onToggle={toggleSection} 
+                    sectionRef={resourcesRef}
+                >
                     <p className="mb-4">Quick access to helplines and professional support.</p>
-                    <p className="text-gray-700">Tap the <span className="text-red-500 font-bold">Lifebuoy icon</span> on the dashboard for immediate access to crisis lines and local resources.</p>
-                </section>
+                    <p className="text-gray-700 text-sm">Tap the <span className="text-red-500 font-bold">Lifebuoy icon</span> on the dashboard for immediate access to crisis lines and local resources.</p>
+                </CollapsibleSection>
+
+                {/* --- SETTINGS SECTION --- */}
+                <CollapsibleSection 
+                    id="settings" 
+                    title="Settings & Data" 
+                    isOpen={expandedSections['settings']} 
+                    onToggle={toggleSection} 
+                    sectionRef={settingsRef}
+                >
+                    <p className="mb-6">Control your privacy, data, and app preferences.</p>
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🔄 Changing Your Date</h4>
+                            <p className="text-sm">Use the date picker to adjust your clean time. Optionally check "Journal about this date change" to process the event.</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">✏️ Custom Header</h4>
+                            <p className="text-sm">Change "You have been clean for" to a phrase that resonates with you (e.g., "Freedom since").</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🔒 End-to-End Encryption</h4>
+                            <p className="text-sm">Enable a PIN to encrypt your local data. <strong>Warning:</strong> If you lose this PIN, your data cannot be recovered.</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">💾 Data Export</h4>
+                            <p className="text-sm">Download a full JSON backup of your journals, settings, and workbook answers to keep your data safe.</p>
+                        </div>
+                    </div>
+                </CollapsibleSection>
 
             </div>
             

@@ -1,10 +1,14 @@
+// src/components/RecoveryWorkbook.jsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import DataStore from '../utils/dataStore.js';
-import { workbookData } from '../utils/data.js';
+import { workbookData } from '../utils/data.js'; // Ensure this imports the UPDATED data object
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, ChevronDown, ChevronUp, CheckCircleIcon, SparklesIcon, DownloadIcon } from '../utils/icons.jsx';
 import { model } from '../firebase.jsx';
 import jsPDF from 'jspdf';
+
+// IMPORT CUSTOM TOOLS
+import { SmartGoalTool, CBATool, ABCTool, UrgeLogTool, LifestyleBalanceTool } from './SmartRecoveryTools.jsx';
 
 // --- Sub-Components ---
 
@@ -110,6 +114,36 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
 
 const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
     
+    // --- CHECK FOR CUSTOM COMPONENT ---
+    const renderCustomTool = () => {
+        switch (topic.customComponent) {
+            case 'SmartGoalTool': return <SmartGoalTool />;
+            case 'CBATool': return <CBATool />;
+            case 'ABCTool': return <ABCTool />;
+            case 'UrgeLogTool': return <UrgeLogTool />;
+            case 'LifestyleBalanceTool': return <LifestyleBalanceTool />;
+            default: return null;
+        }
+    };
+
+    // Render Custom Tool View
+    if (topic.customComponent) {
+        return (
+            <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
+                <div className="flex justify-between items-start mb-4 flex-shrink-0">
+                    <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 font-semibold">
+                        <ArrowLeftIcon /><span className="ml-2">Back</span>
+                    </button>
+                </div>
+                <h3 className="text-2xl font-bold text-deep-charcoal mb-4 flex-shrink-0">{topic.title}</h3>
+                <div className="overflow-y-auto flex-grow pr-2">
+                    {renderCustomTool()}
+                </div>
+            </div>
+        );
+    }
+
+    // --- STANDARD RENDER LOGIC ---
     const handleExportPDF = () => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();

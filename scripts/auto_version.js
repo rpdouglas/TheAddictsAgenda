@@ -26,6 +26,7 @@ const COMPONENT_MAP = {
     'MEETINGFINDER': 'src/components/MeetingTracker.jsx',
     'DAILYREFLECTION': 'src/components/DailyReflection.jsx',
     'USERGUIDE': 'src/components/UserGuide.jsx',
+    'SMARTTOOLS': 'src/components/SmartRecoveryTools.jsx', // Added mapping for Smart Recovery Tools
 };
 
 // --- Helper Functions ---
