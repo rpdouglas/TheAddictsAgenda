@@ -2,12 +2,53 @@
 
 // --- IMPORT JSON DATA ---
 // Vite automatically loads the contents of these JSON files as JavaScript objects.
-import workbookData from '../data/workbook.json';
+import workbookDataRaw from '../data/workbook.json';
+
+// Clone raw data to modify it
+let workbookData = JSON.parse(JSON.stringify(workbookDataRaw));
+
+// ADD SMART RECOVERY CATEGORY
+workbookData['smart_recovery'] = {
+    id: 'smart_recovery',
+    title: 'SMART Recovery Tools',
+    description: 'Evidence-based tools for self-empowerment and practical coping.',
+    topics: [
+        {
+            id: 'smart_cba',
+            title: 'Cost Benefit Analysis',
+            prompt: 'Use the 4 quadrants to weigh the pros and cons of using vs. abstaining.',
+            customComponent: 'CBATool'
+        },
+        {
+            id: 'smart_abc',
+            title: 'The ABCs of Coping',
+            prompt: 'Challenge irrational beliefs that lead to self-defeating consequences.',
+            customComponent: 'ABCTool'
+        },
+        {
+            id: 'smart_goal',
+            title: 'Effective Goal Setting',
+            prompt: 'Create a specific, measurable plan for your recovery.',
+            customComponent: 'SmartGoalTool'
+        },
+        {
+            id: 'smart_urge',
+            title: 'Urge Log',
+            prompt: 'Track your triggers and intensity to find patterns.',
+            customComponent: 'UrgeLogTool'
+        },
+        {
+            id: 'smart_balance',
+            title: 'Lifestyle Balance',
+            prompt: 'Visualize the balance between work, health, and play.',
+            customComponent: 'LifestyleBalanceTool'
+        }
+    ]
+};
 
 // --- DYNAMIC LITERATURE LOADING ---
 export const literatureManifest = {
   // 1. UPDATED: The 4th Edition is now the main Big Book entry
-  // I have applied the PDF link from the deleted entry to this one.
   aa_big_book_v4: {
     key: 'aa_big_book_v4',
     title: 'The Big Book (4th Edition)',
@@ -32,7 +73,6 @@ export const literatureManifest = {
 
 export const getLiteratureBook = (bookKey) => {
   switch (bookKey) {
-    // 2. UPDATED: Removed the old 'aa_big_book' case
     case 'aa_big_book_v4':
       return import('../data/aa_big_book_v4.json');
     case 'na_basic_text':
@@ -119,15 +159,15 @@ export const MEETING_LINKS = {
 
 // --- Application Versioning ---
 export const APP_VERSIONS = {
-    DASHBOARD: '1.4.0',
-    JOURNAL: '1.5.0', 
-    GOALS: '1.2.0', 
-    COPING: '2.2.0', 
-    WORKBOOK: '1.5.0',
-    LITERATURE: '1.3.0',
-    RESOURCES: '1.1.0',
-    SETTINGS: '1.1.0',
-    MEETINGFINDER: '1.1.0',
-    DAILYREFLECTION: '1.1.0',
-    USERGUIDE: '1.1.1', // Added User Guide
+    DASHBOARD: '1.3.1',
+    JOURNAL: '1.4.0', 
+    GOALS: '1.1.1', 
+    COPING: '2.1.0', 
+    WORKBOOK: '1.4.2',
+    LITERATURE: '1.2.0',
+    RESOURCES: '1.0.0',
+    SETTINGS: '1.0.1',
+    MEETINGFINDER: '1.0.0',
+    DAILYREFLECTION: '1.0.0',
+    USERGUIDE: '1.0.0',
 };
