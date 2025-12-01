@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/auto_version.js",
+    "prebuild": "node scripts/auto_version.js && node scripts/toggle_base.js",
     "build": "npm run prebuild && vite build",
+    "build:prod": "node scripts/auto_version.js --prod && node scripts/toggle_base.js --prod && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest"

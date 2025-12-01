@@ -7,7 +7,11 @@ import { fileURLToPath } from 'url';
 // --- Configuration ---
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DATA_FILE_PATH = path.join(ROOT_DIR, 'src/utils/data.js');
-const HASH_FILE_PATH = path.join(ROOT_DIR, 'scripts/component_hashes.json');
+const DEV_HASH_FILE = path.join(ROOT_DIR, 'scripts/component_hashes.json');
+const PROD_HASH_FILE = path.join(ROOT_DIR, 'scripts/prod_component_hashes.json');
+
+// Check for --prod flag
+const IS_PROD = process.argv.includes('--prod');
 
 // Map keys in APP_VERSIONS to the actual file paths
 const COMPONENT_MAP = {
@@ -21,7 +25,7 @@ const COMPONENT_MAP = {
     'SETTINGS': 'src/components/Settings.jsx',
     'MEETINGFINDER': 'src/components/MeetingTracker.jsx',
     'DAILYREFLECTION': 'src/components/DailyReflection.jsx',
-    'USERGUIDE': 'src/components/UserGuide.jsx', // Added mapping for User Guide
+    'USERGUIDE': 'src/components/UserGuide.jsx',
 };
 
 // --- Helper Functions ---
@@ -42,28 +46,49 @@ function getFileHash(filePath) {
 }
 
 // Increment patch version (1.0.0 -> 1.0.1)
-function incrementVersion(version) {
+function incrementPatch(version) {
     const parts = version.split('.').map(Number);
-    if (parts.length !== 3) return version; // Fallback if format is weird
+    if (parts.length !== 3) return version; 
     parts[2] += 1;
+    return parts.join('.');
+}
+
+// Increment minor version and reset patch (1.0.5 -> 1.1.0)
+function incrementMinor(version) {
+    const parts = version.split('.').map(Number);
+    if (parts.length !== 3) return version; 
+    parts[1] += 1; // Increment 2nd number
+    parts[2] = 0;  // Reset 3rd number
     return parts.join('.');
 }
 
 // --- Main Logic ---
 
 function main() {
-    console.log('🔄 Checking for component updates...');
+    const modeLabel = IS_PROD ? 'PRODUCTION' : 'DEVELOPMENT';
+    console.log(`🔄 Checking for component updates (${modeLabel} MODE)...`);
 
     // 1. Load previous hashes
-    let previousHashes = {};
-    if (fs.existsSync(HASH_FILE_PATH)) {
-        previousHashes = JSON.parse(fs.readFileSync(HASH_FILE_PATH, 'utf-8'));
+    let devHashes = {};
+    let prodHashes = {};
+
+    if (fs.existsSync(DEV_HASH_FILE)) {
+        devHashes = JSON.parse(fs.readFileSync(DEV_HASH_FILE, 'utf-8'));
     }
+    if (fs.existsSync(PROD_HASH_FILE)) {
+        prodHashes = JSON.parse(fs.readFileSync(PROD_HASH_FILE, 'utf-8'));
+    }
+
+    // Determine which baseline to compare against
+    const baselineHashes = IS_PROD ? prodHashes : devHashes;
 
     // 2. Read data.js content
     let dataFileContent = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
     let hasChanges = false;
-    const currentHashes = { ...previousHashes };
+    
+    // Create copies to update
+    const nextDevHashes = { ...devHashes };
+    const nextProdHashes = { ...prodHashes };
 
     // 3. Iterate through components
     for (const [key, relativePath] of Object.entries(COMPONENT_MAP)) {
@@ -74,8 +99,8 @@ function main() {
             continue;
         }
 
-        // If hash is different (file changed), update version
-        if (currentHash !== previousHashes[key]) {
+        // Check if file changed since last baseline check
+        if (currentHash !== baselineHashes[key]) {
             console.log(`✨ Changes detected in ${key}. Updating version...`);
             
             // Regex to find: key: '1.2.3'
@@ -84,13 +109,27 @@ function main() {
 
             if (match) {
                 const currentVersion = match[2];
-                const newVersion = incrementVersion(currentVersion);
+                let newVersion;
+
+                if (IS_PROD) {
+                    newVersion = incrementMinor(currentVersion);
+                } else {
+                    newVersion = incrementPatch(currentVersion);
+                }
                 
                 // Replace in content
                 dataFileContent = dataFileContent.replace(regex, `$1${newVersion}$3`);
                 
-                // Update hash record
-                currentHashes[key] = currentHash;
+                // Update Hash Records
+                if (IS_PROD) {
+                    // In Prod mode, update BOTH records (establish new baseline for everything)
+                    nextProdHashes[key] = currentHash;
+                    nextDevHashes[key] = currentHash;
+                } else {
+                    // In Dev mode, only update Dev record
+                    nextDevHashes[key] = currentHash;
+                }
+
                 hasChanges = true;
                 
                 console.log(`   ${key}: ${currentVersion} -> ${newVersion}`);
@@ -103,10 +142,16 @@ function main() {
     // 4. Save changes
     if (hasChanges) {
         fs.writeFileSync(DATA_FILE_PATH, dataFileContent, 'utf-8');
-        fs.writeFileSync(HASH_FILE_PATH, JSON.stringify(currentHashes, null, 2), 'utf-8');
-        console.log('✅ src/utils/data.js updated successfully.');
+        
+        // Save Hash Files
+        fs.writeFileSync(DEV_HASH_FILE, JSON.stringify(nextDevHashes, null, 2), 'utf-8');
+        if (IS_PROD) {
+            fs.writeFileSync(PROD_HASH_FILE, JSON.stringify(nextProdHashes, null, 2), 'utf-8');
+        }
+
+        console.log('✅ src/utils/data.js and hash records updated successfully.');
     } else {
-        console.log('👍 No component changes detected. Versions remain the same.');
+        console.log('👍 No component changes detected since last build. Versions remain the same.');
     }
 }
 
