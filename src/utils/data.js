@@ -119,14 +119,15 @@ export const MEETING_LINKS = {
 
 // --- Application Versioning ---
 export const APP_VERSIONS = {
-    DASHBOARD: '1.3.1',
-    JOURNAL: '1.4.0', 
-    GOALS: '1.1.1', 
-    COPING: '2.1.0', 
-    WORKBOOK: '1.4.1',
-    LITERATURE: '1.2.0',
-    RESOURCES: '1.0.0',
-    SETTINGS: '1.0.1',
-    MEETINGFINDER: '1.0.0',
-    DAILYREFLECTION: '1.0.0',
+    DASHBOARD: '1.4.0',
+    JOURNAL: '1.5.0', 
+    GOALS: '1.2.0', 
+    COPING: '2.2.0', 
+    WORKBOOK: '1.5.0',
+    LITERATURE: '1.3.0',
+    RESOURCES: '1.1.0',
+    SETTINGS: '1.1.0',
+    MEETINGFINDER: '1.1.0',
+    DAILYREFLECTION: '1.1.0',
+    USERGUIDE: '1.1.0', // Added User Guide
 };

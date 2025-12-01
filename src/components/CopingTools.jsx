@@ -1,6 +1,5 @@
 import React from 'react';
-// Corrected the import to include all necessary icons, assuming a generic 'PuzzleIcon' for the simulator
-import { ArrowLeftIcon, SparklesIcon, HeartIcon, ShieldIcon, ZapIcon, GameIcon, PuzzleIcon } from '../utils/icons.jsx'; 
+import { ArrowLeftIcon, ShieldIcon, ZapIcon, GameIcon, PuzzleIcon } from '../utils/icons.jsx'; 
 
 const CopingTools = ({ onNavigate, onBack }) => {
 
@@ -20,20 +19,6 @@ const CopingTools = ({ onNavigate, onBack }) => {
             description: 'A guided exercise to calm your mind and body.'
         },
         {
-            label: 'Yoga Walkthrough',
-            icon: <HeartIcon className="w-8 h-8" />,
-            view: 'yoga',
-            color: 'pink',
-            description: 'Simple yoga poses to help you find your center.'
-        },
-        {
-            label: 'Recovery Games',
-            icon: <SparklesIcon className="w-8 h-8" />,
-            view: 'recovery-games',
-            color: 'purple',
-            description: 'Engaging games to reinforce recovery concepts.'
-        },
-        {
             label: 'Recovery Jeopardy',
             icon: <GameIcon className="w-8 h-8" />,
             view: 'recovery-jeopardy',
@@ -42,7 +27,7 @@ const CopingTools = ({ onNavigate, onBack }) => {
         },
         {
             label: 'Recovery Simulator',
-            icon: <PuzzleIcon className="w-8 h-8" />, // Using a placeholder PuzzleIcon
+            icon: <PuzzleIcon className="w-8 h-8" />, 
             view: 'recovery-simulator',
             color: 'green',
             description: 'Navigate challenges in this interactive life simulator.'
@@ -55,7 +40,7 @@ const CopingTools = ({ onNavigate, onBack }) => {
         pink: 'bg-pink-100 text-pink-600',
         purple: 'bg-purple-100 text-purple-600',
         orange: 'bg-orange-100 text-orange-600',
-        green: 'bg-green-100 text-green-600', // Added color for the new button
+        green: 'bg-green-100 text-green-600', 
     };
 
     return (

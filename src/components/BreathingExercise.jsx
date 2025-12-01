@@ -26,11 +26,13 @@ const exercises = {
   },
 };
 
-const BreathingExercise = ({ onBack }) => {
+const BreathingExercise = ({ onBack, onJournal }) => {
   const [selectedExercise, setSelectedExercise] = useState('box');
   const [isRunning, setIsRunning] = useState(false);
+  const [showCompletion, setShowCompletion] = useState(false);
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [countdown, setCountdown] = useState(exercises[selectedExercise].pattern[0].duration);
+  const [totalSeconds, setTotalSeconds] = useState(0);
 
   // Use refs to avoid stale state in setInterval closure
   const intervalRef = useRef(null);
@@ -50,8 +52,16 @@ const BreathingExercise = ({ onBack }) => {
       setCountdown(pattern[phaseIndexRef.current].duration);
 
       intervalRef.current = setInterval(() => {
+        // Increment session duration
+        setTotalSeconds(s => s + 1);
+
         setCountdown(prevCount => {
           if (prevCount <= 1) {
+            // Haptic Feedback on Phase Change
+            if (navigator.vibrate) {
+                navigator.vibrate(50); // Short 50ms vibration
+            }
+
             // Move to the next phase
             const nextPhaseIndex = (phaseIndexRef.current + 1) % pattern.length;
             setPhaseIndex(nextPhaseIndex);
@@ -71,10 +81,23 @@ const BreathingExercise = ({ onBack }) => {
       setIsRunning(false);
       setPhaseIndex(0);
       setCountdown(exercises[selectedExercise].pattern[0].duration);
+      setTotalSeconds(0);
+      setShowCompletion(false);
   }
 
-  const handleStartStop = () => {
-    setIsRunning(!isRunning);
+  const handleStart = () => {
+    setIsRunning(true);
+    setShowCompletion(false);
+    // If restarting after completion, ensure reset
+    if (totalSeconds > 0 && !isRunning) {
+        setTotalSeconds(0);
+        setPhaseIndex(0);
+    }
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+    setShowCompletion(true);
   };
 
   const handleSelectExercise = (key) => {
@@ -82,9 +105,53 @@ const BreathingExercise = ({ onBack }) => {
     resetExercise();
   };
 
+  const formatDuration = (seconds) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      if (mins > 0) return `${mins}m ${secs}s`;
+      return `${secs}s`;
+  };
+
   const currentPattern = exercises[selectedExercise].pattern;
   const currentPhase = currentPattern[phaseIndex];
   const animationClass = currentPhase.phase === 'in' ? 'grow' : currentPhase.phase === 'out' ? 'shrink' : '';
+
+  // --- Render Logic ---
+
+  if (showCompletion) {
+      return (
+        <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col items-center justify-center">
+             <div className="bg-green-50 p-8 rounded-full mb-6">
+                <span className="text-4xl">🧘</span>
+             </div>
+             <h2 className="text-2xl font-bold text-teal-800 mb-2">Session Complete</h2>
+             <p className="text-gray-600 mb-6 text-center">
+                 You spent <strong>{formatDuration(totalSeconds)}</strong> practicing {exercises[selectedExercise].name}.
+             </p>
+
+             <div className="w-full max-w-xs space-y-3">
+                 <button 
+                    onClick={() => onJournal(exercises[selectedExercise].name, formatDuration(totalSeconds))}
+                    className="w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow hover:bg-teal-700 transition-colors"
+                 >
+                    Log to Journal
+                 </button>
+                 <button 
+                    onClick={resetExercise}
+                    className="w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition-colors"
+                 >
+                    Restart Exercise
+                 </button>
+                 <button 
+                    onClick={onBack}
+                    className="w-full text-gray-500 font-medium py-2 hover:text-gray-700"
+                 >
+                    Back to Tools
+                 </button>
+             </div>
+        </div>
+      );
+  }
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
@@ -120,8 +187,8 @@ const BreathingExercise = ({ onBack }) => {
             </div>
           </div>
 
-          <button onClick={handleStartStop} className="control-btn">
-            {isRunning ? 'Stop' : 'Start'}
+          <button onClick={isRunning ? handleStop : handleStart} className="control-btn">
+            {isRunning ? 'Stop & Finish' : 'Start'}
           </button>
         </div>
     </div>
