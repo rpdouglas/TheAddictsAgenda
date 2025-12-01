@@ -5,6 +5,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 // Import authentication context and data storage utility
 import { useAuth } from '/src/AuthContext.jsx';
 import DataStore from '/src/utils/dataStore.js';
+import { APP_VERSIONS } from '/src/utils/data.js';
 
 // Import icons and shared components
 import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from '/src/utils/icons.jsx';
@@ -12,6 +13,7 @@ import { Spinner } from '/src/components/common.jsx';
 import Login from '/src/components/Login.jsx';
 import { Dashboard, SobrietyDataSetup } from '/src/components/Dashboard.jsx';
 import EncryptionUnlock from '/src/components/EncryptionUnlock.jsx';
+import UserGuide from '/src/components/UserGuide.jsx';
 
 // --- Lazy-loaded Components ---
 const DailyJournal = lazy(() => import('/src/components/DailyJournal.jsx'));
@@ -44,6 +46,7 @@ const App = () => {
     // --- State Management ---
     const { session, loading: authLoading, logout } = useAuth();
     const [activeView, setActiveView] = useState('dashboard');
+    const [targetGuideSection, setTargetGuideSection] = useState(null); // New state for guide navigation
     const [sobrietyStartDate, setSobrietyStartDate] = useState(null);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [journalTemplate, setJournalTemplate] = useState('');
@@ -137,6 +140,13 @@ const App = () => {
         setActiveView('journal');
     };
 
+    const handleJournalFromBreathing = (exerciseName, duration) => {
+        const template = `Breathing Exercise: ${exerciseName}\nDuration: ${duration}\n\n**How I feel after this session:**\n\n`;
+        setJournalTemplate(template);
+        setJournalTags(['Mindfulness', 'Somatic Tool']);
+        setActiveView('journal');
+    };
+
     const handleInstallPWA = async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
@@ -151,6 +161,24 @@ const App = () => {
     const handleUnlock = () => {
         setIsLocked(false); 
     };
+
+    // --- New Navigation Handler for User Guide ---
+    const goToGuide = (section) => {
+        setTargetGuideSection(section);
+        setActiveView('user-guide');
+    };
+
+    // Helper to render the footer version link
+    const renderFooterVersion = (version, section) => (
+        <div className="w-full text-center py-4 mt-auto">
+            <button 
+                onClick={() => goToGuide(section)}
+                className="text-xs text-gray-400 hover:text-teal-600 underline transition-colors"
+            >
+                v{version} - View User Guide
+            </button>
+        </div>
+    );
 
     // --- Render Logic ---
 
@@ -172,47 +200,77 @@ const App = () => {
 
     const routes = {
         'dashboard': (
-            <Dashboard 
-                onNavigate={setActiveView} 
-                sobrietyStartDate={sobrietyStartDate} 
-                deferredPrompt={deferredPrompt} 
-                onInstallPWA={handleInstallPWA} 
-                headerText={headerText}
-                hasMadeJournalEntryToday={hasMadeJournalEntryToday}
-            />
+            <>
+                <Dashboard 
+                    onNavigate={setActiveView} 
+                    sobrietyStartDate={sobrietyStartDate} 
+                    deferredPrompt={deferredPrompt} 
+                    onInstallPWA={handleInstallPWA} 
+                    headerText={headerText}
+                    hasMadeJournalEntryToday={hasMadeJournalEntryToday}
+                />
+                {renderFooterVersion(APP_VERSIONS.DASHBOARD, 'dashboard')}
+            </>
         ),
         'journal': (
-            <DailyJournal 
-                journalTemplate={journalTemplate} 
-                setJournalTemplate={setJournalTemplate} 
-                journalTags={journalTags} 
-                setJournalTags={setJournalTags} 
-            />
+            <>
+                <DailyJournal 
+                    journalTemplate={journalTemplate} 
+                    setJournalTemplate={setJournalTemplate} 
+                    journalTags={journalTags} 
+                    setJournalTags={setJournalTags} 
+                />
+                {renderFooterVersion(APP_VERSIONS.JOURNAL, 'journal')}
+            </>
         ),
-        'goals': <Goals />,
-        'workbook': <RecoveryWorkbook />,
+        'goals': (
+            <>
+                <Goals />
+                {renderFooterVersion(APP_VERSIONS.GOALS, 'goals')}
+            </>
+        ),
+        'workbook': (
+            <>
+                <RecoveryWorkbook />
+                {renderFooterVersion(APP_VERSIONS.WORKBOOK, 'workbook')}
+            </>
+        ),
         'literature': (
-            <RecoveryLiterature 
-                onNavigate={setActiveView} 
-                setJournalTemplate={setJournalTemplate} 
-            />
+            <>
+                <RecoveryLiterature 
+                    onNavigate={setActiveView} 
+                    setJournalTemplate={setJournalTemplate} 
+                />
+                {renderFooterVersion(APP_VERSIONS.LITERATURE, 'literature')}
+            </>
         ),
-        'resources': <Resources />,
+        'resources': (
+            <>
+                <Resources />
+                {renderFooterVersion(APP_VERSIONS.RESOURCES, 'resources')}
+            </>
+        ),
         'settings': (
-            <Settings
-                currentStartDate={sobrietyStartDate}
-                handleSobrietyDateUpdate={handleSobrietyDateUpdate}
-                onBack={() => setActiveView('dashboard')}
-                onLogout={logout}
-                currentHeaderText={headerText}
-                onHeaderTextUpdate={setHeaderText}
-            />
+            <>
+                <Settings
+                    currentStartDate={sobrietyStartDate}
+                    handleSobrietyDateUpdate={handleSobrietyDateUpdate}
+                    onBack={() => setActiveView('dashboard')}
+                    onLogout={logout}
+                    currentHeaderText={headerText}
+                    onHeaderTextUpdate={setHeaderText}
+                />
+                {renderFooterVersion(APP_VERSIONS.SETTINGS, 'dashboard')}
+            </>
         ),
         'finder': (
-            <MeetingManagement 
-                onNavigate={setActiveView} 
-                onBack={() => setActiveView('dashboard')} 
-            />
+             <>
+                <MeetingManagement 
+                    onNavigate={setActiveView} 
+                    onBack={() => setActiveView('dashboard')} 
+                />
+                {renderFooterVersion(APP_VERSIONS.MEETINGFINDER, 'meetings')}
+             </>
         ),
         'daily-readings': (
             <DailyReadings 
@@ -246,13 +304,31 @@ const App = () => {
             />
         ),
         'meetingTracker': <MeetingTracker onBack={() => setActiveView('homegroup')} />,
-        'coping-tools': <CopingTools onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />,
+        'coping-tools': (
+            <>
+                <CopingTools onNavigate={setActiveView} onBack={() => setActiveView('dashboard')} />
+                {renderFooterVersion(APP_VERSIONS.COPING, 'coping')}
+            </>
+        ),
         'coping-cards': <CopingCards onJournal={handleJournalFromCopingCard} onBack={() => setActiveView('coping-tools')} />,
-        'breathing-exercises': <BreathingExercise onBack={() => setActiveView('coping-tools')} />,
+        'breathing-exercises': (
+            <BreathingExercise 
+                onBack={() => setActiveView('coping-tools')} 
+                onJournal={handleJournalFromBreathing} 
+            />
+        ),
         'yoga': <YogaWalkthrough onBack={() => setActiveView('coping-tools')} />,
         'recovery-games': <RecoveryGames onBack={() => setActiveView('coping-tools')} />,
         'recovery-jeopardy': <RecoveryJeopardy onBack={() => setActiveView('coping-tools')} />,
         'recovery-simulator': <RecoverySimulatorGame onBack={() => setActiveView('coping-tools')} />,
+        
+        // --- NEW ROUTE ---
+        'user-guide': (
+            <UserGuide 
+                onBack={() => setActiveView('dashboard')} 
+                targetSection={targetGuideSection} 
+            />
+        ),
     };
 
     return (
