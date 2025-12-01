@@ -163,11 +163,12 @@ export const APP_VERSIONS = {
     JOURNAL: '1.4.0', 
     GOALS: '1.1.1', 
     COPING: '2.1.0', 
-    WORKBOOK: '1.4.2',
+    WORKBOOK: '1.4.1',
     LITERATURE: '1.2.0',
     RESOURCES: '1.0.0',
     SETTINGS: '1.0.1',
     MEETINGFINDER: '1.0.0',
     DAILYREFLECTION: '1.0.0',
     USERGUIDE: '1.0.0',
+    SMARTTOOLS: '1.0.1', // Added Smart Recovery Tools
 };
