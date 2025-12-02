@@ -354,7 +354,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                     </div>
                 </CollapsibleSection>
 
-                {/* --- WORKBOOK SECTION --- */}
+                {/* --- WORKBOOK SECTION (UPDATED) --- */}
                 <CollapsibleSection id="workbook" title="Recovery Workbook" isOpen={expandedSections['workbook']} onToggle={toggleSection} sectionRef={workbookRef}>
                     <p className="mb-6">A structured environment to work the Steps and explore Recovery Dharma inquiries. Your progress is saved automatically.</p>
                     
@@ -372,19 +372,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                             </ol>
                         </div>
 
-                        {/* 2. SMART Recovery Tools (NEW) */}
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                            <h4 className="font-bold text-blue-800 mb-2">🧠 SMART Recovery Tools</h4>
-                            <p className="text-sm text-blue-700 mb-2">Practical, interactive tools for self-management.</p>
-                            <ul className="list-disc pl-5 space-y-2 text-sm text-blue-700">
-                                <li><strong>CBA (Cost Benefit Analysis):</strong> Weigh the pros and cons of using vs. abstaining using 4 quadrants.</li>
-                                <li><strong>ABC Tool:</strong> Analyze your Activating Events, Beliefs, and Consequences to challenge irrational thoughts.</li>
-                                <li><strong>Lifestyle Balance:</strong> Visualize your satisfaction across 6 life areas using a radar chart.</li>
-                                <li><strong>Save to Journal:</strong> Tap the clipboard icon at the top of any SMART tool to export your work directly to a new journal entry.</li>
-                            </ul>
-                        </div>
-
-                        {/* 3. PDF Export */}
+                        {/* 2. PDF Export */}
                         <div className="bg-gray-50 p-4 rounded-lg">
                             <h4 className="font-bold text-teal-600 mb-2">📄 Exporting Your Work</h4>
                             <p className="text-sm text-gray-600 mb-2">Great for sharing your Step 4 inventory or Step 10 review with a sponsor.</p>
@@ -395,7 +383,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                             </ol>
                         </div>
 
-                        {/* 4. AI Insights */}
+                        {/* 3. AI Insights */}
                         <div className="bg-gray-50 p-4 rounded-lg">
                             <h4 className="font-bold text-teal-600 mb-2">🧠 Get AI Feedback</h4>
                             <p className="text-sm text-gray-600 mb-2">Receive an objective summary of your recovery work.</p>
@@ -405,6 +393,35 @@ const UserGuide = ({ onBack, targetSection }) => {
                                 <li>It will generate a compassionate report highlighting <strong>Key Themes</strong> in your writing and suggesting <strong>Areas for Growth</strong>.</li>
                             </ol>
                         </div>
+
+                        {/* 4. Tracking Progress */}
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">📊 Tracking Progress</h4>
+                            <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
+                                <li><strong>Overall Progress:</strong> A bar at the top of the main screen shows your total completion percentage.</li>
+                                <li><strong>Category Progress:</strong> Each category (like "The 12 Steps") has its own progress bar so you can see how far along you are in that specific program.</li>
+                            </ul>
+                        </div>
+
+                        {/* 5. SMART Recovery Tools (NEW) */}
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <h4 className="font-bold text-blue-800 mb-2">🧠 SMART Recovery Tools</h4>
+                            <p className="text-sm text-blue-700 mb-3">Practical, interactive tools for self-management (CBA, ABCs, Lifestyle Balance). Use these tools to apply rational thinking to recovery challenges.</p>
+                            <ul className="list-disc pl-5 space-y-2 text-sm text-blue-700">
+                                <li><strong>CBA (Cost Benefit Analysis):</strong> Weigh the pros and cons of using vs. abstaining using 4 quadrants.</li>
+                                <li><strong>ABC Tool:</strong> Analyze your Activating Events, Beliefs, and Consequences to challenge irrational thoughts.</li>
+                                <li><strong>Lifestyle Balance:</strong> Visualize your satisfaction across 6 life areas using a radar chart.</li>
+                                <li><strong>Urge Log:</strong> Track your triggers and intensity to find patterns.</li>
+                                <li><strong>Effective Goal Setting:</strong> Create specific, measurable plans for your recovery.</li>
+                                <li><strong>Practice Self-Compassion:</strong> Counter feelings of hopelessness by being kind to yourself.</li>
+                                <li><strong>Five Questions:</strong> Align your current actions with your future goals.</li>
+                                <li><strong>Customize DENTS:</strong> Develop strategies to Deny, Escape, Neutralize, Task, or Swap during an urge.</li>
+                                <li><strong>Personify and Disarm:</strong> Give your urge a name to take away its power.</li>
+                                <li><strong>Setting Healthy Boundaries:</strong> Practice setting small boundaries to build confidence for larger ones.</li>
+                                <li><em>Tip: Use the "Save to Journal" button in any tool to save your work directly to your daily journal.</em></li>
+                            </ul>
+                        </div>
+
                     </div>
                 </CollapsibleSection>
 
@@ -452,6 +469,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                                 Need a copy for offline sharing? Tap the green <strong>"PDF"</strong> button next to any book title on the main list to open the official PDF version in your browser.
                             </p>
                         </div>
+
                     </div>
                 </CollapsibleSection>
 
