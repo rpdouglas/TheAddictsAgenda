@@ -30,7 +30,6 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           background_color: '#ffffff',
           icons: [
-            // ADDED: Full icon configuration
             {
               src: 'pwa-192x192.png',
               sizes: '192x192',
@@ -47,12 +46,41 @@ export default defineConfig(({ mode }) => {
               type: 'image/png',
               purpose: 'maskable',
             },
-          ] // End of icons array
+          ]
         }
       })
     ],
       
     base: getBase(mode),
+    
+    // --- BUILD OPTIMIZATION ---
+    build: {
+      chunkSizeWarningLimit: 1500, // Increased to 1.5MB to silence warnings for the main vendor chunk
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // 1. Separate large PDF libraries (Largest bottleneck)
+              if (id.includes('jspdf') || id.includes('html2canvas')) {
+                return 'pdf-libs';
+              }
+              // 2. Separate Recharts (Large charting library)
+              if (id.includes('recharts')) {
+                return 'recharts';
+              }
+              // 3. Separate Firebase (Large SDK)
+              if (id.includes('firebase')) {
+                return 'firebase';
+              }
+              
+              // REMOVED: 'vendor-react' chunking. 
+              // Letting Vite bundle React automatically fixes the "B.Activity" undefined error.
+            }
+          }
+        }
+      }
+    },
+
     // Vitest configuration
     test: {
       globals: true,
