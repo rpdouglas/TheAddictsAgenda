@@ -160,7 +160,7 @@ export const MEETING_LINKS = {
 // --- Application Versioning ---
 export const APP_VERSIONS = {
     DASHBOARD: '1.3.1',
-    JOURNAL: '1.4.0', 
+    JOURNAL: '1.4.1', 
     GOALS: '1.1.1', 
     COPING: '2.1.0', 
     WORKBOOK: '1.5.0',
