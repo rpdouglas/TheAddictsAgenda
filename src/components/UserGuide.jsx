@@ -233,7 +233,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                     </div>
                 </CollapsibleSection>
 
-                {/* --- WORKBOOK SECTION --- */}
+                {/* --- WORKBOOK SECTION (UPDATED) --- */}
                 <CollapsibleSection 
                     id="workbook" 
                     title="Recovery Workbook" 
@@ -241,18 +241,29 @@ const UserGuide = ({ onBack, targetSection }) => {
                     onToggle={toggleSection} 
                     sectionRef={workbookRef}
                 >
-                    <p className="mb-6">A structured environment to work the Steps and explore Recovery Dharma inquiries.</p>
+                    <p className="mb-6">A structured environment to work the Steps, explore Recovery Dharma inquiries, and practice SMART Recovery tools.</p>
                     <div className="space-y-4">
                         <div className="bg-gray-50 p-4 rounded-lg">
                             <h4 className="font-bold text-teal-600 mb-2">✍️ Working the Steps</h4>
                             <p className="text-sm">Select a Step or Inquiry. Questions are auto-saved as you type. Look for the <strong>"Saved"</strong> indicator.</p>
                         </div>
+                        
+                        {/* NEW: SMART Recovery Tools */}
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🧠 SMART Recovery Tools</h4>
+                            <p className="text-sm mb-2">Practical, interactive tools for self-management (CBA, ABCs, Lifestyle Balance).</p>
+                            <ul className="list-disc pl-5 space-y-1 text-sm">
+                                <li><strong>Interactive Inputs:</strong> Fill out the forms or charts directly in the app. Data is auto-saved.</li>
+                                <li><strong>Save to Journal:</strong> Tap the <strong>"Save to Journal"</strong> button at the top of any tool to copy your work into a new journal entry automatically tagged "SMARTrecovery".</li>
+                            </ul>
+                        </div>
+
                         <div className="bg-gray-50 p-4 rounded-lg">
                             <h4 className="font-bold text-teal-600 mb-2">📄 Export to PDF</h4>
                             <p className="text-sm">Tap <strong>"Export PDF"</strong> inside any topic to download a clean document of your questions and answers—perfect for sharing with a sponsor.</p>
                         </div>
                         <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-bold text-teal-600 mb-2">🧠 AI Feedback</h4>
+                            <h4 className="font-bold text-teal-600 mb-2">✨ AI Feedback</h4>
                             <p className="text-sm">Tap <strong>"Get AI Insights on Your Work"</strong> on the main workbook screen to receive an objective summary of key themes in your answers.</p>
                         </div>
                     </div>
