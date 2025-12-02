@@ -160,7 +160,7 @@ export const MEETING_LINKS = {
 // --- Application Versioning ---
 export const APP_VERSIONS = {
     DASHBOARD: '1.3.1',
-    JOURNAL: '1.4.1', 
+    JOURNAL: '1.5.0', 
     GOALS: '1.1.1', 
     COPING: '2.1.0', 
     WORKBOOK: '1.5.0',
@@ -169,6 +169,6 @@ export const APP_VERSIONS = {
     SETTINGS: '1.0.1',
     MEETINGFINDER: '1.0.0',
     DAILYREFLECTION: '1.0.0',
-    USERGUIDE: '1.0.2',
-    SMARTTOOLS: '1.2.2', // Added Smart Recovery Tools
+    USERGUIDE: '1.1.0',
+    SMARTTOOLS: '1.3.0', // Added Smart Recovery Tools
 };
