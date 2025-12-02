@@ -169,6 +169,6 @@ export const APP_VERSIONS = {
     SETTINGS: '1.0.1',
     MEETINGFINDER: '1.0.0',
     DAILYREFLECTION: '1.0.0',
-    USERGUIDE: '1.0.1',
+    USERGUIDE: '1.0.2',
     SMARTTOOLS: '1.2.1', // Added Smart Recovery Tools
 };
