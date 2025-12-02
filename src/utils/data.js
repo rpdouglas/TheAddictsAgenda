@@ -15,40 +15,69 @@ workbookData['smart_recovery'] = {
     topics: [
         {
             id: 'smart_cba',
-            title: 'Cost Benefit Analysis',
-            prompt: 'Use the 4 quadrants to weigh the pros and cons of using vs. abstaining.',
+            title: '1.1 Cost Benefit Analysis',
+            prompt: 'Weigh the pros and cons of using vs. abstaining.',
             customComponent: 'CBATool'
         },
         {
-            id: 'smart_abc',
-            title: 'The ABCs of Coping',
-            prompt: 'Challenge irrational beliefs that lead to self-defeating consequences.',
-            customComponent: 'ABCTool'
-        },
-        {
-            id: 'smart_goal',
-            title: 'Effective Goal Setting',
-            prompt: 'Create a specific, measurable plan for your recovery.',
-            customComponent: 'SmartGoalTool'
+            id: 'smart_compassion',
+            title: '2.2 Practice Self-Compassion',
+            prompt: 'Address feelings of hopelessness with kindness.',
+            customComponent: 'SelfCompassionTool'
         },
         {
             id: 'smart_urge',
-            title: 'Urge Log',
-            prompt: 'Track your triggers and intensity to find patterns.',
+            title: '2.1 Urge Log',
+            prompt: 'Track your triggers and intensity.',
             customComponent: 'UrgeLogTool'
         },
         {
+            id: 'smart_abc',
+            title: '3.1 The ABCs of Coping',
+            prompt: 'Challenge irrational beliefs.',
+            customComponent: 'ABCTool'
+        },
+        {
+            id: 'smart_five_q',
+            title: '3.3 Five Questions',
+            prompt: 'Get what you want by aligning actions with goals.',
+            customComponent: 'FiveQuestionsTool'
+        },
+        {
+            id: 'smart_dents',
+            title: '4.5 Customize DENTS',
+            prompt: 'Strategies to Deny, Escape, Neutralize, Task, or Swap.',
+            customComponent: 'DentsTool'
+        },
+        {
+            id: 'smart_personify',
+            title: '4.6 Personify and Disarm',
+            prompt: 'Give your urge a name to take away its power.',
+            customComponent: 'PersonifyTool'
+        },
+        {
             id: 'smart_balance',
-            title: 'Lifestyle Balance',
+            title: '4.2 Lifestyle Balance',
             prompt: 'Visualize the balance between work, health, and play.',
             customComponent: 'LifestyleBalanceTool'
+        },
+        {
+            id: 'smart_boundaries',
+            title: '5.5 Setting Healthy Boundaries',
+            prompt: 'Practice communicating small and large boundaries.',
+            customComponent: 'BoundariesTool'
+        },
+        {
+            id: 'smart_goal',
+            title: '6.3 Effective Goal Setting',
+            prompt: 'Create a specific, measurable plan.',
+            customComponent: 'SmartGoalTool'
         }
     ]
 };
 
-// --- DYNAMIC LITERATURE LOADING ---
+// ... (Rest of file remains unchanged, keeping literatureManifest, constants etc.)
 export const literatureManifest = {
-  // 1. UPDATED: The 4th Edition is now the main Big Book entry
   aa_big_book_v4: {
     key: 'aa_big_book_v4',
     title: 'The Big Book (4th Edition)',
@@ -86,10 +115,8 @@ export const getLiteratureBook = (bookKey) => {
   }
 };
 
-// --- EXPORT STATIC DATA ---
 export { workbookData };
 
-// --- RECOVERY INSIGHTS/FACTS DATA ---
 export const RECOVERY_FACTS = [
     "The Serenity Prayer was popularized by AA, but was originally written by theologian Reinhold Niebuhr.",
     "AA's Big Book was first published in 1939 and its core text (first 164 pages) remains unchanged.",
@@ -103,7 +130,6 @@ export const RECOVERY_FACTS = [
     "CA (Cocaine Anonymous) uses the same 12 Steps and 12 Traditions as AA.",
 ];
 
-// --- Journal Templates Data ---
 export const journalTemplates = [
     { id: '', name: 'Select a Template...' },
     { id: 'gratitude', name: '3-Part Gratitude Check', template: 'Today I am grateful for:\n1. (Person/Relationship)\n2. (Experience/Event)\n3. (Small Detail)\n\nHow did this feeling of gratitude influence my day?' },
@@ -112,30 +138,21 @@ export const journalTemplates = [
     { id: 'step_10', name: 'Step 10 Spot Check', template: 'Where was I wrong today? (Small admissions of fault or mistake)\n\nWas I mindful of others?\n\nDid I practice honesty in a difficult situation?\n\nIf I was wrong, did I promptly admit it?' },
 ];
 
-// --- Coping Cards Data ---
 export const copingStrategies = [
-    // --- GROUNDING ---
     { title: "Deep Breathing", description: "Inhale for 4s, hold for 7s, exhale for 8s. Repeat 3-5 times.", category: "Grounding", color: "from-serene-teal/20 to-healing-green/20", icon: "MapPinIcon" },
     { title: "5-4-3-2-1 Method", description: "Name: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.", category: "Grounding", color: "from-serene-teal/20 to-healing-green/20", icon: "MapPinIcon" },
     { title: "Ice Cube Hold", description: "Hold an ice cube or run your hands under very cold water for 30 seconds to reset your nervous system.", category: "Grounding", color: "from-serene-teal/20 to-healing-green/20", icon: "ShieldIcon" },
-    
-    // --- ACTION ---
     { title: "Go for a Walk", description: "A 10-15 minute walk can change your scenery and mindset.", category: "Action", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
     { title: "Tidy 5 Minutes", description: "Set a timer and clean one small area (e.g., your desk, one corner of the room).", category: "Action", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
     { title: "Shower or Wash Face", description: "Use the temperature change of the water as a physical reset.", category: "Action", color: "from-healing-green/20 to-serene-teal/20", icon: "LifeBuoyIcon" },
-    
-    // --- COGNITIVE ---
     { title: "Play the Tape Through", description: "Think about the full consequences of giving in to a craving.", category: "Cognitive", color: "from-hopeful-coral/20 to-hopeful-coral/30", icon: "ShieldIcon" },
     { title: "Delay and Distract", description: "Wait 15 minutes. Do something to distract yourself in that time.", category: "Cognitive", color: "from-hopeful-coral/20 to-hopeful-coral/30", icon: "ShieldIcon" },
     { title: "Read an Insight", description: "Read a passage from your favorite recovery book or an inspiring quote.", category: "Cognitive", color: "from-hopeful-coral/20 to-hopeful-coral/30", icon: "LifeBuoyIcon" },
-
-    // --- CONNECTION ---
     { title: "Call a Friend", description: "Talk about what you're feeling with your support network.", category: "Connection", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
     { title: "Check In with Sponsor", description: "Call your sponsor/accountability partner immediately for guidance.", category: "Connection", color: "from-healing-green/20 to-serene-teal/20", icon: "PhoneIcon" },
     { title: "Attend Online Meeting", description: "Join a virtual fellowship meeting right now (AA, NA, SMART, etc.).", category: "Connection", color: "from-healing-green/20 to-serene-teal/20", icon: "MapPinIcon" },
 ];
 
-// --- Meeting Links ---
 export const MEETING_LINKS = {
     AA: {
         name: "Alcoholics Anonymous (AA)",
@@ -157,18 +174,17 @@ export const MEETING_LINKS = {
     }
 };
 
-// --- Application Versioning ---
 export const APP_VERSIONS = {
-    DASHBOARD: '1.3.1',
-    JOURNAL: '1.5.0', 
-    GOALS: '1.1.1', 
-    COPING: '2.1.0', 
-    WORKBOOK: '1.5.0',
-    LITERATURE: '1.2.0',
-    RESOURCES: '1.0.0',
-    SETTINGS: '1.0.1',
-    MEETINGFINDER: '1.0.0',
-    DAILYREFLECTION: '1.0.0',
-    USERGUIDE: '1.1.0',
-    SMARTTOOLS: '1.3.0', // Added Smart Recovery Tools
+    DASHBOARD: '1.3.2',
+    JOURNAL: '1.4.1', 
+    GOALS: '1.1.2', 
+    COPING: '2.1.1', 
+    WORKBOOK: '1.4.2',
+    LITERATURE: '1.2.1',
+    RESOURCES: '1.0.1',
+    SETTINGS: '1.0.2',
+    MEETINGFINDER: '1.0.1',
+    DAILYREFLECTION: '1.0.1',
+    USERGUIDE: '1.0.1',
+    SMARTTOOLS: '1.1.1', // Incremented
 };

@@ -16,7 +16,13 @@ const IS_PROD = process.argv.includes('--prod');
 // Map keys in APP_VERSIONS to the actual file paths
 const COMPONENT_MAP = {
     'DASHBOARD': 'src/components/Dashboard.jsx',
-    'JOURNAL': 'src/components/DailyJournal.jsx',
+    'JOURNAL': [
+        'src/components/DailyJournal.jsx',
+        'src/components/journal/JournalForm.jsx',
+        'src/components/journal/JournalList.jsx',
+        'src/components/journal/MoodGraph.jsx',
+        'src/components/journal/JournalModals.jsx'
+    ],
     'GOALS': 'src/components/Goals.jsx',
     'COPING': 'src/components/CopingTools.jsx',
     'WORKBOOK': 'src/components/RecoveryWorkbook.jsx',
@@ -26,7 +32,20 @@ const COMPONENT_MAP = {
     'MEETINGFINDER': 'src/components/MeetingTracker.jsx',
     'DAILYREFLECTION': 'src/components/DailyReflection.jsx',
     'USERGUIDE': 'src/components/UserGuide.jsx',
-    'SMARTTOOLS': 'src/components/SmartRecoveryTools.jsx', // Added mapping for Smart Recovery Tools
+    'SMARTTOOLS': [
+        'src/components/SmartRecoveryTools.jsx',
+        'src/components/smart_tools/SmartToolsCommon.jsx',
+        'src/components/smart_tools/SmartGoalTool.jsx',
+        'src/components/smart_tools/CBATool.jsx',
+        'src/components/smart_tools/ABCTool.jsx',
+        'src/components/smart_tools/UrgeLogTool.jsx',
+        'src/components/smart_tools/LifestyleBalanceTool.jsx',
+        'src/components/smart_tools/SelfCompassionTool.jsx',
+        'src/components/smart_tools/FiveQuestionsTool.jsx',
+        'src/components/smart_tools/DentsTool.jsx',
+        'src/components/smart_tools/PersonifyTool.jsx',
+        'src/components/smart_tools/BoundariesTool.jsx'
+    ],
 };
 
 // --- Helper Functions ---
@@ -44,6 +63,20 @@ function getFileHash(filePath) {
         console.error(`Error hashing file ${filePath}:`, error);
         return null;
     }
+}
+
+// Calculate a combined hash for multiple files
+function getCombinedHash(filePaths) {
+    const paths = Array.isArray(filePaths) ? filePaths : [filePaths];
+    const hashes = paths.map(p => getFileHash(p)).filter(h => h !== null);
+    
+    if (hashes.length === 0) return null;
+
+    // Sort hashes to ensure consistent order, then hash the joined string
+    const combinedString = hashes.sort().join('');
+    const hashSum = crypto.createHash('md5');
+    hashSum.update(combinedString);
+    return hashSum.digest('hex');
 }
 
 // Increment patch version (1.0.0 -> 1.0.1)
@@ -92,11 +125,12 @@ function main() {
     const nextProdHashes = { ...prodHashes };
 
     // 3. Iterate through components
-    for (const [key, relativePath] of Object.entries(COMPONENT_MAP)) {
-        const currentHash = getFileHash(relativePath);
+    for (const [key, paths] of Object.entries(COMPONENT_MAP)) {
+        const currentHash = getCombinedHash(paths);
         
         if (!currentHash) {
-            console.warn(`⚠️ Warning: Could not find file for ${key} (${relativePath})`);
+            const pathStr = Array.isArray(paths) ? paths.join(', ') : paths;
+            console.warn(`⚠️ Warning: Could not find file(s) for ${key} (${pathStr})`);
             continue;
         }
 
