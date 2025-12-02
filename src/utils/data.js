@@ -170,5 +170,5 @@ export const APP_VERSIONS = {
     MEETINGFINDER: '1.0.0',
     DAILYREFLECTION: '1.0.0',
     USERGUIDE: '1.0.0',
-    SMARTTOOLS: '1.1.0', // Added Smart Recovery Tools
+    SMARTTOOLS: '1.2.0', // Added Smart Recovery Tools
 };

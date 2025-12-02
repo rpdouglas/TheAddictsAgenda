@@ -30,7 +30,6 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           background_color: '#ffffff',
           icons: [
-            // ADDED: Full icon configuration
             {
               src: 'pwa-192x192.png',
               sizes: '192x192',
@@ -47,40 +46,35 @@ export default defineConfig(({ mode }) => {
               type: 'image/png',
               purpose: 'maskable',
             },
-          ] // End of icons array
+          ]
         }
       })
     ],
       
     base: getBase(mode),
     
-    // --- ADDED: Build Optimization to fix chunk size warning ---
+    // --- BUILD OPTIMIZATION ---
     build: {
-      chunkSizeWarningLimit: 1000, // Optional: Increase limit to 1MB to silence minor warnings
+      chunkSizeWarningLimit: 1500, // Increased to 1.5MB to silence warnings for the main vendor chunk
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // Split node_modules into separate chunks
             if (id.includes('node_modules')) {
-              // 1. Separate large PDF libraries
+              // 1. Separate large PDF libraries (Largest bottleneck)
               if (id.includes('jspdf') || id.includes('html2canvas')) {
                 return 'pdf-libs';
               }
-              // 2. Separate Recharts (Charting library)
+              // 2. Separate Recharts (Large charting library)
               if (id.includes('recharts')) {
                 return 'recharts';
               }
-              // 3. Separate Firebase
+              // 3. Separate Firebase (Large SDK)
               if (id.includes('firebase')) {
                 return 'firebase';
               }
-              // 4. Separate React and core vendor libs
-              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-                return 'vendor-react';
-              }
               
-              // Fallback for other node_modules
-              return 'vendor'; 
+              // REMOVED: 'vendor-react' chunking. 
+              // Letting Vite bundle React automatically fixes the "B.Activity" undefined error.
             }
           }
         }

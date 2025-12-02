@@ -1,10 +1,13 @@
 // src/components/SmartRecoveryTools.jsx
 import React, { useState, useEffect } from 'react';
 import DataStore from '../utils/dataStore.js';
+
 import { 
     StarIcon, TrendingUpIcon, ShieldIcon, HeartIcon, 
-    CollectionIcon, CheckIcon, TrashIcon, PlusIcon 
+    CollectionIcon, CheckIcon, TrashIcon, PlusIcon,
+    EditIcon, ArrowLeftIcon 
 } from '../utils/icons.jsx';
+
 import { 
   ResponsiveContainer, RadarChart, PolarGrid, 
   PolarAngleAxis, PolarRadiusAxis, Radar 
