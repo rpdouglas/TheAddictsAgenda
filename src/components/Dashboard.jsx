@@ -109,8 +109,8 @@ export const Dashboard = ({ onNavigate, sobrietyStartDate, deferredPrompt, onIns
             color: 'blue'
         },
         {
-            label: 'Goals',
-            icon: <StarIcon className="w-8 h-8" />,
+            label: 'To-Do List',
+            icon: <CheckCircleIcon className="w-8 h-8" />,
             view: 'goals',
             color: 'yellow'
         },

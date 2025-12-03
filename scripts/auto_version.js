@@ -31,7 +31,21 @@ const COMPONENT_MAP = {
     'SETTINGS': 'src/components/Settings.jsx',
     'MEETINGFINDER': 'src/components/MeetingTracker.jsx',
     'DAILYREFLECTION': 'src/components/DailyReflection.jsx',
-    'USERGUIDE': 'src/components/UserGuide.jsx',
+    'USERGUIDE': [
+        'src/components/UserGuide.jsx',
+        'src/components/guide/GuideDashboard.jsx',
+        'src/components/guide/GuideJournal.jsx',
+        'src/components/guide/GuideCoping.jsx',
+        'src/components/guide/GuideWorkbook.jsx',
+        'src/components/guide/GuideLiterature.jsx',
+        'src/components/guide/GuideToDo.jsx',
+        'src/components/guide/GuideChallenge.jsx',
+        'src/components/guide/GuideMeetings.jsx',
+        'src/components/guide/GuideResources.jsx',
+        'src/components/guide/GuideSettings.jsx',
+        'src/components/guide/GuideDataSecurity.jsx',
+        'src/components/guide/GuidePrivacy.jsx'
+    ],
     'SMARTTOOLS': [
         'src/components/SmartRecoveryTools.jsx',
         'src/components/smart_tools/SmartToolsCommon.jsx',
