@@ -1,14 +1,25 @@
 // src/components/RecoveryWorkbook.jsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import DataStore from '../utils/dataStore.js';
-import { workbookData } from '../utils/data.js'; // Ensure this imports the UPDATED data object
+import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
 import { ArrowLeftIcon, ChevronDown, ChevronUp, CheckCircleIcon, SparklesIcon, DownloadIcon } from '../utils/icons.jsx';
 import { model } from '../firebase.jsx';
 import jsPDF from 'jspdf';
 
-// IMPORT CUSTOM TOOLS
-import { SmartGoalTool, CBATool, ABCTool, UrgeLogTool, LifestyleBalanceTool } from './SmartRecoveryTools.jsx';
+// IMPORT CUSTOM TOOLS (UPDATED: Added missing tools)
+import { 
+    SmartGoalTool, 
+    CBATool, 
+    ABCTool, 
+    UrgeLogTool, 
+    LifestyleBalanceTool,
+    SelfCompassionTool,
+    FiveQuestionsTool,
+    DentsTool,
+    PersonifyTool,
+    BoundariesTool
+} from './SmartRecoveryTools.jsx';
 
 // --- Sub-Components ---
 
@@ -114,7 +125,7 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
 
 const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
     
-    // --- CHECK FOR CUSTOM COMPONENT ---
+    // --- CHECK FOR CUSTOM COMPONENT (UPDATED) ---
     const renderCustomTool = () => {
         switch (topic.customComponent) {
             case 'SmartGoalTool': return <SmartGoalTool />;
@@ -122,6 +133,12 @@ const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
             case 'ABCTool': return <ABCTool />;
             case 'UrgeLogTool': return <UrgeLogTool />;
             case 'LifestyleBalanceTool': return <LifestyleBalanceTool />;
+            // New Tools Added:
+            case 'SelfCompassionTool': return <SelfCompassionTool />;
+            case 'FiveQuestionsTool': return <FiveQuestionsTool />;
+            case 'DentsTool': return <DentsTool />;
+            case 'PersonifyTool': return <PersonifyTool />;
+            case 'BoundariesTool': return <BoundariesTool />;
             default: return null;
         }
     };
@@ -351,13 +368,18 @@ const RecoveryWorkbook = () => {
                         }
                     } else {
                         // Simple Topic: Check single prompt
-                        const response = workbookResponses[topic.id];
-                        if (!response || response.trim().length === 0) {
-                            isComplete = false;
+                        // For custom tools, we currently don't track detailed completion in this loop
+                        // so we assume they are 'incomplete' or handle it differently.
+                        // For now, only text-based topics are checked for completion string.
+                        if (!topic.customComponent) {
+                             const response = workbookResponses[topic.id];
+                             if (!response || response.trim().length === 0) {
+                                isComplete = false;
+                             }
                         }
                     }
 
-                    if (isComplete) {
+                    if (isComplete && !topic.customComponent) {
                         completed.add(topic.id);
                     }
                 });

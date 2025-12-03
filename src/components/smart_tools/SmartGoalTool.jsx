@@ -1,6 +1,6 @@
 import React from 'react';
 import { PlusIcon, CheckIcon, TrashIcon } from '../../utils/icons.jsx';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 export const SmartGoalTool = () => {
     const [state, setState, status] = useAutoSave('smart_tools_goal', {
@@ -8,6 +8,14 @@ export const SmartGoalTool = () => {
         tasks: [],
         newTask: ''
     });
+
+    const explanation = "Vague goals like 'get better' are hard to achieve. This tool uses the S.M.A.R.T. criteria (Specific, Measurable, Achievable, Realistic, Time-bound) to turn wishes into actionable plans.";
+    
+    const walkthrough = [
+        { title: "Define the Goal", desc: "Fill in the five fields to refine your goal (e.g., instead of 'Exercise,' write 'Walk 30 minutes' under Specific)." },
+        { title: "Action Plan", desc: "Use the 'Action Plan' section to break the goal into small steps." },
+        { title: "Track", desc: "Type a step (e.g., 'Buy shoes') and click '+'. Check the box when completed." }
+    ];
 
     const updateGoal = (field, value) => {
         setState(prev => ({ ...prev, goal: { ...prev.goal, [field]: value } }));
@@ -56,13 +64,14 @@ export const SmartGoalTool = () => {
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h3 className="font-bold text-lg text-blue-800">Tool 6.3: Set an Effective Goal</h3>
-                        <p className="text-sm text-blue-700">Goals should be Specific, Measurable, Achievable, Realistic, and Time-bound.</p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
                         <span className="text-xs text-blue-600 font-semibold h-4">{status}</span>
                         <JournalButton onSave={handleJournalSave} />
                     </div>
                 </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Object.keys(state.goal).map(key => (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 export const ABCTool = () => {
     const [state, setState, status] = useAutoSave('smart_tools_abc', {
@@ -9,6 +9,16 @@ export const ABCTool = () => {
         dispute: '',
         effectiveBelief: ''
     });
+
+    const explanation = "Based on Rational Emotive Behavior Therapy (REBT), this tool helps you challenge irrational beliefs that lead to emotional upset. It teaches you that events don't cause feelings—your beliefs about events do.";
+    
+    const walkthrough = [
+        { title: "A (Activating Event)", desc: "Describe the factual event that upset you (e.g., 'My boss criticized my report')." },
+        { title: "B (Beliefs)", desc: "What did you tell yourself? (e.g., 'I'm a failure,' 'He shouldn't treat me like that')." },
+        { title: "C (Consequences)", desc: "How did you feel and act? (e.g., 'Anxious, wanted to drink')." },
+        { title: "D (Dispute)", desc: "Challenge the belief in 'B'. Is it true? Is it helpful?" },
+        { title: "E (Effective New Belief)", desc: "Write a new, rational thought (e.g., 'I made a mistake, but I can learn from it')." }
+    ];
 
     const update = (field, value) => setState(prev => ({ ...prev, [field]: value }));
 
@@ -25,15 +35,18 @@ export const ABCTool = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 flex justify-between items-start">
-                <div>
-                    <h3 className="font-bold text-lg text-purple-800">Tool 3.1: The ABCs of Coping</h3>
-                    <p className="text-sm text-purple-700">Activating Event &rarr; Beliefs &rarr; Consequences</p>
+            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="font-bold text-lg text-purple-800">Tool 3.1: The ABCs of Coping</h3>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs text-purple-700 font-semibold h-4">{status}</span>
+                        <JournalButton onSave={handleJournalSave} />
+                    </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-purple-700 font-semibold h-4">{status}</span>
-                    <JournalButton onSave={handleJournalSave} />
-                </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
             </div>
 
             <div className="space-y-4">

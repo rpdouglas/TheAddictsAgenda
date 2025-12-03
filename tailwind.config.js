@@ -9,7 +9,7 @@ export default {
       colors: {
         'serene-teal': '#2A7886',
         'healing-green': '#5A8B7C',
-        'hopeful-coral': '#F9A487',
+        'hopeful-coral': '#E07A5F', // Darkened from #F9A487 for better visibility
         'soft-linen': '#F4F0E9',
         'deep-charcoal': '#343A40',
         'light-stone': '#DEE2E6',

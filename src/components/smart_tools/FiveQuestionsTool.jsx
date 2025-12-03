@@ -1,11 +1,21 @@
 import React from 'react';
 import { StarIcon } from '../../utils/icons.jsx';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 export const FiveQuestionsTool = () => {
     const [state, setState, status] = useAutoSave('smart_tools_five_questions', {
         q1: '', q2: '', q3: '', q4: '', q5: ''
     });
+
+    const explanation = "This tool is a quick 'reality check' to align your current actions with your long-term goals. It helps when you feel stuck or conflicted about a decision by contrasting what you want with what you are actually doing.";
+    
+    const walkthrough = [
+        { title: "Future Goal", desc: "Answer 'What do I want for my future?'" },
+        { title: "Current Action", desc: "Answer 'What am I doing right now?'" },
+        { title: "Evaluation", desc: "Answer 'How do I feel about what I'm doing?' (Be honest about the conflict)." },
+        { title: "Alternative", desc: "Answer 'What could I do differently?'" },
+        { title: "Outcome", desc: "Answer 'How would changing make me feel?'" }
+    ];
 
     const update = (field, value) => setState(prev => ({ ...prev, [field]: value }));
 
@@ -29,15 +39,18 @@ export const FiveQuestionsTool = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 flex justify-between items-start">
-                <div>
-                    <h3 className="font-bold text-lg text-blue-800">Tool 3.3: Five Questions</h3>
-                    <p className="text-sm text-blue-700">Align your current actions with your future goals.</p>
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="font-bold text-lg text-blue-800">Tool 3.3: Five Questions</h3>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs text-blue-700 font-semibold h-4">{status}</span>
+                        <JournalButton onSave={handleJournalSave} />
+                    </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-blue-700 font-semibold h-4">{status}</span>
-                    <JournalButton onSave={handleJournalSave} />
-                </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
             </div>
 
             <div className="space-y-4">

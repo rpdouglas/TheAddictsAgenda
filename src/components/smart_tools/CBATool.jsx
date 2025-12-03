@@ -1,6 +1,6 @@
 import React from 'react';
 import { PlusIcon, TrashIcon } from '../../utils/icons.jsx';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 const CBAQuadrant = ({ title, id, bg, items, inputValue, onUpdateInput, onAddItem, onRemoveItem }) => (
     <div className={`p-4 rounded-lg border ${bg} h-full`}>
@@ -43,6 +43,15 @@ export const CBATool = () => {
             disadvantages_stopping: ''
         }
     });
+
+    const explanation = "The Cost Benefit Analysis (CBA) is a decision-making tool that helps you see the 'big picture' of your addictive behavior. By weighing the short-term and long-term pros and cons of using versus stopping, you can build motivation to change. It moves you from 'feeling' you should quit to 'knowing' why you must.";
+    
+    const walkthrough = [
+        { title: "Define the Behavior", desc: "Type the specific behavior you are analyzing (e.g., 'Drinking alcohol,' 'Gambling,' 'Isolating') at the top." },
+        { title: "Fill the Quadrants", desc: "List the Advantages/Disadvantages of using, and the Advantages/Disadvantages of stopping." },
+        { title: "Review", desc: "Use the 'Add item' input to list as many points as possible. Seeing the costs of using pile up reinforces your recovery goal." },
+        { title: "Save", desc: "Your work auto-saves. Tap 'Save to Journal' to keep a permanent record." }
+    ];
 
     const addItem = (quadrant) => {
         if (state.inputs[quadrant].trim()) {
@@ -93,22 +102,25 @@ export const CBATool = () => {
     return (
         <div className="space-y-4">
             <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start mb-4">
                     <div className="flex-grow">
                         <h3 className="font-bold text-lg text-yellow-800">Tool 1.1: Cost Benefit Analysis</h3>
-                        <input
-                            type="text"
-                            className="w-full mt-2 p-2 border border-yellow-300 rounded bg-white"
-                            placeholder="Target Behavior (e.g., Drinking, Isolating)..."
-                            value={state.behavior}
-                            onChange={(e) => setState(prev => ({ ...prev, behavior: e.target.value }))}
-                        />
                     </div>
                     <div className="flex flex-col items-end gap-1 ml-4">
                         <span className="text-xs text-yellow-700 font-semibold h-4">{status}</span>
                         <JournalButton onSave={handleJournalSave} />
                     </div>
                 </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
+
+                <input
+                    type="text"
+                    className="w-full p-2 border border-yellow-300 rounded bg-white font-medium placeholder-gray-400"
+                    placeholder="Target Behavior (e.g., Drinking, Isolating)..."
+                    value={state.behavior}
+                    onChange={(e) => setState(prev => ({ ...prev, behavior: e.target.value }))}
+                />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CBAQuadrant 

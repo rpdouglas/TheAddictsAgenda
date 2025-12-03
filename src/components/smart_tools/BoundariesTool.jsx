@@ -1,6 +1,6 @@
 import React from 'react';
 import { PlusIcon, TrashIcon, ShieldIcon } from '../../utils/icons.jsx';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 export const BoundariesTool = () => {
     const [state, setState, status] = useAutoSave('smart_tools_boundaries', {
@@ -10,6 +10,15 @@ export const BoundariesTool = () => {
         how: '',
         type: 'Small' // Small or Large
     });
+
+    const explanation = "Learning to say 'no' is vital for protecting your recovery. This tool helps you script and plan boundaries, distinguishing between 'Small' practice boundaries and 'Large' necessary ones.";
+    
+    const walkthrough = [
+        { title: "Select Type", desc: "Choose 'Small Boundary' (for low-stakes practice) or 'Large Boundary' (for major issues)." },
+        { title: "Who & What", desc: "Enter the person's name and the specific issue (e.g., 'Coworker asking me to cover shifts')." },
+        { title: "How", desc: "Draft your script. Keep it clear and firm (e.g., 'I cannot cover for you. Please don't ask me again.')." },
+        { title: "Add to List", desc: "Save your plan. Reviewing this before the conversation gives you confidence." }
+    ];
 
     const addBoundary = () => {
         if (state.who && state.what) {
@@ -44,15 +53,18 @@ export const BoundariesTool = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200 flex justify-between items-start">
-                <div>
-                    <h3 className="font-bold text-lg text-orange-800">Tool 5.5: Healthy Boundaries</h3>
-                    <p className="text-sm text-orange-700">Practice setting small boundaries to build confidence for larger ones.</p>
+            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="font-bold text-lg text-orange-800">Tool 5.5: Healthy Boundaries</h3>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs text-orange-700 font-semibold h-4">{status}</span>
+                        <JournalButton onSave={handleJournalSave} />
+                    </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-orange-700 font-semibold h-4">{status}</span>
-                    <JournalButton onSave={handleJournalSave} />
-                </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
             </div>
 
             {/* Input Form */}

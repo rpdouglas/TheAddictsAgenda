@@ -1,6 +1,6 @@
 import React from 'react';
 import { PlusIcon, TrashIcon, ShieldIcon } from '../../utils/icons.jsx';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 export const PersonifyTool = () => {
     const [state, setState, status] = useAutoSave('smart_tools_personify', {
@@ -9,6 +9,15 @@ export const PersonifyTool = () => {
         newAction: '',
         newResult: ''
     });
+
+    const explanation = "Sometimes an urge feels like 'you.' This tool separates the addictive voice from your true self by giving it a name and a persona (like an annoying salesperson or a whining child). This detachment makes it easier to say no.";
+    
+    const walkthrough = [
+        { title: "Name It", desc: "Give your urge a nickname (e.g., 'The Whiner,' 'Slick Sal')." },
+        { title: "Script It", desc: "Write what you will say back to it (e.g., 'Not today, Sal. I'm not buying what you're selling.')." },
+        { title: "Result", desc: "Describe the outcome (e.g., 'He shuts up and walks away')." },
+        { title: "Add Persona", desc: "Click 'Add Persona' to save this character. You can build a whole cast for different urges." }
+    ];
 
     const addPersona = () => {
         if (state.newName && state.newAction) {
@@ -42,15 +51,18 @@ export const PersonifyTool = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 flex justify-between items-start">
-                <div>
-                    <h3 className="font-bold text-lg text-purple-800">Tool 4.6: Personify and Disarm</h3>
-                    <p className="text-sm text-purple-700">Treat urges as an annoying salesperson or a whining child to reduce their power.</p>
+            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="font-bold text-lg text-purple-800">Tool 4.6: Personify and Disarm</h3>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs text-purple-700 font-semibold h-4">{status}</span>
+                        <JournalButton onSave={handleJournalSave} />
+                    </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-purple-700 font-semibold h-4">{status}</span>
-                    <JournalButton onSave={handleJournalSave} />
-                </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
             </div>
 
             {/* Input Form */}
