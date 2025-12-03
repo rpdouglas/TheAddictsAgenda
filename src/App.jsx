@@ -225,7 +225,7 @@ const App = () => {
         ),
         'goals': (
             <>
-                <Goals />
+                <Goals onBack={() => setActiveView('dashboard')} />
                 {renderFooterVersion(APP_VERSIONS.GOALS, 'goals')}
             </>
         ),
