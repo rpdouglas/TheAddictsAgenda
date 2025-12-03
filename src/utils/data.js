@@ -175,16 +175,16 @@ export const MEETING_LINKS = {
 };
 
 export const APP_VERSIONS = {
-    DASHBOARD: '1.3.2',
-    JOURNAL: '1.4.1', 
-    GOALS: '1.1.2', 
-    COPING: '2.1.1', 
-    WORKBOOK: '1.4.2',
-    LITERATURE: '1.2.1',
-    RESOURCES: '1.0.1',
-    SETTINGS: '1.0.2',
-    MEETINGFINDER: '1.0.1',
-    DAILYREFLECTION: '1.0.1',
-    USERGUIDE: '1.0.1',
-    SMARTTOOLS: '1.1.1', // Incremented
+    DASHBOARD: '1.4.0',
+    JOURNAL: '1.7.0', 
+    GOALS: '1.2.0', 
+    COPING: '2.2.0', 
+    WORKBOOK: '1.6.1',
+    LITERATURE: '1.3.0',
+    RESOURCES: '1.1.0',
+    SETTINGS: '1.1.0',
+    MEETINGFINDER: '1.1.0',
+    DAILYREFLECTION: '1.1.0',
+    USERGUIDE: '1.2.0',
+    SMARTTOOLS: '1.3.0', // Incremented
 };

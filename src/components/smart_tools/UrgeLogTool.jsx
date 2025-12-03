@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 export const UrgeLogTool = () => {
     const [state, setState, status] = useAutoSave('smart_tools_urgelog', {
@@ -8,6 +8,15 @@ export const UrgeLogTool = () => {
         trigger: '',
         response: ''
     });
+
+    const explanation = "Cravings can feel unpredictable and overwhelming. The Urge Log turns them into data. By tracking when urges happen, how intense they are, and what triggered them, you can identify patterns and discover which coping strategies actually work for you.";
+    
+    const walkthrough = [
+        { title: "Rate Intensity", desc: "Use the slider to rate your urge from 1 (mild) to 10 (intense)." },
+        { title: "Identify the Trigger", desc: "Write what was happening just before the urge (e.g., 'Argument with partner,' 'Saw a bar')." },
+        { title: "Record Response", desc: "What did you do to cope? (e.g., 'Called a friend,' 'Played the tape through')." },
+        { title: "Log It", desc: "Tap 'Log Urge' to save the entry to your history list below." }
+    ];
 
     const addLog = () => {
         if (state.trigger) {
@@ -45,13 +54,16 @@ export const UrgeLogTool = () => {
     return (
         <div className="space-y-6">
             <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start mb-4">
                     <h3 className="font-bold text-lg text-red-800">Tool 2.1: Urge Log</h3>
                     <div className="flex flex-col items-end gap-1">
                         <span className="text-xs text-red-700 font-semibold h-4">{status}</span>
                         <JournalButton onSave={handleJournalSave} />
                     </div>
                 </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
+
                 <div className="mt-4 space-y-3">
                     <div>
                         <label className="block text-xs font-bold text-red-800 uppercase">Intensity (1-10)</label>

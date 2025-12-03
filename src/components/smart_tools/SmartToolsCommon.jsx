@@ -1,6 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import DataStore from '../../utils/dataStore.js';
-import { ClipboardListIcon } from '../../utils/icons.jsx';
+import { ClipboardListIcon, ChevronDown, ChevronUp } from '../../utils/icons.jsx';
+
+// --- NEW COMPONENT: Tool Guide (Explanation + Walkthrough) ---
+export const ToolGuide = ({ explanation, walkthrough }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="mb-6 bg-white/60 rounded-lg border border-black/5 overflow-hidden shadow-sm">
+            <div className="p-4 text-sm text-gray-800 leading-relaxed border-b border-black/5">
+                <p>{explanation}</p>
+            </div>
+            <div>
+                <button 
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full flex justify-between items-center p-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-600 hover:bg-black/5 transition-colors focus:outline-none"
+                >
+                    <span>How to use this tool</span>
+                    {isOpen ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}
+                </button>
+                
+                {isOpen && (
+                    <div className="p-4 bg-white/40 text-sm text-gray-700 space-y-3 animate-fade-in border-t border-black/5">
+                        {walkthrough.map((step, index) => (
+                            <div key={index} className="flex gap-3">
+                                <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-black/10 text-[10px] font-bold text-gray-700">
+                                    {index + 1}
+                                </span>
+                                <div>
+                                    <span className="font-bold text-gray-900">{step.title}: </span>
+                                    <span>{step.desc}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
 
 // --- HELPER: Auto-Save Hook ---
 export const useAutoSave = (key, initialState) => {

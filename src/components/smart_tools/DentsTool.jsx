@@ -1,11 +1,21 @@
 import React from 'react';
 import { ShieldIcon } from '../../utils/icons.jsx';
-import { useAutoSave, saveToJournal, JournalButton } from './SmartToolsCommon.jsx';
+import { useAutoSave, saveToJournal, JournalButton, ToolGuide } from './SmartToolsCommon.jsx';
 
 export const DentsTool = () => {
     const [state, setState, status] = useAutoSave('smart_tools_dents', {
         deny: '', escape: '', neutralize: '', tasks: '', swap: ''
     });
+
+    const explanation = "DENTS provides five distinct strategies to handle cravings. This tool helps you pre-plan exactly what you will do for each strategy so you aren't scrambling in the moment when an urge hits.";
+    
+    const walkthrough = [
+        { title: "D (Deny/Delay)", desc: "Write your plan to wait out the urge (e.g., 'I will set a timer for 15 minutes')." },
+        { title: "E (Escape)", desc: "Identify triggers you can physically leave (e.g., 'If I see X, I will walk away')." },
+        { title: "N (Neutralize)", desc: "Write a phrase to dismiss the urge (e.g., 'This is just a thought, not a command')." },
+        { title: "T (Tasks)", desc: "List distracting activities (e.g., 'Do the dishes,' 'Sudoku')." },
+        { title: "S (Swap)", desc: "Choose a healthy substitute (e.g., 'Sparkling water instead of beer')." }
+    ];
 
     const update = (field, value) => setState(prev => ({ ...prev, [field]: value }));
 
@@ -29,15 +39,18 @@ export const DentsTool = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-teal-50 p-4 rounded-lg border border-teal-200 flex justify-between items-start">
-                <div>
-                    <h3 className="font-bold text-lg text-teal-800">Tool 4.5: Customize DENTS</h3>
-                    <p className="text-sm text-teal-700">Develop strategies to get through an urge.</p>
+            <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="font-bold text-lg text-teal-800">Tool 4.5: Customize DENTS</h3>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs text-teal-700 font-semibold h-4">{status}</span>
+                        <JournalButton onSave={handleJournalSave} />
+                    </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-teal-700 font-semibold h-4">{status}</span>
-                    <JournalButton onSave={handleJournalSave} />
-                </div>
+
+                <ToolGuide explanation={explanation} walkthrough={walkthrough} />
             </div>
 
             <div className="space-y-4">

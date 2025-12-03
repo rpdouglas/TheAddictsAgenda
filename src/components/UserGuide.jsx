@@ -37,6 +37,7 @@ const UserGuide = ({ onBack, targetSection }) => {
     const workbookRef = useRef(null);
     const literatureRef = useRef(null);
     const goalsRef = useRef(null);
+    const challengeRef = useRef(null); // NEW REF
     const meetingsRef = useRef(null);
     const resourcesRef = useRef(null);
     const settingsRef = useRef(null);
@@ -50,6 +51,7 @@ const UserGuide = ({ onBack, targetSection }) => {
         'workbook': workbookRef,
         'literature': literatureRef,
         'goals': goalsRef,
+        'challenge': challengeRef, // NEW MAPPING
         'meetings': meetingsRef,
         'resources': resourcesRef,
         'settings': settingsRef,
@@ -65,6 +67,7 @@ const UserGuide = ({ onBack, targetSection }) => {
         'workbook': false,
         'literature': false,
         'goals': false,
+        'challenge': false, // NEW STATE
         'meetings': false,
         'resources': false,
         'settings': false,
@@ -155,6 +158,7 @@ const UserGuide = ({ onBack, targetSection }) => {
         { id: 'workbook', label: 'Recovery Workbook' },
         { id: 'literature', label: 'Literature Library' },
         { id: 'goals', label: 'Goals & Milestones' },
+        { id: 'challenge', label: '90-Day Challenge' }, // NEW ITEM
         { id: 'meetings', label: 'Meeting Management' },
         { id: 'resources', label: 'Emergency Resources' },
         { id: 'settings', label: 'Settings' },
@@ -354,7 +358,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                     </div>
                 </CollapsibleSection>
 
-                {/* --- WORKBOOK SECTION (UPDATED) --- */}
+                {/* --- WORKBOOK SECTION --- */}
                 <CollapsibleSection id="workbook" title="Recovery Workbook" isOpen={expandedSections['workbook']} onToggle={toggleSection} sectionRef={workbookRef}>
                     <p className="mb-6">A structured environment to work the Steps and explore Recovery Dharma inquiries. Your progress is saved automatically.</p>
                     
@@ -403,7 +407,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                             </ul>
                         </div>
 
-                        {/* 5. SMART Recovery Tools (NEW) */}
+                        {/* 5. SMART Recovery Tools */}
                         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
                             <h4 className="font-bold text-blue-800 mb-2">🧠 SMART Recovery Tools</h4>
                             <p className="text-sm text-blue-700 mb-3">Practical, interactive tools for self-management (CBA, ABCs, Lifestyle Balance). Use these tools to apply rational thinking to recovery challenges.</p>
@@ -481,14 +485,59 @@ const UserGuide = ({ onBack, targetSection }) => {
                         <li><strong>Categories:</strong> Organize goals by type (e.g., Spiritual, Physical, Financial).</li>
                     </ul>
                 </CollapsibleSection>
+
+                {/* --- 90-DAY CHALLENGE SECTION (NEW) --- */}
+                <CollapsibleSection id="challenge" title="90-Day Challenge" isOpen={expandedSections['challenge']} onToggle={toggleSection} sectionRef={challengeRef}>
+                    <p className="mb-6">The "90 Meetings in 90 Days" challenge is a cornerstone of early recovery for many. This tool helps you visualize and track that commitment.</p>
+                    
+                    <h3 className="text-xl font-bold text-gray-800 mb-3">Feature Guide</h3>
+                    <div className="space-y-6">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">📊 Tracking Attendance</h4>
+                            <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
+                                <li><strong>Start Today:</strong> When you open the challenge for the first time, it starts tracking from "Day 1".</li>
+                                <li><strong>Mark Complete:</strong> Tap any day number in the grid to mark it as "Attended". It will turn green with a checkmark.</li>
+                                <li><strong>Catch Up:</strong> You can tap past days if you forgot to log them, but you cannot log future days.</li>
+                            </ul>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">📓 Journal Integration</h4>
+                            <p className="text-sm text-gray-600 mb-2">Connect your meetings to your reflections.</p>
+                            <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
+                                <li>When you mark a day as attended, the app will ask: <em>"Would you like to journal about this meeting?"</em></li>
+                                <li>Tap <strong>"Yes"</strong> to instantly open a new journal entry with a "Meeting Reflection" template pre-loaded for that date.</li>
+                            </ul>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🔄 Resetting</h4>
+                            <p className="text-sm text-gray-600">
+                                If you experience a recurrence of use or simply want to start a fresh 90-day cycle, tap the <strong>"Reset Challenge"</strong> button at the top right. This will clear your grid and start over from Day 1.
+                            </p>
+                        </div>
+                    </div>
+                </CollapsibleSection>
                 
-                 {/* --- MEETINGS SECTION --- */}
+                 {/* --- MEETINGS SECTION (UPDATED) --- */}
                  <CollapsibleSection id="meetings" title="Meeting Management" isOpen={expandedSections['meetings']} onToggle={toggleSection} sectionRef={meetingsRef}>
-                    <p className="mb-4">Keep track of your meeting attendance and service commitments.</p>
-                    <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
-                        <li><strong>Tracker:</strong> Log every meeting you attend to build a history of your commitment.</li>
-                        <li><strong>Homegroup:</strong> Store details about your homegroup, including business meeting notes and group conscience decisions.</li>
-                    </ul>
+                    <p className="mb-6">Organize your recovery network. Keep track of where you go and who is in your circle.</p>
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">📝 Meeting Tracker</h4>
+                            <p className="text-sm text-gray-700">Keep a personal log of every meeting you attend. You can add notes about the topic, chair, or location.</p>
+                        </div>
+                         <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🏠 Homegroup & Members</h4>
+                            <p className="text-sm text-gray-700">
+                                Designated your "Homegroup"? Use the <strong>Group Members</strong> feature to keep a private list of phone numbers and names for your support network within that group.
+                            </p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold text-teal-600 mb-2">🔍 External Meeting Finder</h4>
+                            <p className="text-sm text-gray-700">
+                                Need to find a meeting near you? Use the <strong>Meeting Finder</strong> to access official search tools for Alcoholics Anonymous, Narcotics Anonymous, and more directly from the app.
+                            </p>
+                        </div>
+                    </div>
                 </CollapsibleSection>
 
                  {/* --- RESOURCES SECTION --- */}
