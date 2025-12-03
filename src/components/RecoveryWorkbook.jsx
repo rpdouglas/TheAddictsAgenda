@@ -3,11 +3,11 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import DataStore from '../utils/dataStore.js';
 import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
-import { ArrowLeftIcon, ChevronDown, ChevronUp, CheckCircleIcon, SparklesIcon, DownloadIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ArrowRightIcon, ChevronDown, ChevronUp, CheckCircleIcon, SparklesIcon, DownloadIcon } from '../utils/icons.jsx';
 import { model } from '../firebase.jsx';
 import jsPDF from 'jspdf';
 
-// IMPORT CUSTOM TOOLS (UPDATED: Added missing tools)
+// IMPORT CUSTOM TOOLS
 import { 
     SmartGoalTool, 
     CBATool, 
@@ -63,16 +63,21 @@ const WorkbookQuestion = ({ questionText, questionKey, initialResponses, onUpdat
     }, [response, questionKey, onUpdate, initialResponses]);
 
     return (
-        <div className="mb-4 pb-2">
-            <p className="workbook-question text-deep-charcoal">{questionText}</p>
-            <textarea 
-                value={response} 
-                onChange={(e) => setResponse(e.target.value)} 
-                placeholder="Write your answer here..." 
-                className="w-full p-3 border border-light-stone rounded-lg shadow-sm focus:ring-2 focus:ring-pink-500 resize-y min-h-[100px] text-sm"
-                rows="4"
-            />
-            <p className="text-right text-xs text-deep-charcoal/60 mt-1 h-4">{saveStatus === 'Saved' ? 'Saved' : (saveStatus === 'Saving...' ? 'Saving...' : '\u00A0')}</p>
+        <div className="mb-6">
+            <p className="font-semibold text-deep-charcoal mb-2 text-sm leading-relaxed">{questionText}</p>
+            <div className="relative">
+                <textarea 
+                    value={response} 
+                    onChange={(e) => setResponse(e.target.value)} 
+                    placeholder="Write your answer here..." 
+                    className="w-full p-4 border border-light-stone rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-y min-h-[120px] text-sm bg-white transition-all"
+                />
+                <div className="absolute bottom-3 right-3">
+                    <p className={`text-xs font-bold transition-opacity duration-300 ${saveStatus === 'Saved' ? 'text-green-600 opacity-100' : (saveStatus === 'Saving...' ? 'text-pink-500 opacity-100' : 'opacity-0')}`}>
+                        {saveStatus === 'Saved' ? 'Saved' : 'Saving...'}
+                    </p>
+                </div>
+            </div>
         </div>
     );
 };
@@ -83,6 +88,13 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
     
     const keyPrefix = `${stepId}-${section.id}`; 
     
+    // Calculate progress for this specific section
+    const totalQuestions = section.questions.length;
+    const completedQuestions = section.questions.filter((_, idx) => {
+        const key = `${keyPrefix}-${idx + 1}`;
+        return initialResponses[key] && initialResponses[key].trim().length > 0;
+    }).length;
+
     useEffect(() => {
         if (contentRef.current) {
             contentRef.current.style.maxHeight = isCollapsed ? '0px' : `${contentRef.current.scrollHeight}px`;
@@ -90,13 +102,20 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
     }, [isCollapsed]);
 
     return (
-        <div className="mb-4 border border-light-stone/50 rounded-lg shadow-sm overflow-hidden">
+        <div className="mb-4 border border-light-stone/50 rounded-xl shadow-sm overflow-hidden bg-white">
             <button 
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className={`w-full flex justify-between items-center p-4 font-bold text-lg transition-colors ${isCollapsed ? 'bg-pure-white/60 hover:bg-soft-linen text-deep-charcoal/80' : 'bg-pink-600 text-white hover:bg-pink-700'}`}
+                className={`w-full flex justify-between items-center p-4 transition-colors ${isCollapsed ? 'bg-white hover:bg-gray-50' : 'bg-pink-50'}`}
             >
-                {section.title}
-                {isCollapsed ? <ChevronDown /> : <ChevronUp />}
+                <div className="text-left">
+                    <span className="font-bold text-deep-charcoal block">{section.title}</span>
+                    <span className="text-xs text-deep-charcoal/60 font-medium">
+                        {completedQuestions} / {totalQuestions} Answered
+                    </span>
+                </div>
+                <div className={`p-2 rounded-full ${isCollapsed ? 'bg-gray-100 text-gray-400' : 'bg-pink-200 text-pink-700'}`}>
+                    {isCollapsed ? <ChevronDown /> : <ChevronUp />}
+                </div>
             </button>
             
             <div 
@@ -104,7 +123,7 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
                 style={{ maxHeight: '0px', transition: 'max-height 0.4s ease-in-out' }}
                 className="overflow-hidden bg-white"
             >
-                <div className="p-4">
+                <div className="p-4 border-t border-light-stone/30">
                     {section.questions.map((question, qIndex) => {
                         const questionKey = `${keyPrefix}-${qIndex + 1}`;
                         return (
@@ -123,9 +142,9 @@ const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdat
     );
 };
 
-const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
+const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate, onNext, onPrevious, hasNext, hasPrevious }) => {
     
-    // --- CHECK FOR CUSTOM COMPONENT (UPDATED) ---
+    // --- CHECK FOR CUSTOM COMPONENT ---
     const renderCustomTool = () => {
         switch (topic.customComponent) {
             case 'SmartGoalTool': return <SmartGoalTool />;
@@ -133,7 +152,6 @@ const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
             case 'ABCTool': return <ABCTool />;
             case 'UrgeLogTool': return <UrgeLogTool />;
             case 'LifestyleBalanceTool': return <LifestyleBalanceTool />;
-            // New Tools Added:
             case 'SelfCompassionTool': return <SelfCompassionTool />;
             case 'FiveQuestionsTool': return <FiveQuestionsTool />;
             case 'DentsTool': return <DentsTool />;
@@ -155,6 +173,24 @@ const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
                 <h3 className="text-2xl font-bold text-deep-charcoal mb-4 flex-shrink-0">{topic.title}</h3>
                 <div className="overflow-y-auto flex-grow pr-2">
                     {renderCustomTool()}
+                </div>
+                
+                {/* Navigation Footer for Custom Tools */}
+                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between">
+                    <button 
+                        onClick={onPrevious} 
+                        disabled={!hasPrevious}
+                        className={`flex items-center gap-2 font-semibold ${!hasPrevious ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-pink-600'}`}
+                    >
+                        <ArrowLeftIcon className="w-4 h-4" /> Previous Tool
+                    </button>
+                    <button 
+                        onClick={onNext} 
+                        disabled={!hasNext}
+                        className={`flex items-center gap-2 font-semibold ${!hasNext ? 'text-gray-300 cursor-not-allowed' : 'text-pink-600 hover:text-pink-700'}`}
+                    >
+                        Next Tool <ArrowRightIcon className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
         );
@@ -225,27 +261,32 @@ const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <div className="flex justify-between items-start mb-4 flex-shrink-0">
-                <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back</span></button>
-                <button 
-                    onClick={handleExportPDF}
-                    className="flex items-center gap-2 bg-gray-100 text-deep-charcoal text-sm font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
-                    title="Download this topic as a PDF"
-                >
-                    <DownloadIcon className="w-4 h-4" /> Export PDF
-                </button>
-            </div>
-            
-            <h3 className="text-2xl font-bold text-deep-charcoal mb-2 flex-shrink-0">{topic.title}</h3>
-            
-            {topic.quote && (
-                <div className="step-quote">
-                    {topic.quote}
+        <div className="bg-white rounded-xl shadow-lg animate-fade-in h-full flex flex-col overflow-hidden">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 bg-white border-b border-gray-100 p-6 z-10">
+                <div className="flex justify-between items-start mb-4">
+                    <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 font-semibold group">
+                        <ArrowLeftIcon className="w-5 h-5 transition-transform group-hover:-translate-x-1"/><span className="ml-2">Back to Menu</span>
+                    </button>
+                    <button 
+                        onClick={handleExportPDF}
+                        className="flex items-center gap-2 bg-gray-50 text-deep-charcoal text-xs font-bold py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                        title="Download this topic as a PDF"
+                    >
+                        <DownloadIcon className="w-4 h-4" /> Export PDF
+                    </button>
                 </div>
-            )}
+                
+                <h3 className="text-2xl font-bold text-deep-charcoal">{topic.title}</h3>
+                {topic.quote && (
+                    <div className="mt-3 p-3 bg-pink-50 border-l-4 border-pink-400 rounded-r-lg">
+                        <p className="text-sm italic text-deep-charcoal/80">"{topic.quote}"</p>
+                    </div>
+                )}
+            </div>
 
-            <div className="overflow-y-auto flex-grow pr-2">
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-grow p-6 bg-gray-50/50">
                 {topic.sections ? (
                     topic.sections.map((section, secIndex) => (
                         <CollapsibleWorkbookSection 
@@ -257,13 +298,33 @@ const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate }) => {
                         />
                     ))
                 ) : (
-                    <WorkbookQuestion 
-                        questionText={topic.prompt} 
-                        questionKey={topic.id} 
-                        initialResponses={initialResponses} 
-                        onUpdate={onUpdate}
-                    />
+                    <div className="bg-white p-4 rounded-xl border border-light-stone/50 shadow-sm">
+                        <WorkbookQuestion 
+                            questionText={topic.prompt} 
+                            questionKey={topic.id} 
+                            initialResponses={initialResponses} 
+                            onUpdate={onUpdate}
+                        />
+                    </div>
                 )}
+
+                {/* Footer Navigation */}
+                <div className="mt-8 flex justify-between items-center pt-6 border-t border-gray-200">
+                    <button 
+                        onClick={onPrevious} 
+                        disabled={!hasPrevious}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${!hasPrevious ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white hover:shadow-sm'}`}
+                    >
+                        <ArrowLeftIcon className="w-4 h-4" /> Previous Step
+                    </button>
+                    <button 
+                        onClick={onNext} 
+                        disabled={!hasNext}
+                        className={`flex items-center gap-2 px-6 py-2 rounded-lg font-bold shadow-md transition-all ${!hasNext ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-pink-600 text-white hover:bg-pink-700 hover:shadow-lg'}`}
+                    >
+                        Next Step <ArrowRightIcon className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -277,9 +338,15 @@ const WorkbookCategory = ({ category, onSelectTopic, onBack, completedTopicIds }
         <ul className="space-y-3">
             {category.topics.map(topic => (
                 <li key={topic.id}>
-                    <button onClick={() => onSelectTopic(topic)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-pink-100 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 flex items-center justify-between">
-                        <h3 className="font-semibold text-deep-charcoal">{topic.title}</h3>
-                        {completedTopicIds.includes(topic.id) && <CheckCircleIcon className="text-green-500 w-5 h-5"/>}
+                    <button onClick={() => onSelectTopic(topic)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-pink-100 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 flex items-center justify-between group">
+                        <div>
+                            <h3 className="font-semibold text-deep-charcoal group-hover:text-pink-900 transition-colors">{topic.title}</h3>
+                            {/* Show basic completion status for sections without progress bars in main view */}
+                            {topic.customComponent && (
+                                <span className="text-xs text-gray-500 font-medium">Interactive Tool</span>
+                            )}
+                        </div>
+                        {completedTopicIds.includes(topic.id) && <CheckCircleIcon className="text-green-500 w-6 h-6"/>}
                     </button>
                 </li>
             ))}
@@ -344,33 +411,60 @@ const RecoveryWorkbook = () => {
         }));
     };
 
-    // --- UPDATED LOGIC FOR 100% COMPLETION ---
+    // Navigation Logic
+    const handleNextTopic = () => {
+        if (!activeCategory || !selectedTopic) return;
+        const currentIndex = activeCategory.topics.findIndex(t => t.id === selectedTopic.id);
+        if (currentIndex < activeCategory.topics.length - 1) {
+            setSelectedTopic(activeCategory.topics[currentIndex + 1]);
+            // Scroll to top when changing topics
+            const container = document.querySelector('.overflow-y-auto');
+            if (container) container.scrollTop = 0;
+        }
+    };
+
+    const handlePreviousTopic = () => {
+        if (!activeCategory || !selectedTopic) return;
+        const currentIndex = activeCategory.topics.findIndex(t => t.id === selectedTopic.id);
+        if (currentIndex > 0) {
+            setSelectedTopic(activeCategory.topics[currentIndex - 1]);
+            const container = document.querySelector('.overflow-y-auto');
+            if (container) container.scrollTop = 0;
+        }
+    };
+
+    // Calculate current position for navigation buttons
+    const getCurrentTopicIndex = () => {
+        if (!activeCategory || !selectedTopic) return -1;
+        return activeCategory.topics.findIndex(t => t.id === selectedTopic.id);
+    };
+    
+    const currentIndex = getCurrentTopicIndex();
+    const hasNext = activeCategory && currentIndex < (activeCategory.topics.length - 1);
+    const hasPrevious = activeCategory && currentIndex > 0;
+
+
+    // --- LOGIC FOR 100% COMPLETION ---
     const completedTopicIds = useMemo(() => {
         const completed = new Set();
         Object.values(workbookData).forEach(category => {
             if (category && category.topics) {
                 category.topics.forEach(topic => {
-                    let isComplete = true; // Assume complete
+                    let isComplete = true; 
 
                     if (topic.sections) {
-                        // Complex Topic (e.g., Steps): Check EVERY question in EVERY section
                         for (const section of topic.sections) {
                             for (let i = 0; i < section.questions.length; i++) {
                                 const key = `${topic.id}-${section.id}-${i + 1}`;
                                 const response = workbookResponses[key];
-                                // If ANY question is missing/empty, fail completion
                                 if (!response || response.trim().length === 0) {
                                     isComplete = false;
                                     break; 
                                 }
                             }
-                            if (!isComplete) break; // Fail fast
+                            if (!isComplete) break; 
                         }
                     } else {
-                        // Simple Topic: Check single prompt
-                        // For custom tools, we currently don't track detailed completion in this loop
-                        // so we assume they are 'incomplete' or handle it differently.
-                        // For now, only text-based topics are checked for completion string.
                         if (!topic.customComponent) {
                              const response = workbookResponses[topic.id];
                              if (!response || response.trim().length === 0) {
@@ -439,6 +533,10 @@ const RecoveryWorkbook = () => {
                                 onBack={() => setSelectedTopic(null)} 
                                 initialResponses={workbookResponses} 
                                 onUpdate={handleResponseUpdate} 
+                                onNext={handleNextTopic}
+                                onPrevious={handlePreviousTopic}
+                                hasNext={hasNext}
+                                hasPrevious={hasPrevious}
                               />;
     if (activeCategory) return <WorkbookCategory category={activeCategory} onSelectTopic={setSelectedTopic} onBack={() => setActiveCategory(null)} completedTopicIds={completedTopicIds} />;
     
