@@ -9,6 +9,42 @@ fi
 
 # Store the commit message in a variable
 COMMIT_MESSAGE="$1"
+LAST_MSG_FILE=".last_commit_message"
+
+# Check for duplicate message
+if [ -f "$LAST_MSG_FILE" ]; then
+  LAST_MESSAGE=$(cat "$LAST_MSG_FILE")
+  
+  if [ "$COMMIT_MESSAGE" == "$LAST_MESSAGE" ]; then
+    echo "⚠️  Warning: The commit message is identical to the previous one: \"$COMMIT_MESSAGE\""
+    echo "Select an option:"
+    echo "  [y] Use this message anyway"
+    echo "  [n] Enter a new message"
+    echo "  [q] Quit/Cancel"
+    read -p "Choice: " choice
+    
+    case "$choice" in 
+      y|Y ) 
+        echo "Proceeding with duplicate message..."
+        ;;
+      n|N )
+        read -p "Enter new commit message: " NEW_MSG
+        if [ -z "$NEW_MSG" ]; then
+           echo "Error: Empty message provided. Aborting."
+           exit 1
+        fi
+        COMMIT_MESSAGE="$NEW_MSG"
+        ;;
+      * )
+        echo "Aborting."
+        exit 1
+        ;;
+    esac
+  fi
+fi
+
+# Save the current message for next time
+echo "$COMMIT_MESSAGE" > "$LAST_MSG_FILE"
 
 # Run the build process
 echo "🔨 Running build..."
