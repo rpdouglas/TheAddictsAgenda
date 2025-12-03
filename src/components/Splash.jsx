@@ -1,15 +1,23 @@
 // src/components/Splash.jsx
 import React from 'react';
-import { ShieldIcon, BookOpenIcon, HeartIcon, CheckCircleIcon } from '../utils/icons.jsx';
+// Import the logo image - Make sure your file is at src/assets/logo.png
+import logoImage from '../assets/logo.png';
+// Removed ShieldIcon from imports
+import { BookOpenIcon, HeartIcon, CheckCircleIcon } from '../utils/icons.jsx';
 
 const Splash = ({ onGetStarted, onLogin }) => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex flex-col">
             {/* --- Hero Section --- */}
             <header className="px-6 py-10 flex flex-col items-center text-center">
-                <div className="bg-teal-100 p-4 rounded-full mb-6">
-                    <ShieldIcon className="w-12 h-12 text-teal-600" />
-                </div>
+                
+                {/* REPLACE SHIELD ICON WITH LOGO IMAGE */}
+                <img 
+                    src={logoImage} 
+                    alt="My Recovery Toolkit Logo" 
+                    className="w-32 h-auto mb-6 object-contain" // Adjust w-32 as needed for your specific logo size
+                />
+                
                 <h1 className="text-4xl font-bold text-gray-800 mb-4">My Recovery Toolkit</h1>
                 <p className="text-lg text-gray-600 max-w-md mb-8 leading-relaxed">
                     Your private, all-in-one companion for sobriety. Journal, track your progress, and work the steps—all in one secure place.
