@@ -143,3 +143,4 @@ The data layer employs an **Adapter Pattern** to abstract the underlying storage
 * **jsPDF:** PDF Generation
 * **Crypto-JS:** Encryption
 * **Google Gemini API:** AI Features
+* 

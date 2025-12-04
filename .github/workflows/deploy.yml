@@ -42,7 +42,7 @@ jobs:
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
         
       - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v3 # <-- Correct action
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
           
