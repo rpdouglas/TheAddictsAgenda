@@ -182,9 +182,9 @@ export const APP_VERSIONS = {
     WORKBOOK: '1.7.0',
     LITERATURE: '1.3.0',
     RESOURCES: '1.1.0',
-    SETTINGS: '1.1.2',
+    SETTINGS: '1.1.3',
     MEETINGFINDER: '1.1.0',
     DAILYREFLECTION: '1.1.0',
-    USERGUIDE: '1.3.0',
+    USERGUIDE: '1.3.1',
     SMARTTOOLS: '1.3.0', // Incremented
 };

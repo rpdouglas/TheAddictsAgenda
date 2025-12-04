@@ -1,6 +1,6 @@
 // src/components/UserGuide.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeftIcon, ChevronDown, ChevronUp, BookOpenIcon, DownloadIcon, ShieldIcon, ScaleIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ChevronDown, ChevronUp, BookOpenIcon, DownloadIcon, ShieldIcon, ScaleIcon, UsersIcon } from '../utils/icons.jsx';
 import jsPDF from 'jspdf';
 
 // --- Import Content Components ---
@@ -16,6 +16,7 @@ import GuideResources from './guide/GuideResources.jsx';
 import GuideSettings from './guide/GuideSettings.jsx';
 import GuideDataSecurity from './guide/GuideDataSecurity.jsx';
 import GuidePrivacy from './guide/GuidePrivacy.jsx';
+import GuideDemoProfiles from './guide/GuideDemoProfiles.jsx'; // NEW IMPORT
 
 // --- Helper Component for Collapsible Sections ---
 const CollapsibleSection = ({ id, title, children, isOpen, onToggle, sectionRef, icon }) => (
@@ -57,6 +58,7 @@ const UserGuide = ({ onBack, targetSection }) => {
     const settingsRef = useRef(null);
     const dataRef = useRef(null);
     const privacyRef = useRef(null);
+    const demoRef = useRef(null); // NEW REF
 
     const sectionRefs = {
         'dashboard': dashboardRef,
@@ -71,6 +73,7 @@ const UserGuide = ({ onBack, targetSection }) => {
         'settings': settingsRef,
         'data': dataRef,
         'privacy': privacyRef,
+        'demo': demoRef, // NEW MAPPING
     };
 
     // --- State for Expanded Sections ---
@@ -87,6 +90,7 @@ const UserGuide = ({ onBack, targetSection }) => {
         'settings': false,
         'data': false,
         'privacy': false,
+        'demo': false, // NEW STATE
     });
 
     const toggleSection = (id) => {
@@ -175,6 +179,7 @@ const UserGuide = ({ onBack, targetSection }) => {
         { id: 'meetings', label: 'Meeting Management' },
         { id: 'resources', label: 'Emergency Resources' },
         { id: 'settings', label: 'Settings' },
+        { id: 'demo', label: 'Demo Profiles' }, // NEW ITEM
         { id: 'data', label: 'Data & Security' },
         { id: 'privacy', label: 'Privacy & Legal' },
     ];
@@ -222,6 +227,8 @@ const UserGuide = ({ onBack, targetSection }) => {
             </nav>
 
             <div className="space-y-2">
+                
+                {/* --- SECTIONS --- */}
                 <CollapsibleSection id="dashboard" title="Dashboard & Sobriety" isOpen={expandedSections['dashboard']} onToggle={toggleSection} sectionRef={dashboardRef}>
                     <GuideDashboard />
                 </CollapsibleSection>
@@ -262,6 +269,11 @@ const UserGuide = ({ onBack, targetSection }) => {
                     <GuideSettings />
                 </CollapsibleSection>
 
+                {/* NEW DEMO PROFILES SECTION */}
+                <CollapsibleSection id="demo" title="Demo Profiles" isOpen={expandedSections['demo']} onToggle={toggleSection} sectionRef={demoRef} icon={<UsersIcon className="w-6 h-6" />}>
+                    <GuideDemoProfiles />
+                </CollapsibleSection>
+
                 <CollapsibleSection id="data" title="Data & Security" isOpen={expandedSections['data']} onToggle={toggleSection} sectionRef={dataRef} icon={<ShieldIcon className="w-6 h-6" />}>
                     <GuideDataSecurity />
                 </CollapsibleSection>
@@ -269,6 +281,7 @@ const UserGuide = ({ onBack, targetSection }) => {
                 <CollapsibleSection id="privacy" title="Privacy Policy & Legal" isOpen={expandedSections['privacy']} onToggle={toggleSection} sectionRef={privacyRef} icon={<ScaleIcon className="w-6 h-6" />}>
                     <GuidePrivacy />
                 </CollapsibleSection>
+
             </div>
             
             <div className="mt-12 p-4 bg-gray-50 rounded-lg text-center text-sm text-gray-500">

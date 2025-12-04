@@ -43,6 +43,7 @@ const COMPONENT_MAP = {
         'src/components/guide/GuideMeetings.jsx',
         'src/components/guide/GuideResources.jsx',
         'src/components/guide/GuideSettings.jsx',
+        'src/components/guide/GuideDemoProfiles.jsx', // ADDED HERE
         'src/components/guide/GuideDataSecurity.jsx',
         'src/components/guide/GuidePrivacy.jsx'
     ],
