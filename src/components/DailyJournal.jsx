@@ -4,6 +4,7 @@ import DataStore from '../utils/dataStore.js';
 import JournalForm from './journal/JournalForm.jsx';
 import JournalList from './journal/JournalList.jsx';
 import MoodGraph from './journal/MoodGraph.jsx';
+import WordCloudView from './journal/WordCloudView.jsx'; // NEW IMPORT
 import JournalModals from './journal/JournalModals.jsx';
 import { processAIActionPlan } from '../utils/journalLogger.js';
 
@@ -11,7 +12,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const [items, setItems] = useState([]);
     const [newItemText, setNewItemText] = useState('');
     const [currentMood, setCurrentMood] = useState(0);
-    const [weather, setWeather] = useState(''); // NEW: Weather State
+    const [weather, setWeather] = useState(''); 
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
@@ -75,7 +76,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         const entryData = {
             text: cleanText,
             mood: currentMood,
-            weather: weather, // NEW: Save Weather
+            weather: weather, 
             tags: journalTags || [],
             timestamp: new Date().toISOString()
         };
@@ -114,7 +115,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         // Reset Form
         setNewItemText('');
         setCurrentMood(0);
-        setWeather(''); // Reset Weather
+        setWeather(''); 
         setJournalTags([]);
         setShowGeminiHelper(false);
         setActiveTab('history');
@@ -126,7 +127,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const handleEdit = (item) => {
         setNewItemText(item.text);
         setCurrentMood(item.mood || 0);
-        setWeather(item.weather || ''); // Load existing weather or empty
+        setWeather(item.weather || ''); 
         setJournalTags(item.tags || []);
         setIsEditing(true);
         setEditItemId(item.id);
@@ -172,10 +173,16 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         }
     };
 
+    // --- NEW: Word Cloud Interactivity ---
+    const handleWordClick = (word) => {
+        setSearchQuery(word);
+        setActiveTab('history');
+        // Optional: Scroll to top of list
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const handleApplyTemplate = (templateId) => {
-        // Logic handled in JournalForm or passed down if needed
-        // For now, we assume JournalForm calls a prop or manages this via the setJournalTemplate we passed
-        // Actually, looking at previous code, JournalForm manages the selection state but needs to update text
+        // Legacy prop handler if needed
     };
 
     return (
@@ -216,8 +223,8 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         setNewItemText={setNewItemText}
                         currentMood={currentMood}
                         setCurrentMood={setCurrentMood}
-                        weather={weather}        // NEW PROP
-                        setWeather={setWeather}  // NEW PROP
+                        weather={weather}        
+                        setWeather={setWeather}  
                         currentEntryTags={journalTags}
                         tagInput={tagInput}
                         setTagInput={setTagInput}
@@ -227,8 +234,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         allTags={allTags}
                         showGeminiHelper={showGeminiHelper}
                         setShowGeminiHelper={setShowGeminiHelper}
-                        // Template logic
-                        selectedTemplateId="" // Managed in form for now or lift up if needed
+                        selectedTemplateId="" 
                         setSelectedTemplateId={() => {}} 
                         handleApplyTemplate={() => {}}
                     />
@@ -247,8 +253,17 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                     />
                 )}
 
+                {/* UPDATED INSIGHTS TAB */}
                 {activeTab === 'insights' && (
-                    <MoodGraph items={items} />
+                    <div className="space-y-6">
+                        {/* 1. Mood Graph */}
+                        <div className="h-[400px]">
+                            <MoodGraph items={items} />
+                        </div>
+                        
+                        {/* 2. Word Cloud */}
+                        <WordCloudView items={items} onWordClick={handleWordClick} />
+                    </div>
                 )}
             </div>
 

@@ -176,7 +176,7 @@ export const MEETING_LINKS = {
 
 export const APP_VERSIONS = {
     DASHBOARD: '1.5.0',
-    JOURNAL: '1.8.1', 
+    JOURNAL: '1.8.2', 
     GOALS: '1.4.1', 
     COPING: '2.2.0', 
     WORKBOOK: '1.8.0',

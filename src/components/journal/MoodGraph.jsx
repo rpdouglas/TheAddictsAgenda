@@ -1,12 +1,48 @@
+// src/components/journal/MoodGraph.jsx
 import React, { useState, useMemo } from 'react';
 import { ArrowLeftIcon, TrendingUpIcon } from '../../utils/icons.jsx';
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, ReferenceLine, Area, AreaChart 
+  ResponsiveContainer, ReferenceLine, Area, 
+  ComposedChart, Bar, Line, Legend
 } from 'recharts';
 
 const MoodGraphView = ({ items, onBack, onPointClick }) => {
     const [timeRange, setTimeRange] = useState('30'); // '7', '30', 'all'
+
+    // --- Helper: Simple Linear Regression for Trendline ---
+    const calculateTrendline = (data) => {
+        if (data.length < 2) return data;
+
+        const n = data.length;
+        let sumX = 0;
+        let sumY = 0;
+        let sumXY = 0;
+        let sumXX = 0;
+
+        // X is the index (0, 1, 2...), Y is the Mood
+        data.forEach((point, i) => {
+            sumX += i;
+            sumY += point.mood;
+            sumXY += i * point.mood;
+            sumXX += i * i;
+        });
+
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+
+        return data.map((point, i) => ({
+            ...point,
+            trend: Number((slope * i + intercept).toFixed(1))
+        }));
+    };
+
+    // --- Helper: Extract Temp from String "Cloudy, 22°C" ---
+    const extractTemp = (weatherStr) => {
+        if (!weatherStr) return null;
+        const match = weatherStr.match(/(-?\d+)/); // Find integer (supports negative)
+        return match ? parseInt(match[0], 10) : null;
+    };
 
     // 1. Prepare Data
     const chartData = useMemo(() => {
@@ -21,22 +57,58 @@ const MoodGraphView = ({ items, onBack, onPointClick }) => {
             filteredItems = filteredItems.filter(item => new Date(item.timestamp) >= cutoff);
         }
 
-        return filteredItems.map(item => ({
+        const mappedData = filteredItems.map(item => ({
             id: item.id,
             date: new Date(item.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
             fullDate: new Date(item.timestamp).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }),
             mood: item.mood,
+            temp: extractTemp(item.weather),
+            weatherDesc: item.weather || 'No Data',
             entry: item,
         }));
+
+        // Attach Trendline
+        return calculateTrendline(mappedData);
+
     }, [items, timeRange]);
 
-    const CustomTooltip = ({ active, payload }) => {
+    const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
+            // Find payload items by dataKey to ensure correct display
+            const moodData = payload.find(p => p.dataKey === 'mood');
+            const tempData = payload.find(p => p.dataKey === 'temp');
+            const trendData = payload.find(p => p.dataKey === 'trend');
+            
+            // Safety check for metadata
+            const metadata = moodData ? moodData.payload : (payload[0] ? payload[0].payload : {});
+
             return (
-                <div className="bg-white p-3 border border-blue-100 rounded-lg shadow-lg">
-                    <p className="text-sm font-bold text-gray-700">{payload[0].payload.fullDate}</p>
-                    <p className="text-sm text-blue-600 font-semibold">Mood: <span className="text-lg">{payload[0].value}</span>/10</p>
-                    <p className="text-xs text-gray-400 mt-1">Tap dot to view entry</p>
+                <div className="bg-white p-3 border border-blue-100 rounded-lg shadow-lg z-50">
+                    <p className="text-sm font-bold text-gray-700 mb-1">{metadata.fullDate}</p>
+                    
+                    {moodData && (
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                            <span className="text-sm font-semibold text-gray-600">Mood:</span>
+                            <span className="text-sm font-bold text-blue-600">{moodData.value}/10</span>
+                        </div>
+                    )}
+                    
+                    {trendData && (
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                            <span className="text-xs text-gray-500">Trend: {trendData.value}</span>
+                        </div>
+                    )}
+
+                    {tempData && tempData.value !== null && (
+                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
+                             <div className="w-2 h-2 bg-gray-300"></div>
+                             <span className="text-xs text-gray-500">{metadata.weatherDesc}</span>
+                        </div>
+                    )}
+
+                    <p className="text-[10px] text-gray-400 mt-2 italic">Click chart to view entry</p>
                 </div>
             );
         }
@@ -48,7 +120,6 @@ const MoodGraphView = ({ items, onBack, onPointClick }) => {
         if (data && data.activePayload && data.activePayload.length > 0) {
             onPointClick(data.activePayload[0].payload.entry);
         } else if (data && data.payload && data.payload.entry) {
-            // Fallback for direct dot clicks which pass the payload directly
             onPointClick(data.payload.entry);
         }
     };
@@ -81,10 +152,9 @@ const MoodGraphView = ({ items, onBack, onPointClick }) => {
             ) : (
                 <div className="flex-grow w-full bg-white rounded-xl shadow-sm border border-gray-100 p-2 sm:p-4 min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart 
+                        <ComposedChart 
                             data={chartData} 
                             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                            // 1. Chart Background Click (Best effort)
                             onClick={handleChartClick}
                         >
                             <defs>
@@ -94,38 +164,87 @@ const MoodGraphView = ({ items, onBack, onPointClick }) => {
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                            <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6b7280' }} tickLine={false} axisLine={{ stroke: '#e5e7eb' }} minTickGap={30} />
-                            <YAxis domain={[0, 10]} tickCount={6} tick={{ fontSize: 12, fill: '#6b7280' }} tickLine={false} axisLine={false} />
+                            
+                            {/* X-Axis: Dates */}
+                            <XAxis 
+                                dataKey="date" 
+                                tick={{ fontSize: 12, fill: '#6b7280' }} 
+                                tickLine={false} 
+                                axisLine={{ stroke: '#e5e7eb' }} 
+                                minTickGap={30} 
+                            />
+                            
+                            {/* Y-Axis 1: Mood (Left) */}
+                            <YAxis 
+                                yAxisId="left"
+                                domain={[0, 10]} 
+                                tickCount={6} 
+                                tick={{ fontSize: 12, fill: '#6b7280' }} 
+                                tickLine={false} 
+                                axisLine={false} 
+                                label={{ value: 'Mood', angle: -90, position: 'insideLeft', style: { fill: '#9ca3af', fontSize: 10 } }}
+                            />
+
+                            {/* Y-Axis 2: Temperature (Right) */}
+                            <YAxis 
+                                yAxisId="right"
+                                orientation="right"
+                                tick={{ fontSize: 10, fill: '#9ca3af' }}
+                                tickLine={false}
+                                axisLine={false}
+                                unit="°"
+                                label={{ value: 'Temp', angle: 90, position: 'insideRight', style: { fill: '#9ca3af', fontSize: 10 } }}
+                            />
                             
                             <Tooltip content={<CustomTooltip />} wrapperStyle={{ pointerEvents: 'none' }} />
+                            <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                             
-                            <ReferenceLine y={5} stroke="#e5e7eb" strokeDasharray="3 3" />
-                            
+                            {/* 1. Temperature Bars (Background) */}
+                            <Bar 
+                                yAxisId="right"
+                                dataKey="temp" 
+                                name="Temp (°C)"
+                                fill="#e5e7eb" 
+                                barSize={20}
+                                radius={[4, 4, 0, 0]}
+                            />
+
+                            {/* 2. Mood Area (Middle) */}
                             <Area 
+                                yAxisId="left"
                                 type="monotone" 
                                 dataKey="mood" 
+                                name="Mood Score"
                                 stroke="#2563eb" 
                                 strokeWidth={3} 
                                 fillOpacity={1} 
                                 fill="url(#colorMood)" 
-                                // 2. Explicit Dot Click (The Fix)
                                 dot={{ 
-                                    r: 6, 
-                                    stroke: '#2563eb', 
-                                    strokeWidth: 2, 
-                                    fill: '#fff',
-                                    cursor: 'pointer',
-                                    onClick: handleChartClick // Direct click handler on dots
+                                    r: 4, stroke: '#2563eb', strokeWidth: 2, fill: '#fff',
+                                    cursor: 'pointer', onClick: handleChartClick 
                                 }} 
                                 activeDot={{ 
-                                    r: 8, 
-                                    strokeWidth: 0, 
-                                    fill: '#1d4ed8', 
-                                    cursor: 'pointer',
-                                    onClick: handleChartClick // Direct click handler on active dot
+                                    r: 6, strokeWidth: 0, fill: '#1d4ed8',
+                                    cursor: 'pointer', onClick: handleChartClick 
                                 }} 
                             />
-                        </AreaChart>
+
+                            {/* 3. Trendline (Top) */}
+                            <Line
+                                yAxisId="left"
+                                type="monotone"
+                                dataKey="trend"
+                                name="Recovery Trend"
+                                stroke="#f59e0b"
+                                strokeWidth={2}
+                                strokeDasharray="5 5"
+                                dot={false}
+                                activeDot={false}
+                                isAnimationActive={false}
+                            />
+                            
+                            <ReferenceLine yAxisId="left" y={5} stroke="#e5e7eb" strokeDasharray="3 3" />
+                        </ComposedChart>
                     </ResponsiveContainer>
                 </div>
             )}
