@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { ArrowLeftIcon, PlusIcon, TrashIcon, CheckCircleIcon, CheckIcon } from '../utils/icons.jsx';
+import { logDailyAction } from '../utils/journalLogger.js';
 
 const Goals = ({ onBack }) => {
     const [tasks, setTasks] = useState([]);
@@ -13,7 +14,6 @@ const Goals = ({ onBack }) => {
         const loadTasks = async () => {
             setIsLoading(true);
             const storedTasks = await DataStore.load(DataStore.KEYS.GOALS) || [];
-            // Ensure we handle potential legacy data formats safely
             setTasks(Array.isArray(storedTasks) ? storedTasks : []);
             setIsLoading(false);
         };
@@ -43,10 +43,23 @@ const Goals = ({ onBack }) => {
     };
 
     const toggleTask = async (taskId) => {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const newCompletedStatus = !task.completed;
+
         const updatedTasks = tasks.map(t => 
-            t.id === taskId ? { ...t, completed: !t.completed } : t
+            t.id === taskId ? { ...t, completed: newCompletedStatus } : t
         );
+        
+        // 1. Save Task Update
         await saveTasks(updatedTasks);
+
+        // 2. Log to Journal if marking AS COMPLETE
+        if (newCompletedStatus) {
+            console.log("Task completed, attempting to log to journal...");
+            await logDailyAction(task.text, 'todolist');
+        }
     };
 
     const deleteTask = async (taskId) => {

@@ -1,388 +1,17 @@
 // src/components/RecoveryWorkbook.jsx
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
-import { ArrowLeftIcon, ArrowRightIcon, ChevronDown, ChevronUp, CheckCircleIcon, SparklesIcon, DownloadIcon } from '../utils/icons.jsx';
 import { model } from '../firebase.jsx';
-import jsPDF from 'jspdf';
 
-// IMPORT CUSTOM TOOLS
-import { 
-    SmartGoalTool, 
-    CBATool, 
-    ABCTool, 
-    UrgeLogTool, 
-    LifestyleBalanceTool,
-    SelfCompassionTool,
-    FiveQuestionsTool,
-    DentsTool,
-    PersonifyTool,
-    BoundariesTool
-} from './SmartRecoveryTools.jsx';
+// Import Refactored Components
+import WorkbookMenu from './workbook/WorkbookMenu.jsx';
+import WorkbookCategoryDetail from './workbook/WorkbookCategoryDetail.jsx';
+import WorkbookTopicDetail from './workbook/WorkbookTopicDetail.jsx';
+import WorkbookSmartTool from './workbook/WorkbookSmartTool.jsx';
+import WorkbookInsightsModal from './workbook/WorkbookInsightsModal.jsx';
 
-// --- Sub-Components ---
-
-const WorkbookQuestion = ({ questionText, questionKey, initialResponses, onUpdate }) => {
-    const [response, setResponse] = useState('');
-    const [saveStatus, setSaveStatus] = useState('');
-    const isInitialLoad = useRef(true);
-
-    useEffect(() => {
-        setResponse(initialResponses[questionKey] || '');
-        isInitialLoad.current = true;
-    }, [questionKey]); 
-
-    useEffect(() => {
-        if (isInitialLoad.current) {
-            isInitialLoad.current = false;
-            return;
-        }
-        
-        if (response === (initialResponses[questionKey] || '')) {
-            return;
-        }
-
-        setSaveStatus('Saving...');
-        const delayDebounceFn = setTimeout(async () => {
-            try {
-                const currentWorkbookData = await DataStore.load(DataStore.KEYS.WORKBOOK) || {};
-                const updatedData = { ...currentWorkbookData, [questionKey]: response };
-                await DataStore.save(DataStore.KEYS.WORKBOOK, updatedData);
-                
-                onUpdate(questionKey, response);
-                
-                setSaveStatus('Saved');
-            } catch (error) {
-                console.error("Error saving workbook response:", error);
-                setSaveStatus('Error');
-            }
-        }, 1500);
-
-        return () => clearTimeout(delayDebounceFn);
-    }, [response, questionKey, onUpdate, initialResponses]);
-
-    return (
-        <div className="mb-6">
-            <p className="font-semibold text-deep-charcoal mb-2 text-sm leading-relaxed">{questionText}</p>
-            <div className="relative">
-                <textarea 
-                    value={response} 
-                    onChange={(e) => setResponse(e.target.value)} 
-                    placeholder="Write your answer here..." 
-                    className="w-full p-4 border border-light-stone rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-y min-h-[120px] text-sm bg-white transition-all"
-                />
-                <div className="absolute bottom-3 right-3">
-                    <p className={`text-xs font-bold transition-opacity duration-300 ${saveStatus === 'Saved' ? 'text-green-600 opacity-100' : (saveStatus === 'Saving...' ? 'text-pink-500 opacity-100' : 'opacity-0')}`}>
-                        {saveStatus === 'Saved' ? 'Saved' : 'Saving...'}
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const CollapsibleWorkbookSection = ({ section, stepId, initialResponses, onUpdate }) => {
-    const [isCollapsed, setIsCollapsed] = useState(true);
-    const contentRef = useRef(null);
-    
-    const keyPrefix = `${stepId}-${section.id}`; 
-    
-    // Calculate progress for this specific section
-    const totalQuestions = section.questions.length;
-    const completedQuestions = section.questions.filter((_, idx) => {
-        const key = `${keyPrefix}-${idx + 1}`;
-        return initialResponses[key] && initialResponses[key].trim().length > 0;
-    }).length;
-
-    useEffect(() => {
-        if (contentRef.current) {
-            contentRef.current.style.maxHeight = isCollapsed ? '0px' : `${contentRef.current.scrollHeight}px`;
-        }
-    }, [isCollapsed]);
-
-    return (
-        <div className="mb-4 border border-light-stone/50 rounded-xl shadow-sm overflow-hidden bg-white">
-            <button 
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className={`w-full flex justify-between items-center p-4 transition-colors ${isCollapsed ? 'bg-white hover:bg-gray-50' : 'bg-pink-50'}`}
-            >
-                <div className="text-left">
-                    <span className="font-bold text-deep-charcoal block">{section.title}</span>
-                    <span className="text-xs text-deep-charcoal/60 font-medium">
-                        {completedQuestions} / {totalQuestions} Answered
-                    </span>
-                </div>
-                <div className={`p-2 rounded-full ${isCollapsed ? 'bg-gray-100 text-gray-400' : 'bg-pink-200 text-pink-700'}`}>
-                    {isCollapsed ? <ChevronDown /> : <ChevronUp />}
-                </div>
-            </button>
-            
-            <div 
-                ref={contentRef}
-                style={{ maxHeight: '0px', transition: 'max-height 0.4s ease-in-out' }}
-                className="overflow-hidden bg-white"
-            >
-                <div className="p-4 border-t border-light-stone/30">
-                    {section.questions.map((question, qIndex) => {
-                        const questionKey = `${keyPrefix}-${qIndex + 1}`;
-                        return (
-                            <WorkbookQuestion
-                                key={questionKey}
-                                questionText={question}
-                                questionKey={questionKey}
-                                initialResponses={initialResponses}
-                                onUpdate={onUpdate}
-                            />
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const WorkbookTopic = ({ topic, onBack, initialResponses, onUpdate, onNext, onPrevious, hasNext, hasPrevious }) => {
-    
-    // --- CHECK FOR CUSTOM COMPONENT ---
-    const renderCustomTool = () => {
-        switch (topic.customComponent) {
-            case 'SmartGoalTool': return <SmartGoalTool />;
-            case 'CBATool': return <CBATool />;
-            case 'ABCTool': return <ABCTool />;
-            case 'UrgeLogTool': return <UrgeLogTool />;
-            case 'LifestyleBalanceTool': return <LifestyleBalanceTool />;
-            case 'SelfCompassionTool': return <SelfCompassionTool />;
-            case 'FiveQuestionsTool': return <FiveQuestionsTool />;
-            case 'DentsTool': return <DentsTool />;
-            case 'PersonifyTool': return <PersonifyTool />;
-            case 'BoundariesTool': return <BoundariesTool />;
-            default: return null;
-        }
-    };
-
-    // Render Custom Tool View
-    if (topic.customComponent) {
-        return (
-            <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-                <div className="flex justify-between items-start mb-4 flex-shrink-0">
-                    <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 font-semibold">
-                        <ArrowLeftIcon /><span className="ml-2">Back</span>
-                    </button>
-                </div>
-                <h3 className="text-2xl font-bold text-deep-charcoal mb-4 flex-shrink-0">{topic.title}</h3>
-                <div className="overflow-y-auto flex-grow pr-2">
-                    {renderCustomTool()}
-                </div>
-                
-                {/* Navigation Footer for Custom Tools */}
-                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between">
-                    <button 
-                        onClick={onPrevious} 
-                        disabled={!hasPrevious}
-                        className={`flex items-center gap-2 font-semibold ${!hasPrevious ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-pink-600'}`}
-                    >
-                        <ArrowLeftIcon className="w-4 h-4" /> Previous Tool
-                    </button>
-                    <button 
-                        onClick={onNext} 
-                        disabled={!hasNext}
-                        className={`flex items-center gap-2 font-semibold ${!hasNext ? 'text-gray-300 cursor-not-allowed' : 'text-pink-600 hover:text-pink-700'}`}
-                    >
-                        Next Tool <ArrowRightIcon className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    // --- STANDARD RENDER LOGIC ---
-    const handleExportPDF = () => {
-        const doc = new jsPDF();
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const margin = 15;
-        const maxTextWidth = pageWidth - (margin * 2);
-        let yPos = 20;
-
-        doc.setFontSize(18);
-        doc.text(topic.title, margin, yPos);
-        yPos += 15;
-
-        if (topic.quote) {
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'italic');
-            const splitQuote = doc.splitTextToSize(`"${topic.quote}"`, maxTextWidth);
-            doc.text(splitQuote, margin, yPos);
-            yPos += (splitQuote.length * 7) + 10;
-            doc.setFont(undefined, 'normal');
-        }
-
-        const addContent = (question, key) => {
-            if (yPos > 270) {
-                doc.addPage();
-                yPos = 20;
-            }
-
-            doc.setFontSize(11);
-            doc.setTextColor(50); 
-            const splitQ = doc.splitTextToSize(question, maxTextWidth);
-            doc.text(splitQ, margin, yPos);
-            yPos += (splitQ.length * 6) + 2;
-
-            const answer = initialResponses[key] || "(No answer provided)";
-            doc.setFontSize(10);
-            doc.setTextColor(0); 
-            const splitA = doc.splitTextToSize(answer, maxTextWidth - 5);
-            doc.text(splitA, margin + 5, yPos); 
-            yPos += (splitA.length * 6) + 10; 
-        };
-
-        if (topic.sections) {
-            topic.sections.forEach(section => {
-                const keyPrefix = `${topic.id}-${section.id}`;
-                
-                if (yPos > 270) { doc.addPage(); yPos = 20; }
-                doc.setFontSize(14);
-                doc.setFont(undefined, 'bold');
-                doc.text(section.title, margin, yPos);
-                doc.setFont(undefined, 'normal');
-                yPos += 10;
-
-                section.questions.forEach((q, i) => {
-                    const key = `${keyPrefix}-${i + 1}`;
-                    addContent(q, key);
-                });
-            });
-        } else {
-            addContent(topic.prompt, topic.id);
-        }
-
-        doc.save(`${topic.title.replace(/\s+/g, '_')}_Workbook.pdf`);
-    };
-
-    return (
-        <div className="bg-white rounded-xl shadow-lg animate-fade-in h-full flex flex-col overflow-hidden">
-            {/* Sticky Header */}
-            <div className="flex-shrink-0 bg-white border-b border-gray-100 p-6 z-10">
-                <div className="flex justify-between items-start mb-4">
-                    <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 font-semibold group">
-                        <ArrowLeftIcon className="w-5 h-5 transition-transform group-hover:-translate-x-1"/><span className="ml-2">Back to Menu</span>
-                    </button>
-                    <button 
-                        onClick={handleExportPDF}
-                        className="flex items-center gap-2 bg-gray-50 text-deep-charcoal text-xs font-bold py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
-                        title="Download this topic as a PDF"
-                    >
-                        <DownloadIcon className="w-4 h-4" /> Export PDF
-                    </button>
-                </div>
-                
-                <h3 className="text-2xl font-bold text-deep-charcoal">{topic.title}</h3>
-                {topic.quote && (
-                    <div className="mt-3 p-3 bg-pink-50 border-l-4 border-pink-400 rounded-r-lg">
-                        <p className="text-sm italic text-deep-charcoal/80">"{topic.quote}"</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Scrollable Content */}
-            <div className="overflow-y-auto flex-grow p-6 bg-gray-50/50">
-                {topic.sections ? (
-                    topic.sections.map((section, secIndex) => (
-                        <CollapsibleWorkbookSection 
-                            key={secIndex} 
-                            section={section} 
-                            stepId={topic.id} 
-                            initialResponses={initialResponses}
-                            onUpdate={onUpdate}
-                        />
-                    ))
-                ) : (
-                    <div className="bg-white p-4 rounded-xl border border-light-stone/50 shadow-sm">
-                        <WorkbookQuestion 
-                            questionText={topic.prompt} 
-                            questionKey={topic.id} 
-                            initialResponses={initialResponses} 
-                            onUpdate={onUpdate}
-                        />
-                    </div>
-                )}
-
-                {/* Footer Navigation */}
-                <div className="mt-8 flex justify-between items-center pt-6 border-t border-gray-200">
-                    <button 
-                        onClick={onPrevious} 
-                        disabled={!hasPrevious}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${!hasPrevious ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white hover:shadow-sm'}`}
-                    >
-                        <ArrowLeftIcon className="w-4 h-4" /> Previous Step
-                    </button>
-                    <button 
-                        onClick={onNext} 
-                        disabled={!hasNext}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-lg font-bold shadow-md transition-all ${!hasNext ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-pink-600 text-white hover:bg-pink-700 hover:shadow-lg'}`}
-                    >
-                        Next Step <ArrowRightIcon className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const WorkbookCategory = ({ category, onSelectTopic, onBack, completedTopicIds }) => (
-    <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in">
-        <button onClick={onBack} className="flex items-center text-pink-600 hover:text-pink-700 mb-4 font-semibold"><ArrowLeftIcon /><span className="ml-2">Back to Workbook Sections</span></button>
-        <h2 className="text-2xl font-bold text-deep-charcoal mb-2">{category.title}</h2>
-        <p className="text-deep-charcoal/70 mb-6">{category.description}</p>
-        <ul className="space-y-3">
-            {category.topics.map(topic => (
-                <li key={topic.id}>
-                    <button onClick={() => onSelectTopic(topic)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-pink-100 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 flex items-center justify-between group">
-                        <div>
-                            <h3 className="font-semibold text-deep-charcoal group-hover:text-pink-900 transition-colors">{topic.title}</h3>
-                            {/* Show basic completion status for sections without progress bars in main view */}
-                            {topic.customComponent && (
-                                <span className="text-xs text-gray-500 font-medium">Interactive Tool</span>
-                            )}
-                        </div>
-                        {completedTopicIds.includes(topic.id) && <CheckCircleIcon className="text-green-500 w-6 h-6"/>}
-                    </button>
-                </li>
-            ))}
-        </ul>
-    </div>
-);
-
-const InsightsModal = ({ onClose, isLoading, insights }) => (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg space-y-4 flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center flex-shrink-0">
-                <h3 className="text-xl font-bold text-deep-charcoal flex items-center gap-2">
-                    <SparklesIcon className="text-pink-500 w-6 h-6"/> AI-Powered Insights
-                </h3>
-                <button onClick={onClose} className="text-deep-charcoal/60 hover:text-deep-charcoal text-2xl">&times;</button>
-            </div>
-            <div className="flex-grow overflow-y-auto pr-2 -mr-2">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
-                        <Spinner />
-                        <p className="mt-4 text-deep-charcoal/70">Analyzing your workbook entries...</p>
-                    </div>
-                ) : (
-                    <div className="text-deep-charcoal/80 space-y-4 whitespace-pre-wrap">
-                        {insights.split('\n\n').map((paragraph, index) => <p key={index}>{paragraph}</p>)}
-                    </div>
-                )}
-            </div>
-            <div className="flex-shrink-0">
-                <button onClick={onClose} className="w-full bg-light-stone/50 text-deep-charcoal/80 font-semibold py-2 px-4 rounded-lg hover:bg-light-stone/70">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-);
 
 const RecoveryWorkbook = () => {
     const [activeCategory, setActiveCategory] = useState(null); 
@@ -393,6 +22,7 @@ const RecoveryWorkbook = () => {
     const [showInsightsModal, setShowInsightsModal] = useState(false);
     const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
     const [aiInsights, setAiInsights] = useState('');
+    const [aiActions, setAiActions] = useState([]);
 
     useEffect(() => {
         const loadWorkbookData = async () => {
@@ -411,13 +41,12 @@ const RecoveryWorkbook = () => {
         }));
     };
 
-    // Navigation Logic
+    // --- Navigation Logic ---
     const handleNextTopic = () => {
         if (!activeCategory || !selectedTopic) return;
         const currentIndex = activeCategory.topics.findIndex(t => t.id === selectedTopic.id);
         if (currentIndex < activeCategory.topics.length - 1) {
             setSelectedTopic(activeCategory.topics[currentIndex + 1]);
-            // Scroll to top when changing topics
             const container = document.querySelector('.overflow-y-auto');
             if (container) container.scrollTop = 0;
         }
@@ -433,7 +62,6 @@ const RecoveryWorkbook = () => {
         }
     };
 
-    // Calculate current position for navigation buttons
     const getCurrentTopicIndex = () => {
         if (!activeCategory || !selectedTopic) return -1;
         return activeCategory.topics.findIndex(t => t.id === selectedTopic.id);
@@ -444,14 +72,13 @@ const RecoveryWorkbook = () => {
     const hasPrevious = activeCategory && currentIndex > 0;
 
 
-    // --- LOGIC FOR 100% COMPLETION ---
+    // --- Completion Logic ---
     const completedTopicIds = useMemo(() => {
         const completed = new Set();
         Object.values(workbookData).forEach(category => {
             if (category && category.topics) {
                 category.topics.forEach(topic => {
                     let isComplete = true; 
-
                     if (topic.sections) {
                         for (const section of topic.sections) {
                             for (let i = 0; i < section.questions.length; i++) {
@@ -472,7 +99,6 @@ const RecoveryWorkbook = () => {
                              }
                         }
                     }
-
                     if (isComplete && !topic.customComponent) {
                         completed.add(topic.id);
                     }
@@ -496,10 +122,12 @@ const RecoveryWorkbook = () => {
         return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
     }, [completedTopicIds]);
 
+    // --- AI Generation ---
     const handleGenerateInsights = async () => {
         setIsGeneratingInsights(true);
         setShowInsightsModal(true);
         setAiInsights('');
+        setAiActions([]);
 
         const allResponsesText = Object.entries(workbookResponses)
             .filter(([, value]) => value && value.trim().length > 0)
@@ -512,88 +140,148 @@ const RecoveryWorkbook = () => {
             return;
         }
 
-        const prompt = `You are an AI assistant for a recovery application called "My Recovery Toolkit." Your role is to provide compassionate, encouraging, and insightful reflections based on a user's workbook entries. Do not give medical advice. Focus on identifying themes, patterns, and opportunities for growth based on recovery principles. The user has provided the following workbook answers:\n\n${allResponsesText}\n\nBased on these entries, provide a few paragraphs of gentle, insightful feedback. Identify 2-3 key themes and suggest which recovery principles or workbook sections might be helpful to focus on next. Frame your response as a supportive guide.`;
+        const prompt = `You are an AI assistant for "My Recovery Toolkit." Provide insightful reflections based on the user's workbook entries below. Focus on identifying themes and opportunities for growth.
+        
+        Entries:
+        ${allResponsesText}
+
+        IMPORTANT: At the very end of your response, provide a section titled "SUGGESTED_ACTIONS" followed by exactly 3 short, concrete, actionable bullet points (no bolding, no markdown) to support their recovery.
+        
+        Example end format:
+        SUGGESTED_ACTIONS
+        - Discuss Step 1 with sponsor
+        - Practice daily self-compassion
+        - Attend a new meeting`;
 
         try {
             const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-            setAiInsights(text);
+            const responseText = await result.response.text();
+            
+            const parts = responseText.split('SUGGESTED_ACTIONS');
+            const mainText = parts[0].trim();
+            const actionText = parts.length > 1 ? parts[1].trim() : '';
+            
+            const extractedActions = actionText
+                .split('\n')
+                .map(line => line.replace(/^-/, '').trim())
+                .filter(line => line.length > 0)
+                .slice(0, 3);
+
+            setAiInsights(mainText);
+            setAiActions(extractedActions);
         } catch (error) {
             console.error("Error generating AI insights:", error);
-            setAiInsights("Sorry, I was unable to generate insights at this time. Please check your connection or API key and try again.");
+            setAiInsights("Sorry, I was unable to generate insights at this time.");
         } finally {
             setIsGeneratingInsights(false);
         }
     };
+
+    const handleSaveActionPlan = async (actionsToSave) => {
+        const currentJournal = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
+        const allTags = await DataStore.load(DataStore.KEYS.JOURNAL_TAGS) || [];
+        const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
+
+        const formattedList = actionsToSave.map(a => `- ${a}`).join('\n');
+        const newEntry = {
+            id: DataStore.generateId(),
+            text: `AI Action Plan (Workbook Insights):\n\n${formattedList}`,
+            mood: 0,
+            tags: ['actionitems', 'workbook'],
+            timestamp: new Date().toISOString()
+        };
+        await DataStore.save(DataStore.KEYS.JOURNAL, [newEntry, ...currentJournal]);
+        
+        const newTags = ['actionitems', 'workbook'].filter(t => !allTags.includes(t));
+        if (newTags.length > 0) {
+            await DataStore.save(DataStore.KEYS.JOURNAL_TAGS, [...allTags, ...newTags].sort());
+        }
+
+        let updatedGoals = [...currentGoals];
+        for (const actionText of actionsToSave) {
+            const existingGoalIndex = updatedGoals.findIndex(g => g.text.toLowerCase() === actionText.toLowerCase());
+            
+            if (existingGoalIndex !== -1) {
+                if (window.confirm(`"${actionText}" exists in To-Do list.\nClick OK to reset/reactivate it, or Cancel to duplicate.`)) {
+                    updatedGoals[existingGoalIndex] = {
+                        ...updatedGoals[existingGoalIndex],
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    };
+                } else {
+                    updatedGoals.push({
+                        id: DataStore.generateId(),
+                        text: actionText,
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            } else {
+                updatedGoals.push({
+                    id: DataStore.generateId(),
+                    text: actionText,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                });
+            }
+        }
+        await DataStore.save(DataStore.KEYS.GOALS, updatedGoals);
+    };
     
     if (isLoading) return <Spinner />;
-    if (selectedTopic) return <WorkbookTopic 
-                                topic={selectedTopic} 
-                                onBack={() => setSelectedTopic(null)} 
-                                initialResponses={workbookResponses} 
-                                onUpdate={handleResponseUpdate} 
-                                onNext={handleNextTopic}
-                                onPrevious={handlePreviousTopic}
-                                hasNext={hasNext}
-                                hasPrevious={hasPrevious}
-                              />;
-    if (activeCategory) return <WorkbookCategory category={activeCategory} onSelectTopic={setSelectedTopic} onBack={() => setActiveCategory(null)} completedTopicIds={completedTopicIds} />;
+    
+    // --- View Routing ---
+    if (selectedTopic) {
+        if (selectedTopic.customComponent) {
+            return <WorkbookSmartTool 
+                        topic={selectedTopic} 
+                        onBack={() => setSelectedTopic(null)} 
+                        onNext={handleNextTopic}
+                        onPrevious={handlePreviousTopic}
+                        hasNext={hasNext}
+                        hasPrevious={hasPrevious}
+                    />;
+        }
+        return <WorkbookTopicDetail 
+                    topic={selectedTopic} 
+                    onBack={() => setSelectedTopic(null)} 
+                    initialResponses={workbookResponses} 
+                    onUpdate={handleResponseUpdate} 
+                    onNext={handleNextTopic}
+                    onPrevious={handlePreviousTopic}
+                    hasNext={hasNext}
+                    hasPrevious={hasPrevious}
+               />;
+    }
+    
+    if (activeCategory) {
+        return <WorkbookCategoryDetail 
+                    category={activeCategory} 
+                    onSelectTopic={setSelectedTopic} 
+                    onBack={() => setActiveCategory(null)} 
+                    completedTopicIds={completedTopicIds} 
+               />;
+    }
     
     return ( 
-        <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in"> 
+        <>
             {showInsightsModal && (
-                <InsightsModal 
+                <WorkbookInsightsModal 
                     onClose={() => setShowInsightsModal(false)}
                     isLoading={isGeneratingInsights}
                     insights={aiInsights}
+                    actions={aiActions}
+                    onSaveActions={handleSaveActionPlan}
                 />
             )}
-            <h2 className="text-2xl font-bold text-deep-charcoal mb-2">Recovery Workbook</h2> 
-            <p className="text-deep-charcoal/70 mb-6">Track your progress through the exercises.</p> 
-            <div className="mb-6"> 
-                <div className="flex justify-between items-center mb-1"> 
-                    <span className="text-sm font-semibold text-deep-charcoal/70">Overall Progress</span> 
-                    <span className="text-sm font-semibold text-pink-600">{overallCompletion.percentage}%</span> 
-                </div> 
-                <div className="w-full bg-light-stone/50 rounded-full h-2.5">
-                    <div className="bg-pink-600 h-2.5 rounded-full" style={{ width: `${overallCompletion.percentage}%` }}></div>
-                </div> 
-            </div> 
-            <div className="mt-6 mb-4 border-t pt-6">
-                <button
-                    onClick={handleGenerateInsights}
-                    className="w-full flex items-center justify-center gap-2 bg-pink-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:brightness-95 transition-colors"
-                >
-                    <SparklesIcon className="w-5 h-5"/> Get AI Insights on Your Work
-                </button>
-                <p className="text-xs text-deep-charcoal/60 text-center mt-2">Analyzes your completed entries to find themes and patterns in your recovery journey.</p>
-            </div>
-            <ul className="space-y-4"> 
-                {Object.keys(workbookData).map(key => { 
-                    const category = workbookData[key]; 
-                    if (!category) return null; 
-                    const { completed, total, percentage } = calculateCompletion(key); 
-                    return ( 
-                        <li key={key}> 
-                            <button onClick={() => setActiveCategory(category)} className="w-full text-left p-4 bg-pure-white/60 hover:bg-pink-100 rounded-lg shadow-sm"> 
-                                <h3 className="font-semibold text-deep-charcoal text-lg">{category.title}</h3> 
-                                <p className="text-deep-charcoal/70 mt-1 text-sm">{category.description}</p> 
-                                <div className="mt-3"> 
-                                    <div className="flex justify-between items-center mb-1"> 
-                                        <span className="text-xs font-semibold text-deep-charcoal/60">{completed} / {total} Completed</span> 
-                                        <span className="text-xs font-semibold text-pink-600">{percentage}%</span> 
-                                    </div> 
-                                    <div className="w-full bg-light-stone/50 rounded-full h-1.5">
-                                        <div className="bg-pink-600 h-1.5 rounded-full" style={{ width: `${percentage}%` }}></div>
-                                    </div> 
-                                </div> 
-                            </button> 
-                        </li> 
-                    ); 
-                })} 
-            </ul> 
-        </div> 
+            <WorkbookMenu 
+                workbookData={workbookData} 
+                calculateCompletion={calculateCompletion} 
+                overallCompletion={overallCompletion} 
+                onSelectCategory={setActiveCategory}
+                onGenerateInsights={handleGenerateInsights}
+            />
+        </>
     );
 };
 

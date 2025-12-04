@@ -23,9 +23,20 @@ const COMPONENT_MAP = {
         'src/components/journal/MoodGraph.jsx',
         'src/components/journal/JournalModals.jsx'
     ],
-    'GOALS': 'src/components/Goals.jsx',
+    'GOALS': [
+        'src/components/Goals.jsx',
+        'src/utils/journalLogger.js' // ADDED
+    ],
     'COPING': 'src/components/CopingTools.jsx',
-    'WORKBOOK': 'src/components/RecoveryWorkbook.jsx',
+    'WORKBOOK': [
+        'src/components/RecoveryWorkbook.jsx',
+        'src/components/workbook/WorkbookComponents.jsx',
+        'src/components/workbook/WorkbookMenu.jsx',
+        'src/components/workbook/WorkbookCategoryDetail.jsx',
+        'src/components/workbook/WorkbookTopicDetail.jsx',
+        'src/components/workbook/WorkbookSmartTool.jsx',
+        'src/components/workbook/WorkbookInsightsModal.jsx'
+    ],
     'LITERATURE': 'src/components/RecoveryLiterature.jsx',
     'RESOURCES': 'src/components/Resources.jsx',
     'SETTINGS': 'src/components/Settings.jsx',
@@ -43,6 +54,7 @@ const COMPONENT_MAP = {
         'src/components/guide/GuideMeetings.jsx',
         'src/components/guide/GuideResources.jsx',
         'src/components/guide/GuideSettings.jsx',
+        'src/components/guide/GuideDemoProfiles.jsx', 
         'src/components/guide/GuideDataSecurity.jsx',
         'src/components/guide/GuidePrivacy.jsx'
     ],

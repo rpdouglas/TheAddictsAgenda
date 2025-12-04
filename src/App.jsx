@@ -11,6 +11,7 @@ import { APP_VERSIONS } from '/src/utils/data.js';
 import { SettingsIcon, ArrowLeftIcon, LifeBuoyIcon } from '/src/utils/icons.jsx';
 import { Spinner } from '/src/components/common.jsx';
 import Login from '/src/components/Login.jsx';
+import Splash from '/src/components/Splash.jsx'; // Import Splash Screen
 import { Dashboard, SobrietyDataSetup } from '/src/components/Dashboard.jsx';
 import EncryptionUnlock from '/src/components/EncryptionUnlock.jsx';
 import UserGuide from '/src/components/UserGuide.jsx';
@@ -56,6 +57,9 @@ const App = () => {
     
     // State to track if the account is currently locked due to encryption
     const [isLocked, setIsLocked] = useState(false);
+
+    // State to toggle between Splash and Login screens
+    const [showLogin, setShowLogin] = useState(false);
 
     const DEFAULT_HEADER = 'You have been clean for';
     const [headerText, setHeaderText] = useState(DEFAULT_HEADER);
@@ -190,8 +194,12 @@ const App = () => {
         return <div className="h-screen w-full flex items-center justify-center bg-gray-100"><Spinner /></div>;
     }
 
+    // --- LOGIC CHANGE: Splash vs Login vs Dashboard ---
     if (!session) {
-        return <Login />;
+        if (showLogin) {
+            return <Login onBack={() => setShowLogin(false)} />;
+        }
+        return <Splash onGetStarted={() => setShowLogin(true)} onLogin={() => setShowLogin(true)} />;
     }
 
     if (!sobrietyStartDate) {
