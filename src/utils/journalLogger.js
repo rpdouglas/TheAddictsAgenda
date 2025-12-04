@@ -74,3 +74,29 @@ export const logDailyAction = async (text, tag) => {
         console.error("Error logging daily action:", error);
     }
 };
+
+/**
+ * Parses journal text to find "Action Items" (lines starting with - [ ])
+ * Returns the cleaned text (marked as processed) and the list of actions to move to Goals.
+ * @param {string} text 
+ * @returns {Object} { cleanText, pendingActions }
+ */
+export const processAIActionPlan = (text) => {
+    const pendingActions = [];
+    if (!text) return { cleanText: '', pendingActions: [] };
+    
+    // Regex to find Markdown checkboxes: - [ ] Task... or * [ ] Task...
+    // We capture the text after the brackets.
+    // The 'm' flag allows matching start of lines, 'g' for global.
+    const actionRegex = /^[-*]\s*\[\s*\]\s*(.+)$/gm;
+    
+    // Replace found checkboxes with a "processed" marker to indicate they were moved
+    const cleanText = text.replace(actionRegex, (match, taskText) => {
+        const cleanedTask = taskText.trim();
+        pendingActions.push(cleanedTask);
+        // Mark as checked/moved in the journal so it isn't processed again
+        return `- [x] ${cleanedTask} (Moved to To-Do)`;
+    });
+
+    return { cleanText, pendingActions };
+};

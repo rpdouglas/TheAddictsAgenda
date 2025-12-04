@@ -1,9 +1,52 @@
 // src/components/journal/JournalModals.jsx
 import React, { useState } from 'react';
-import { SparklesIcon, FilterIcon, PlusIcon, CheckIcon, CheckCircleIcon } from '../../utils/icons.jsx';
+import { SparklesIcon, FilterIcon, PlusIcon, CheckIcon, CheckCircleIcon, TrashIcon } from '../../utils/icons.jsx';
 import { Spinner } from '../common.jsx';
 
-// --- Results Modal (Updated for Shopping Cart) ---
+// --- 1. DEFAULT EXPORT: Delete Confirmation Modal ---
+// This matches the import in DailyJournal.jsx
+const JournalModals = ({ showDeleteModal, setShowDeleteModal, confirmDelete }) => {
+    if (!showDeleteModal) return null;
+
+    return (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-gray-100">
+                <div className="flex items-center gap-3 mb-4 text-red-600">
+                    <div className="bg-red-100 p-2 rounded-full">
+                        <TrashIcon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">Delete Entry?</h3>
+                </div>
+                
+                <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+                    Are you sure you want to permanently delete this journal entry? 
+                    <br/><br/>
+                    <span className="font-bold text-red-500">This action cannot be undone.</span>
+                </p>
+                
+                <div className="flex justify-end gap-3">
+                    <button 
+                        onClick={() => setShowDeleteModal(false)}
+                        className="px-4 py-2 text-gray-600 hover:text-gray-800 font-bold text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={confirmDelete}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold text-sm shadow-md transition-transform transform active:scale-95"
+                    >
+                        Yes, Delete It
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default JournalModals;
+
+
+// --- 2. NAMED EXPORT: Results Modal (Action Plan / Shopping Cart) ---
 export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSaveActions }) => {
     const [selectedIndices, setSelectedIndices] = useState([]);
     const [isSaved, setIsSaved] = useState(false);
@@ -96,7 +139,7 @@ export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSa
     );
 };
 
-// --- Configuration Modal ---
+// --- 3. NAMED EXPORT: Configuration Modal ---
 export const AnalysisConfigModal = ({ isOpen, onClose, onAnalyze, allTags }) => {
     const [startDate, setStartDate] = useState(() => {
         const d = new Date();

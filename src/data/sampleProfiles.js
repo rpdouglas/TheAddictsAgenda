@@ -140,6 +140,9 @@ const ryanBeats = [
 export const SAMPLE_PROFILES = {
     NEWCOMER: {
         name: "Newcomer Ned",
+        avatar: "/images/profiles/ned_avatar.jpg",
+        imageFull: "/images/profiles/ned_full.jpg",
+        imageIcon: "/images/profiles/ned_icon.jpg",
         description: "90 Days Sober. Moving from the 'Pink Cloud' into real Step work.",
         data: {
             'recovery_sobriety_date': daysAgo(90),
@@ -173,6 +176,9 @@ export const SAMPLE_PROFILES = {
 
     SPONSOR: {
         name: "Steady Sarah",
+        avatar: "/images/profiles/sarah_avatar.jpg",
+        imageFull: "/images/profiles/sarah_full.jpg",
+        imageIcon: "/images/profiles/sarah_icon.jpg",
         description: "3 Years Sober. Deep Step work, sponsorship, and emotional maintenance.",
         data: {
             'recovery_sobriety_date': daysAgo(3 * 365),
@@ -207,6 +213,9 @@ export const SAMPLE_PROFILES = {
 
     DHARMA: {
         name: "Dharma Dan",
+        avatar: "/images/profiles/dan_avatar.jpg",
+        imageFull: "/images/profiles/dan_full.jpg",
+        imageIcon: "/images/profiles/dan_icon.jpg",
         description: "6 Months Sober. Using Buddhist principles and meditation.",
         data: {
             'recovery_sobriety_date': daysAgo(180),
@@ -238,6 +247,9 @@ export const SAMPLE_PROFILES = {
 
     RELAPSE: {
         name: "Relapse Ryan",
+        avatar: "/images/profiles/ryan_avatar.jpg",
+        imageFull: "/images/profiles/ryan_full.jpg",
+        imageIcon: "/images/profiles/ryan_icon.jpg",
         description: "3 Days Sober (Again). A history of 6 months of struggle.",
         data: {
             'recovery_sobriety_date': daysAgo(3),

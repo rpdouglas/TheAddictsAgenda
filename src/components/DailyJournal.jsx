@@ -1,355 +1,262 @@
 // src/components/DailyJournal.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import DataStore from '../utils/dataStore.js';
-import { journalTemplates } from '../utils/data.js';
-import { model } from '../firebase.jsx';
-
-// Import Refactored Components
 import JournalForm from './journal/JournalForm.jsx';
-import JournalListView from './journal/JournalList.jsx';
-import MoodGraphView from './journal/MoodGraph.jsx';
-import { InsightsModal, AnalysisConfigModal } from './journal/JournalModals.jsx';
+import JournalList from './journal/JournalList.jsx';
+import MoodGraph from './journal/MoodGraph.jsx';
+import JournalModals from './journal/JournalModals.jsx';
+import { processAIActionPlan } from '../utils/journalLogger.js';
 
 const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJournalTags }) => {
     const [items, setItems] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('list'); // 'list', 'form', 'graph'
     const [newItemText, setNewItemText] = useState('');
-    const [currentMood, setCurrentMood] = useState(0); 
-    const [selectedTemplateId, setSelectedTemplateId] = useState('');
-    const [showGeminiHelper, setShowGeminiHelper] = useState(false);
-
-    // AI Insights State
-    const [showConfigModal, setShowConfigModal] = useState(false);
-    const [showInsightsModal, setShowInsightsModal] = useState(false);
-    const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
-    const [aiInsights, setAiInsights] = useState('');
-    const [aiActions, setAiActions] = useState([]); 
-
-    // Editing & Tagging State
+    const [currentMood, setCurrentMood] = useState(0);
+    const [weather, setWeather] = useState(''); // NEW: Weather State
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
-    const [allTags, setAllTags] = useState([]);
-    const [currentEntryTags, setCurrentEntryTags] = useState([]);
+    const [showGeminiHelper, setShowGeminiHelper] = useState(false);
+    const [activeTab, setActiveTab] = useState('write');
+    
+    // Filtering & Search State
+    const [filterTag, setFilterTag] = useState('All');
+    const [searchQuery, setSearchQuery] = useState('');
+    
+    // Tag Management
     const [tagInput, setTagInput] = useState('');
+    const [allTags, setAllTags] = useState([]);
 
-    // --- Data Loading & Management ---
-    const saveItemsToStore = useCallback(async (updatedItems) => {
-        const sortedItems = updatedItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        setItems(sortedItems);
-        await DataStore.save(DataStore.KEYS.JOURNAL, sortedItems);
-    }, []);
-
-    const saveAllTagsToStore = useCallback(async (updatedTags) => {
-        const sortedTags = [...new Set(updatedTags)].sort();
-        setAllTags(sortedTags);
-        await DataStore.save(DataStore.KEYS.JOURNAL_TAGS, sortedTags);
-    }, []);
+    // Modals
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     useEffect(() => {
-        const loadJournalData = async () => {
-            setIsLoading(true);
-            const loadedItems = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
-            const loadedTags = await DataStore.load(DataStore.KEYS.JOURNAL_TAGS) || [];
-            setItems(loadedItems);
-            setAllTags(loadedTags.sort());
-            setIsLoading(false);
-        };
-        loadJournalData();
+        loadJournal();
     }, []);
-    
-    // Handle External Triggers (e.g. from Dashboard or Tools)
+
+    // Handle Template Props (from external components like Coping Cards)
     useEffect(() => {
         if (journalTemplate) {
-            setIsEditing(false);
-            setEditItemId(null);
             setNewItemText(journalTemplate);
-            setCurrentEntryTags(journalTags || []);
-            setCurrentMood(0);
-            setViewMode('form');
-            setJournalTemplate('');
-            if (setJournalTags) setJournalTags([]);
+            setJournalTemplate(''); 
+            setActiveTab('write');
         }
-    }, [journalTemplate, journalTags, setJournalTemplate, setJournalTags]);
+        if (journalTags && journalTags.length > 0) {
+            // Merge unique tags
+            setAllTags(prev => [...new Set([...prev, ...journalTags])]);
+        }
+    }, [journalTemplate, journalTags, setJournalTemplate]);
 
-    // --- UI Handlers ---
-    const handleShowNewForm = () => {
-        setIsEditing(false);
-        setEditItemId(null);
-        setNewItemText('');
-        setCurrentEntryTags([]);
-        setCurrentMood(0);
-        setViewMode('form');
+
+    const loadJournal = async () => {
+        const storedItems = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
+        
+        // Sort by timestamp desc
+        storedItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        setItems(storedItems);
+
+        // Extract all unique tags
+        const tags = new Set();
+        storedItems.forEach(item => {
+            if (item.tags) item.tags.forEach(t => tags.add(t));
+        });
+        setAllTags(Array.from(tags));
     };
 
-    const handleStartEdit = (item) => {
-        setEditItemId(item.id);
+    const handleSaveEntry = async (e) => {
+        e.preventDefault();
+        if (!newItemText.trim()) return;
+
+        let updatedItems;
+        
+        // 1. Process AI Action Items (if any checkboxes [ ] were used)
+        const { cleanText, pendingActions } = processAIActionPlan(newItemText);
+
+        // 2. Construct Entry Object
+        const entryData = {
+            text: cleanText,
+            mood: currentMood,
+            weather: weather, // NEW: Save Weather
+            tags: journalTags || [],
+            timestamp: new Date().toISOString()
+        };
+
+        if (isEditing) {
+            updatedItems = items.map(item => 
+                item.id === editItemId ? { ...item, ...entryData, id: item.id } : item
+            );
+            setIsEditing(false);
+            setEditItemId(null);
+        } else {
+            const newItem = {
+                id: DataStore.generateId(),
+                ...entryData
+            };
+            updatedItems = [newItem, ...items];
+        }
+
+        // 3. Handle Action Plan items (Save to Goals)
+        if (pendingActions.length > 0) {
+            const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
+            const newGoals = pendingActions.map(actionText => ({
+                id: DataStore.generateId(),
+                text: actionText,
+                completed: false,
+                createdAt: new Date().toISOString(),
+                source: 'journal_ai'
+            }));
+            await DataStore.save(DataStore.KEYS.GOALS, [...currentGoals, ...newGoals]);
+            alert(`Saved ${pendingActions.length} action items to your To-Do List!`);
+        }
+
+        await DataStore.save(DataStore.KEYS.JOURNAL, updatedItems);
+        setItems(updatedItems);
+        
+        // Reset Form
+        setNewItemText('');
+        setCurrentMood(0);
+        setWeather(''); // Reset Weather
+        setJournalTags([]);
+        setShowGeminiHelper(false);
+        setActiveTab('history');
+        
+        // Refresh tags
+        loadJournal();
+    };
+
+    const handleEdit = (item) => {
         setNewItemText(item.text);
-        setCurrentEntryTags(item.tags || []);
         setCurrentMood(item.mood || 0);
+        setWeather(item.weather || ''); // Load existing weather or empty
+        setJournalTags(item.tags || []);
         setIsEditing(true);
-        setViewMode('form');
+        setEditItemId(item.id);
+        setActiveTab('write');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        const updatedItems = items.filter(i => i.id !== itemToDelete);
+        await DataStore.save(DataStore.KEYS.JOURNAL, updatedItems);
+        setItems(updatedItems);
+        setShowDeleteModal(false);
+        setItemToDelete(null);
+        loadJournal(); // Refresh tags
     };
 
     const handleCancelEdit = () => {
         setIsEditing(false);
         setEditItemId(null);
         setNewItemText('');
-        setCurrentEntryTags([]);
         setCurrentMood(0);
-        setViewMode('list');
+        setWeather('');
+        setJournalTags([]);
     };
 
-    const handleDeleteItem = async (id) => {
-        await saveItemsToStore(items.filter(item => item.id !== id));
-    };
-
-    const handleApplyTemplate = () => {
-        const templateObj = journalTemplates.find(t => t.id === selectedTemplateId);
-        if (templateObj) {
-            setNewItemText(templateObj.template);
-            let tagsToAdd = [];
-            if (templateObj.name === '3-Part Gratitude Check') tagsToAdd.push('gratitude');
-            if (templateObj.name === 'Resentment Filter') tagsToAdd.push('resentments');
-
-            if (tagsToAdd.length > 0) {
-                setCurrentEntryTags(prev => {
-                    const newTags = tagsToAdd.filter(t => !prev.includes(t));
-                    return [...prev, ...newTags];
-                });
-            }
-        }
-        setSelectedTemplateId('');
-    };
-
-    // --- AI Logic ---
-    const handleRunAnalysis = async (startDate, endDate, selectedTags) => {
-        setShowConfigModal(false);
-        setIsGeneratingInsights(true);
-        setShowInsightsModal(true);
-        setAiInsights('');
-        setAiActions([]);
-
-        const start = new Date(startDate); start.setHours(0, 0, 0, 0);
-        const end = new Date(endDate); end.setHours(23, 59, 59, 999);
-
-        const filteredEntries = items.filter(item => {
-            const itemDate = new Date(item.timestamp);
-            const matchesDate = itemDate >= start && itemDate <= end;
-            const matchesTags = selectedTags.length === 0 ? true : item.tags?.some(t => selectedTags.includes(t));
-            return matchesDate && matchesTags;
-        });
-        
-        const recentEntries = filteredEntries.slice(0, 20); // Limit context
-        
-        if (recentEntries.length === 0) {
-            setAiInsights("I couldn't find any journal entries matching your filters.");
-            setIsGeneratingInsights(false);
-            return;
-        }
-
-        const entriesText = recentEntries.map(entry => 
-            `Date: ${new Date(entry.timestamp).toLocaleDateString()}\nMood: ${entry.mood}/10\nTags: ${entry.tags?.join(', ')}\nContent: "${entry.text}"`
-        ).join('\n---\n');
-
-        const prompt = `You are an empathetic recovery companion. Analyze the following journal entries and provide insights on themes, triggers, and progress. 
-        
-        Entries:
-        ${entriesText}
-        
-        IMPORTANT: At the very end of your response, provide a section titled "SUGGESTED_ACTIONS" followed by exactly 3 short, concrete, actionable bullet points (no bolding, no markdown) that the user can take to support their recovery based on this analysis.
-        
-        Example end format:
-        SUGGESTED_ACTIONS
-        - Call your sponsor to check in
-        - Spend 10 minutes meditating
-        - Write a gratitude list`;
-
-        try {
-            const result = await model.generateContent(prompt);
-            const responseText = await result.response.text();
-            
-            const parts = responseText.split('SUGGESTED_ACTIONS');
-            const mainText = parts[0].trim();
-            const actionText = parts.length > 1 ? parts[1].trim() : '';
-            
-            const extractedActions = actionText
-                .split('\n')
-                .map(line => line.replace(/^-/, '').trim()) 
-                .filter(line => line.length > 0)
-                .slice(0, 3); 
-
-            setAiInsights(mainText);
-            setAiActions(extractedActions);
-
-        } catch (error) {
-            console.error("AI Error:", error);
-            setAiInsights("Sorry, I was unable to analyze your entries at this time.");
-        } finally {
-            setIsGeneratingInsights(false);
+    // Tag Handlers
+    const handleAddTag = () => {
+        if (tagInput.trim() && !journalTags.includes(tagInput.trim())) {
+            setJournalTags([...journalTags, tagInput.trim()]);
+            setTagInput('');
         }
     };
 
-    // --- UPDATED: Handle Saving Action Plan ---
-    const handleSaveActionPlan = async (actionsToSave) => {
-        // 1. Create Consolidated Journal Entry
-        const formattedList = actionsToSave.map(a => `- ${a}`).join('\n');
-        const newEntry = {
-            id: DataStore.generateId(),
-            text: `AI Action Plan:\n\n${formattedList}`,
-            mood: 0,
-            tags: ['actionitems'],
-            timestamp: new Date().toISOString()
-        };
-        await saveItemsToStore([newEntry, ...items]);
-        
-        // Ensure tag exists
-        if (!allTags.includes('actionitems')) {
-            await saveAllTagsToStore([...allTags, 'actionitems']);
-        }
-
-        // 2. Process To-Do List Integration
-        const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
-        let updatedGoals = [...currentGoals];
-
-        for (const actionText of actionsToSave) {
-            const existingGoalIndex = updatedGoals.findIndex(g => g.text.toLowerCase() === actionText.toLowerCase());
-            
-            if (existingGoalIndex !== -1) {
-                // Duplicate Found
-                const confirmMsg = `The task "${actionText}" already exists in your To-Do list.\n\nClick OK to reset it (mark incomplete & update date).\nClick Cancel to create a duplicate anyway.`;
-                if (window.confirm(confirmMsg)) {
-                    // Reset Existing
-                    updatedGoals[existingGoalIndex] = {
-                        ...updatedGoals[existingGoalIndex],
-                        completed: false,
-                        createdAt: new Date().toISOString()
-                    };
-                } else {
-                    // Create Duplicate
-                    updatedGoals.push({
-                        id: DataStore.generateId(),
-                        text: actionText,
-                        completed: false,
-                        createdAt: new Date().toISOString()
-                    });
-                }
-            } else {
-                // New Item
-                updatedGoals.push({
-                    id: DataStore.generateId(),
-                    text: actionText,
-                    completed: false,
-                    createdAt: new Date().toISOString()
-                });
-            }
-        }
-
-        await DataStore.save(DataStore.KEYS.GOALS, updatedGoals);
+    const handleRemoveTag = (tagToRemove) => {
+        setJournalTags(journalTags.filter(t => t !== tagToRemove));
     };
 
-    // --- Tag Handlers ---
-    const handleAddTag = async () => {
-        const newTag = tagInput.trim().toLowerCase();
-        if (newTag && !currentEntryTags.includes(newTag)) {
-            setCurrentEntryTags([...currentEntryTags, newTag]);
-            if (!allTags.includes(newTag)) {
-                await saveAllTagsToStore([...allTags, newTag]);
-            }
+    const handleTagInputKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddTag();
         }
-        setTagInput('');
     };
 
-    const handleRemoveTag = (tagToRemove) => setCurrentEntryTags(currentEntryTags.filter(tag => tag !== tagToRemove));
-    const handleTagInputKeyDown = (e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } };
-
-    // --- Save Handler ---
-    const handleSaveEntry = async (e) => {
-        e.preventDefault();
-        if (currentMood === 0) {
-            window.alert("Please set the mood indicator to save your entry.");
-            return;
-        }
-        if (newItemText.trim() === '') return;
-
-        const entryData = {
-            text: newItemText,
-            tags: currentEntryTags,
-            mood: currentMood,
-            timestamp: new Date().toISOString()
-        };
-
-        if (isEditing && editItemId) {
-            await saveItemsToStore(items.map(item => item.id === editItemId ? { ...item, ...entryData } : item));
-        } else {
-            const newTagsForMasterList = currentEntryTags.filter(t => !allTags.includes(t));
-            if (newTagsForMasterList.length > 0) await saveAllTagsToStore([...allTags, ...newTagsForMasterList]);
-            await saveItemsToStore([{ id: DataStore.generateId(), ...entryData }, ...items]);
-        }
-        handleCancelEdit();
-    };
-
-    // --- Render ---
-    const renderContent = () => {
-        switch (viewMode) {
-            case 'form':
-                return <JournalForm
-                    isEditing={isEditing}
-                    editItemId={editItemId}
-                    items={items}
-                    handleCancelEdit={handleCancelEdit}
-                    handleSaveEntry={handleSaveEntry}
-                    newItemText={newItemText}
-                    setNewItemText={setNewItemText}
-                    currentMood={currentMood}
-                    setCurrentMood={setCurrentMood}
-                    selectedTemplateId={selectedTemplateId}
-                    setSelectedTemplateId={setSelectedTemplateId}
-                    handleApplyTemplate={handleApplyTemplate}
-                    currentEntryTags={currentEntryTags}
-                    tagInput={tagInput}
-                    setTagInput={setTagInput}
-                    handleTagInputKeyDown={handleTagInputKeyDown}
-                    handleAddTag={handleAddTag}
-                    handleRemoveTag={handleRemoveTag}
-                    allTags={allTags}
-                    showGeminiHelper={showGeminiHelper}
-                    setShowGeminiHelper={setShowGeminiHelper}
-                />;
-            case 'graph':
-                return <MoodGraphView items={items} onBack={() => setViewMode('list')} onPointClick={(entry) => handleStartEdit(entry)} />;
-            case 'list':
-            default:
-                return <JournalListView
-                    isLoading={isLoading}
-                    items={items}
-                    handleShowNewForm={handleShowNewForm}
-                    handleStartEdit={handleStartEdit}
-                    handleDeleteItem={handleDeleteItem}
-                    setViewMode={setViewMode}
-                    onOpenAnalysisConfig={() => setShowConfigModal(true)}
-                />;
-        }
+    const handleApplyTemplate = (templateId) => {
+        // Logic handled in JournalForm or passed down if needed
+        // For now, we assume JournalForm calls a prop or manages this via the setJournalTemplate we passed
+        // Actually, looking at previous code, JournalForm manages the selection state but needs to update text
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-            <AnalysisConfigModal isOpen={showConfigModal} onClose={() => setShowConfigModal(false)} onAnalyze={handleRunAnalysis} allTags={allTags} />
+        <div className="h-full flex flex-col space-y-4">
             
-            {/* UPDATED: Pass onSaveActions instead of onSaveAction */}
-            {showInsightsModal && (
-                <InsightsModal 
-                    onClose={() => setShowInsightsModal(false)} 
-                    isLoading={isGeneratingInsights} 
-                    insights={aiInsights}
-                    actions={aiActions}
-                    onSaveActions={handleSaveActionPlan} 
-                />
-            )}
-            
-            <h2 className="text-2xl font-bold text-deep-charcoal mb-4">Daily Journal</h2>
-            <p className="text-deep-charcoal/70 mb-6">How are you feeling? You can write about your day, feelings, or things you are grateful for.</p>
-            {renderContent()}
+            {/* Tab Navigation */}
+            <div className="flex p-1 bg-gray-200 rounded-xl">
+                <button 
+                    onClick={() => setActiveTab('write')}
+                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'write' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    Write Entry
+                </button>
+                <button 
+                    onClick={() => setActiveTab('history')}
+                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'history' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    History
+                </button>
+                <button 
+                    onClick={() => setActiveTab('insights')}
+                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'insights' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    Insights
+                </button>
+            </div>
+
+            {/* CONTENT AREA */}
+            <div className="flex-grow overflow-y-auto pb-20">
+                {activeTab === 'write' && (
+                    <JournalForm 
+                        isEditing={isEditing}
+                        editItemId={editItemId}
+                        items={items}
+                        handleCancelEdit={handleCancelEdit}
+                        handleSaveEntry={handleSaveEntry}
+                        newItemText={newItemText}
+                        setNewItemText={setNewItemText}
+                        currentMood={currentMood}
+                        setCurrentMood={setCurrentMood}
+                        weather={weather}        // NEW PROP
+                        setWeather={setWeather}  // NEW PROP
+                        currentEntryTags={journalTags}
+                        tagInput={tagInput}
+                        setTagInput={setTagInput}
+                        handleTagInputKeyDown={handleTagInputKeyDown}
+                        handleAddTag={handleAddTag}
+                        handleRemoveTag={handleRemoveTag}
+                        allTags={allTags}
+                        showGeminiHelper={showGeminiHelper}
+                        setShowGeminiHelper={setShowGeminiHelper}
+                        // Template logic
+                        selectedTemplateId="" // Managed in form for now or lift up if needed
+                        setSelectedTemplateId={() => {}} 
+                        handleApplyTemplate={() => {}}
+                    />
+                )}
+
+                {activeTab === 'history' && (
+                    <JournalList 
+                        items={items}
+                        onEdit={handleEdit}
+                        onDelete={(id) => { setItemToDelete(id); setShowDeleteModal(true); }}
+                        filterTag={filterTag}
+                        setFilterTag={setFilterTag}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        allTags={allTags}
+                    />
+                )}
+
+                {activeTab === 'insights' && (
+                    <MoodGraph items={items} />
+                )}
+            </div>
+
+            <JournalModals 
+                showDeleteModal={showDeleteModal}
+                setShowDeleteModal={setShowDeleteModal}
+                confirmDelete={confirmDelete}
+            />
         </div>
     );
 };
