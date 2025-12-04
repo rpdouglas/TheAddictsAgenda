@@ -1,3 +1,4 @@
+// src/components/DailyJournal.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { journalTemplates } from '../utils/data.js';
@@ -23,6 +24,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const [showInsightsModal, setShowInsightsModal] = useState(false);
     const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
     const [aiInsights, setAiInsights] = useState('');
+    const [aiActions, setAiActions] = useState([]); 
 
     // Editing & Tagging State
     const [isEditing, setIsEditing] = useState(false);
@@ -126,6 +128,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setIsGeneratingInsights(true);
         setShowInsightsModal(true);
         setAiInsights('');
+        setAiActions([]);
 
         const start = new Date(startDate); start.setHours(0, 0, 0, 0);
         const end = new Date(endDate); end.setHours(23, 59, 59, 999);
@@ -149,18 +152,100 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             `Date: ${new Date(entry.timestamp).toLocaleDateString()}\nMood: ${entry.mood}/10\nTags: ${entry.tags?.join(', ')}\nContent: "${entry.text}"`
         ).join('\n---\n');
 
-        const prompt = `You are an empathetic recovery companion. Analyze the following journal entries... \n\n${entriesText}`; // Truncated prompt for brevity
+        const prompt = `You are an empathetic recovery companion. Analyze the following journal entries and provide insights on themes, triggers, and progress. 
+        
+        Entries:
+        ${entriesText}
+        
+        IMPORTANT: At the very end of your response, provide a section titled "SUGGESTED_ACTIONS" followed by exactly 3 short, concrete, actionable bullet points (no bolding, no markdown) that the user can take to support their recovery based on this analysis.
+        
+        Example end format:
+        SUGGESTED_ACTIONS
+        - Call your sponsor to check in
+        - Spend 10 minutes meditating
+        - Write a gratitude list`;
 
         try {
             const result = await model.generateContent(prompt);
-            const response = await result.response;
-            setAiInsights(response.text());
+            const responseText = await result.response.text();
+            
+            const parts = responseText.split('SUGGESTED_ACTIONS');
+            const mainText = parts[0].trim();
+            const actionText = parts.length > 1 ? parts[1].trim() : '';
+            
+            const extractedActions = actionText
+                .split('\n')
+                .map(line => line.replace(/^-/, '').trim()) 
+                .filter(line => line.length > 0)
+                .slice(0, 3); 
+
+            setAiInsights(mainText);
+            setAiActions(extractedActions);
+
         } catch (error) {
             console.error("AI Error:", error);
             setAiInsights("Sorry, I was unable to analyze your entries at this time.");
         } finally {
             setIsGeneratingInsights(false);
         }
+    };
+
+    // --- UPDATED: Handle Saving Action Plan ---
+    const handleSaveActionPlan = async (actionsToSave) => {
+        // 1. Create Consolidated Journal Entry
+        const formattedList = actionsToSave.map(a => `- ${a}`).join('\n');
+        const newEntry = {
+            id: DataStore.generateId(),
+            text: `AI Action Plan:\n\n${formattedList}`,
+            mood: 0,
+            tags: ['actionitems'],
+            timestamp: new Date().toISOString()
+        };
+        await saveItemsToStore([newEntry, ...items]);
+        
+        // Ensure tag exists
+        if (!allTags.includes('actionitems')) {
+            await saveAllTagsToStore([...allTags, 'actionitems']);
+        }
+
+        // 2. Process To-Do List Integration
+        const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
+        let updatedGoals = [...currentGoals];
+
+        for (const actionText of actionsToSave) {
+            const existingGoalIndex = updatedGoals.findIndex(g => g.text.toLowerCase() === actionText.toLowerCase());
+            
+            if (existingGoalIndex !== -1) {
+                // Duplicate Found
+                const confirmMsg = `The task "${actionText}" already exists in your To-Do list.\n\nClick OK to reset it (mark incomplete & update date).\nClick Cancel to create a duplicate anyway.`;
+                if (window.confirm(confirmMsg)) {
+                    // Reset Existing
+                    updatedGoals[existingGoalIndex] = {
+                        ...updatedGoals[existingGoalIndex],
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    };
+                } else {
+                    // Create Duplicate
+                    updatedGoals.push({
+                        id: DataStore.generateId(),
+                        text: actionText,
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            } else {
+                // New Item
+                updatedGoals.push({
+                    id: DataStore.generateId(),
+                    text: actionText,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                });
+            }
+        }
+
+        await DataStore.save(DataStore.KEYS.GOALS, updatedGoals);
     };
 
     // --- Tag Handlers ---
@@ -250,7 +335,17 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
             <AnalysisConfigModal isOpen={showConfigModal} onClose={() => setShowConfigModal(false)} onAnalyze={handleRunAnalysis} allTags={allTags} />
-            {showInsightsModal && <InsightsModal onClose={() => setShowInsightsModal(false)} isLoading={isGeneratingInsights} insights={aiInsights} />}
+            
+            {/* UPDATED: Pass onSaveActions instead of onSaveAction */}
+            {showInsightsModal && (
+                <InsightsModal 
+                    onClose={() => setShowInsightsModal(false)} 
+                    isLoading={isGeneratingInsights} 
+                    insights={aiInsights}
+                    actions={aiActions}
+                    onSaveActions={handleSaveActionPlan} 
+                />
+            )}
             
             <h2 className="text-2xl font-bold text-deep-charcoal mb-4">Daily Journal</h2>
             <p className="text-deep-charcoal/70 mb-6">How are you feeling? You can write about your day, feelings, or things you are grateful for.</p>
