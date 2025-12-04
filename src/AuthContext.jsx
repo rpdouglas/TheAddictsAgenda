@@ -1,53 +1,90 @@
 // src/AuthContext.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from './firebase.jsx';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { auth } from './firebase.jsx'; // Import the initialized auth instance
+import { 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged 
+} from 'firebase/auth'; // Import SDK functions directly
 
 const AuthContext = createContext();
 
-export function useAuth() {
-    return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null);
-    const [loading, setLoading] = useState(true); // Start as true
+    const [loading, setLoading] = useState(true);
 
+    // Guest Mode Logic
     const loginLocally = () => {
-        const localUser = { uid: 'localUser', displayName: 'Guest' };
-        setSession({ user: localUser, type: 'local' });
-        setLoading(false);
+        // Sets a local-only session object
+        const guestUser = { 
+            uid: 'guest', 
+            email: null, 
+            displayName: 'Guest User',
+            type: 'local' // Used by DataStore to select LocalStorage
+        };
+        setSession(guestUser);
+        localStorage.setItem('isGuest', 'true');
+    };
+
+    // Email/Password Login
+    const login = (email, password) => {
+        return signInWithEmailAndPassword(auth, email, password);
+    };
+
+    // Email/Password Signup
+    const signup = (email, password) => {
+        return createUserWithEmailAndPassword(auth, email, password);
     };
 
     const logout = async () => {
-        if (session?.type === 'firebase') {
+        try {
             await signOut(auth);
-        } else {
             setSession(null);
+            localStorage.removeItem('isGuest');
+        } catch (error) {
+            console.error("Logout Error:", error);
         }
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, user => {
+        // Check for guest flag first
+        const isGuest = localStorage.getItem('isGuest');
+        if (isGuest === 'true') {
+            setSession({ uid: 'guest', displayName: 'Guest User', type: 'local' });
+            setLoading(false);
+            // Even if guest, we still listen to Firebase in case they sign in on top
+        }
+
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                setSession({ user, type: 'firebase' });
-            } else {
+                // Firebase User overrides Guest User
+                setSession({ ...user, type: 'firebase' });
+                localStorage.removeItem('isGuest'); // Clear guest flag if real auth happens
+            } else if (!isGuest) {
+                // Only clear session if we weren't already in guest mode
                 setSession(null);
             }
-            // This is the key: loading is set to false only AFTER
-            // Firebase has confirmed the auth state for the first time.
             setLoading(false);
         });
 
-        // Cleanup subscription on component unmount
-        return () => unsubscribe();
-    }, []); // Empty array ensures this runs only once
+        return unsubscribe;
+    }, []);
 
-    const value = { session, loginLocally, logout, loading };
+    const value = {
+        session,
+        loading,
+        loginLocally, 
+        login,        
+        signup,       
+        logout
+    };
 
     return (
         <AuthContext.Provider value={value}>
-            {children}
+            {!loading && children}
         </AuthContext.Provider>
     );
-}
+};

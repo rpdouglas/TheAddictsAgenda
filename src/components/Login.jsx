@@ -2,10 +2,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../AuthContext.jsx';
 import { ArrowLeftIcon } from '../utils/icons.jsx';
-import { auth, googleProvider, facebookProvider, signInWithPopup } from '../firebase.jsx';
+import { auth, googleProvider, facebookProvider } from '../firebase.jsx';
+import { signInWithPopup } from 'firebase/auth';
 
 const Login = ({ onBack }) => {
-    const { login, guestLogin, signup } = useAuth();
+    // Destructure 'loginLocally' instead of 'guestLogin'
+    const { login, loginLocally, signup } = useAuth(); 
+    
     const [isSignup, setIsSignup] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -138,7 +141,7 @@ const Login = ({ onBack }) => {
                 </div>
 
                 <button 
-                    onClick={guestLogin}
+                    onClick={loginLocally}
                     className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
                 >
                     Continue as Guest
