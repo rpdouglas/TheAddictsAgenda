@@ -1,196 +1,166 @@
 // src/components/journal/JournalList.jsx
-import React, { useState, useMemo, useEffect } from 'react';
-import { SparklesIcon, TrendingUpIcon, EditIcon, TrashIcon, ChevronDown, ChevronUp } from '../../utils/icons.jsx';
-import { Spinner } from '../common.jsx';
+import React, { useState } from 'react';
+import { EditIcon, TrashIcon, CalendarIcon, ShareIcon } from '../../utils/icons.jsx';
 
-const JournalListView = ({ isLoading, items, handleShowNewForm, handleStartEdit, handleDeleteItem, setViewMode, onOpenAnalysisConfig }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [expandedMonths, setExpandedMonths] = useState({});
+const JournalList = ({ items, onEdit, onDelete, filterTag, setFilterTag, searchQuery, setSearchQuery, allTags }) => {
+    
+    // State to handle feedback when copying to clipboard (on devices without native share)
+    const [copiedId, setCopiedId] = useState(null);
 
-    // 1. Group Items by Month (Memoized)
-    // We assume 'items' are already sorted by date (descending) from the parent component
-    const groupedItems = useMemo(() => {
-        const groups = {};
-        items.forEach(item => {
-            const date = new Date(item.timestamp);
-            const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(item);
-        });
-        return groups;
-    }, [items]);
+    const filteredItems = items.filter(item => {
+        const matchesTag = filterTag === 'All' || (item.tags && item.tags.includes(filterTag));
+        const matchesSearch = item.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              (item.tags && item.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())));
+        return matchesTag && matchesSearch;
+    });
 
-    // 2. Set default expanded state (Open most recent month on load)
-    useEffect(() => {
-        if (items.length > 0) {
-            const mostRecentDate = new Date(items[0].timestamp);
-            const key = mostRecentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-            
-            // Only set default if we haven't set any state yet (to prevent collapsing while user is interacting)
-            setExpandedMonths(prev => Object.keys(prev).length === 0 ? { [key]: true } : prev);
+    const handleShare = async (item) => {
+        const dateStr = new Date(item.timestamp).toLocaleDateString();
+        const moodStr = item.mood > 0 ? `Mood: ${item.mood}/10` : 'No Mood Recorded';
+        
+        // Option 2: Formatted Recovery Update
+        const shareText = `Journal Entry: ${dateStr}\n${moodStr}\n\n${item.text}\n\nShared from My Recovery Toolkit`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Journal Entry - ${dateStr}`,
+                    text: shareText,
+                });
+            } catch (error) {
+                console.error('Error sharing:', error);
+            }
+        } else {
+            // Fallback for desktop/unsupported browsers
+            try {
+                await navigator.clipboard.writeText(shareText);
+                setCopiedId(item.id);
+                setTimeout(() => setCopiedId(null), 2000); // Reset after 2 seconds
+            } catch (error) {
+                console.error('Failed to copy:', error);
+                alert('Failed to copy to clipboard');
+            }
         }
-    }, [items]);
-
-    // 3. Search Filter Logic
-    const searchResults = useMemo(() => {
-        if (!searchTerm.trim()) return null;
-        const lowerTerm = searchTerm.toLowerCase();
-        return items.filter(item =>
-            item.text.toLowerCase().includes(lowerTerm) ||
-            (item.tags && item.tags.some(tag => tag.toLowerCase().includes(lowerTerm)))
-        );
-    }, [items, searchTerm]);
-
-    const toggleMonth = (month) => {
-        setExpandedMonths(prev => ({
-            ...prev,
-            [month]: !prev[month]
-        }));
     };
 
-    // Helper to render individual entry cards
-    const renderEntry = (item) => (
-        <li key={item.id} className="p-4 bg-pure-white/60 rounded-lg shadow-sm transition-colors hover:bg-soft-linen mb-3 last:mb-0 border border-light-stone/20">
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className="text-deep-charcoal font-semibold text-sm">
-                        {new Date(item.timestamp).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </p>
-                    <p className="text-xs text-deep-charcoal/60">
-                        {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                </div>
-                <div className="flex space-x-2 flex-shrink-0">
-                    <button 
-                        onClick={() => handleStartEdit(item)} 
-                        className="text-blue-600 hover:text-blue-700 p-1.5 rounded-lg bg-white shadow-sm border border-light-stone/50 transition-colors" 
-                        title="Edit"
-                    >
-                        <EditIcon className="w-4 h-4" />
-                    </button>
-                    <button 
-                        onClick={() => handleDeleteItem(item.id)} 
-                        className="text-hopeful-coral hover:text-red-700 p-1.5 rounded-lg bg-white shadow-sm border border-light-stone/50 transition-colors" 
-                        title="Delete"
-                    >
-                        <TrashIcon className="w-4 h-4" />
-                    </button>
-                </div>
+    return (
+        <div className="space-y-4">
+            {/* Filter & Search Bar */}
+            <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3">
+                <input 
+                    type="text" 
+                    placeholder="Search entries..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-grow p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                />
+                
+                <select 
+                    value={filterTag} 
+                    onChange={(e) => setFilterTag(e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg text-sm bg-gray-50 min-w-[120px]"
+                >
+                    <option value="All">All Tags</option>
+                    {allTags.map(tag => (
+                        <option key={tag} value={tag}>{tag}</option>
+                    ))}
+                </select>
             </div>
-            
-            <p className="mt-2 text-deep-charcoal/80 whitespace-pre-wrap text-sm leading-relaxed">{item.text}</p>
-            
-            {(item.tags?.length > 0 || item.mood > 0) && (
-                <div className="mt-3 flex flex-wrap gap-2 items-center">
-                    {item.mood > 0 && (
-                        <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-1 rounded-full border border-blue-100">
-                            Mood: {item.mood}/10
-                        </span>
-                    )}
-                    {item.tags?.map(tag => (
-                        <span key={tag} className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded-full border border-gray-200">
-                            #{tag}
-                        </span>
+
+            {/* List */}
+            {filteredItems.length === 0 ? (
+                <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                    <p>No entries found.</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {filteredItems.map(item => (
+                        <div key={item.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                            
+                            {/* Header: Date & Mood */}
+                            <div className="flex justify-between items-start mb-3 border-b border-gray-50 pb-2">
+                                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
+                                    <CalendarIcon className="w-4 h-4" />
+                                    <span>{new Date(item.timestamp).toLocaleDateString()}</span>
+                                    <span className="text-gray-300">|</span>
+                                    <span>{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                                {item.mood > 0 && (
+                                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                        item.mood >= 7 ? 'bg-green-100 text-green-700' :
+                                        item.mood >= 4 ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-red-100 text-red-700'
+                                    }`}>
+                                        Mood: {item.mood}/10
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Content */}
+                            <div className="prose prose-sm max-w-none mb-4 text-deep-charcoal leading-relaxed whitespace-pre-wrap">
+                                {item.text}
+                            </div>
+                            
+                            {/* Weather (if present) */}
+                            {item.weather && (
+                                <div className="mb-3 text-xs text-gray-500 flex items-center gap-1">
+                                    <span>🌤️ Weather: {item.weather}</span>
+                                </div>
+                            )}
+
+                            {/* Footer: Tags & Actions */}
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2">
+                                <div className="flex flex-wrap gap-1">
+                                    {item.tags && item.tags.map(tag => (
+                                        <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
+                                            #{tag}
+                                        </span>
+                                    ))}
+                                </div>
+                                
+                                <div className="flex items-center gap-2 w-full sm:w-auto border-t sm:border-t-0 border-gray-50 pt-3 sm:pt-0">
+                                    {/* Share Button */}
+                                    <button 
+                                        onClick={() => handleShare(item)}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1 text-teal-600 hover:text-teal-800 hover:bg-teal-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium"
+                                        title="Share Entry"
+                                    >
+                                        {copiedId === item.id ? (
+                                            <span className="text-green-600 font-bold text-xs animate-fade-in">Copied!</span>
+                                        ) : (
+                                            <>
+                                                <ShareIcon className="w-4 h-4" />
+                                                <span className="sm:hidden">Share</span>
+                                            </>
+                                        )}
+                                    </button>
+
+                                    {/* Edit Button */}
+                                    <button 
+                                        onClick={() => onEdit(item)} 
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        <EditIcon className="w-4 h-4" />
+                                        <span className="sm:hidden">Edit</span>
+                                    </button>
+                                    
+                                    {/* Delete Button */}
+                                    <button 
+                                        onClick={() => onDelete(item.id)} 
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1 text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        <TrashIcon className="w-4 h-4" />
+                                        <span className="sm:hidden">Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
                     ))}
                 </div>
             )}
-        </li>
-    );
-
-    return (
-        <div className="flex-grow flex flex-col overflow-hidden mt-4">
-            {/* Controls Header */}
-            <div className="flex flex-col gap-3 mb-4 flex-shrink-0">
-                <div className="flex gap-2">
-                    <button
-                        onClick={handleShowNewForm}
-                        className="flex-grow bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
-                    >
-                        Write New Entry
-                    </button>
-                    <button
-                        onClick={onOpenAnalysisConfig}
-                        className="flex-shrink-0 bg-white border border-light-stone text-blue-600 font-bold py-3 px-4 rounded-lg shadow-md hover:bg-soft-linen transition-colors"
-                        title="Get AI Analysis"
-                    >
-                        <SparklesIcon className="w-5 h-5"/>
-                    </button>
-                     <button
-                        onClick={() => setViewMode('graph')}
-                        className="flex-shrink-0 bg-white border border-light-stone text-deep-charcoal/80 font-bold py-3 px-4 rounded-lg shadow-md hover:bg-soft-linen transition-colors"
-                        title="View Mood Graph"
-                    >
-                        <TrendingUpIcon className="w-5 h-5"/>
-                    </button>
-                </div>
-                
-                {/* Search Bar */}
-                <div className="relative">
-                    <input 
-                        type="text" 
-                        placeholder="Search journal entries by text or tag..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full p-3 rounded-lg border border-light-stone shadow-inner text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-shadow"
-                    />
-                </div>
-            </div>
-
-            {/* List Content */}
-            <div className="flex-grow overflow-y-auto pr-2 -mr-2">
-                {isLoading ? <Spinner /> : (items.length > 0 ? (
-                    <>
-                        {/* --- VIEW MODE 1: SEARCH RESULTS --- */}
-                        {searchTerm.trim() ? (
-                            searchResults.length > 0 ? (
-                                <ul className="space-y-3">
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 pl-1">
-                                        Found {searchResults.length} matching {searchResults.length === 1 ? 'entry' : 'entries'}
-                                    </p>
-                                    {searchResults.map(renderEntry)}
-                                </ul>
-                            ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    <p>No matches found for "{searchTerm}"</p>
-                                </div>
-                            )
-                        ) : (
-                            /* --- VIEW MODE 2: MONTHLY GROUPS --- */
-                            <div className="space-y-4">
-                                {Object.keys(groupedItems).map(month => (
-                                    <div key={month} className="border border-light-stone/50 rounded-xl overflow-hidden bg-white shadow-sm">
-                                        <button 
-                                            onClick={() => toggleMonth(month)}
-                                            className="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none"
-                                        >
-                                            <span className="font-bold text-deep-charcoal text-lg">{month}</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-semibold text-gray-500 bg-white px-2 py-1 rounded-full border border-gray-200">
-                                                    {groupedItems[month].length}
-                                                </span>
-                                                {expandedMonths[month] ? <ChevronUp className="w-5 h-5 text-gray-400"/> : <ChevronDown className="w-5 h-5 text-gray-400"/>}
-                                            </div>
-                                        </button>
-                                        
-                                        {/* Collapsible Content */}
-                                        {expandedMonths[month] && (
-                                            <ul className="p-2 bg-light-stone/10 border-t border-light-stone/20">
-                                                {groupedItems[month].map(renderEntry)}
-                                            </ul>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <div className="text-center py-10">
-                        <p className="text-deep-charcoal/60">No journal entries yet. Tap above to start.</p>
-                    </div>
-                ))}
-            </div>
         </div>
     );
 };
 
-export default JournalListView;
+export default JournalList;

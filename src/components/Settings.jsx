@@ -278,35 +278,74 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                     </div>
                 </div>
 
-                {/* --- CARD 4: DEMO & TESTING (Updated Dropdown) --- */}
+                {/* --- CARD 4: DEMO & TESTING (Visual Selector) --- */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="bg-blue-50 px-4 py-3 border-b border-blue-100 flex items-center gap-2">
                         <CloudIcon className="w-5 h-5 text-blue-600"/>
                         <h3 className="font-bold text-blue-800">Demo Mode</h3>
                     </div>
                     <div className="p-4">
-                        <p className="text-xs text-gray-500 mb-3">Load a sample persona to test the app. This switches you to Guest Mode.</p>
-                        <div className="flex gap-2">
-                            <select 
-                                value={selectedProfileKey}
-                                onChange={(e) => setSelectedProfileKey(e.target.value)}
-                                className="flex-grow p-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
-                            >
-                                {Object.keys(SAMPLE_PROFILES).map(key => (
-                                    <option key={key} value={key}>{SAMPLE_PROFILES[key].name}</option>
-                                ))}
-                            </select>
-                            <button 
-                                onClick={handleLoadProfile}
-                                disabled={isImporting}
-                                className="bg-blue-600 text-white text-sm font-bold px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                            >
-                                {isImporting ? 'Loading...' : 'Load'}
-                            </button>
-                        </div>
-                        <p className="text-[10px] text-gray-400 mt-2">
-                            Selected: {SAMPLE_PROFILES[selectedProfileKey].description}
+                        <p className="text-xs text-gray-500 mb-3">
+                            Select a sample persona to test the app. This switches you to <strong>Guest Mode</strong>.
                         </p>
+                        
+                        <div className="flex flex-col gap-3 mb-4">
+                            {Object.keys(SAMPLE_PROFILES).map(key => {
+                                const profile = SAMPLE_PROFILES[key];
+                                const isSelected = selectedProfileKey === key;
+                                const displayImage = profile.imageIcon || profile.avatar;
+                                
+                                return (
+                                    <button 
+                                        key={key} 
+                                        onClick={() => setSelectedProfileKey(key)}
+                                        className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-all ${
+                                            isSelected 
+                                                ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' 
+                                                : 'border-gray-200 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {/* Profile Image with Fallback */}
+                                        <div className="flex-shrink-0">
+                                            {displayImage ? (
+                                                <img 
+                                                    src={displayImage} 
+                                                    alt={profile.name} 
+                                                    className="w-12 h-12 rounded-full object-cover bg-gray-200 border border-gray-300"
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none'; // Hide broken image
+                                                        e.target.nextSibling.style.display = 'flex'; // Show fallback
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <div 
+                                                className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200"
+                                                style={{ display: displayImage ? 'none' : 'flex' }}
+                                            >
+                                                <UserIcon className="w-6 h-6" />
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <p className={`text-sm font-bold ${isSelected ? 'text-blue-800' : 'text-gray-800'}`}>
+                                                {profile.name}
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                {profile.description}
+                                            </p>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <button 
+                            onClick={handleLoadProfile}
+                            disabled={isImporting}
+                            className="w-full bg-blue-600 text-white text-sm font-bold py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
+                        >
+                            {isImporting ? 'Loading Profile...' : `Load ${SAMPLE_PROFILES[selectedProfileKey].name}`}
+                        </button>
                     </div>
                 </div>
 

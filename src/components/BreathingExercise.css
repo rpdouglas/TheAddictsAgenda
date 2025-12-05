@@ -5,55 +5,78 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #1a202c; /* Dark background */
-  color: #e2e8f0; /* Light text */
+  background-color: #ffffff;
+  color: #2d3748;
   padding: 40px 20px;
-  border-radius: 15px;
+  border-radius: 24px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   width: 100%;
-  max-width: 450px;
-  margin: 2rem auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* Soft shadow */
+  transition: background-color 1s ease; /* Smooth background transition */
+  position: relative;
+  overflow: hidden;
+  min-height: 550px; /* Ensure consistent height */
+}
+
+/* --- Color Coded Backgrounds (Subtle) --- */
+.breathing-container.phase-in {
+  background-color: #ebf8ff; /* Very light blue */
+}
+.breathing-container.phase-hold {
+  background-color: #faf5ff; /* Very light purple */
+}
+.breathing-container.phase-out {
+  background-color: #e6fffa; /* Very light teal */
 }
 
 .breathing-title {
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1a202c;
   margin: 0;
+  z-index: 10;
 }
 
 .breathing-subtitle {
-  font-size: 1.1rem;
-  color: #a0aec0; /* Lighter gray for subtitle */
-  margin: 5px 0 25px 0;
+  font-size: 1rem;
+  color: #718096;
+  margin: 5px 0 30px 0;
+  z-index: 10;
 }
 
+/* --- Selectors --- */
 .exercise-selector {
   display: flex;
   gap: 10px;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  z-index: 10;
+  background: #f7fafc;
+  padding: 4px;
+  border-radius: 12px;
 }
 
 .selector-btn {
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid #4a5568;
+  padding: 8px 20px;
+  border-radius: 10px;
+  border: none;
   background-color: transparent;
-  color: #a0aec0;
+  color: #718096;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease;
 }
 
 .selector-btn:hover {
-  background-color: #2d3748;
-  color: #e2e8f0;
+  color: #2d3748;
 }
 
 .selector-btn.active {
-  background-color: #4299e1; /* Blue for active */
-  color: #1a202c;
-  border-color: #4299e1;
-  font-weight: 600;
+  background-color: #fff;
+  color: #319795; /* Teal */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .selector-btn:disabled {
@@ -61,72 +84,122 @@
   cursor: not-allowed;
 }
 
+/* --- Visualizer --- */
 .visualizer-wrapper {
-  width: 250px;
-  height: 250px;
+  width: 300px;
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  position: relative;
 }
 
+/* Main Circle */
 .visualizer-circle {
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
-  background-color: #4299e1;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition-property: transform;
-  transition-timing-function: linear; /* Smooth, constant speed animation */
+  transition-property: transform, background-color, box-shadow;
+  transition-timing-function: ease-in-out;
   transform: scale(1);
+  z-index: 5;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
+/* --- Phase Colors (Main Circle) --- */
+.phase-in .visualizer-circle {
+  background-color: #63b3ed; /* Sky Blue */
+  box-shadow: 0 0 30px rgba(99, 179, 237, 0.4);
+}
+.phase-hold .visualizer-circle {
+  background-color: #b794f4; /* Lavender */
+  box-shadow: 0 0 30px rgba(183, 148, 244, 0.4);
+}
+.phase-out .visualizer-circle {
+  background-color: #38b2ac; /* Teal */
+  box-shadow: 0 0 30px rgba(56, 178, 172, 0.4);
+}
+
+/* --- Scaling Logic --- */
 .visualizer-circle.grow {
-  transform: scale(1.5);
+  transform: scale(1.3);
 }
-
 .visualizer-circle.shrink {
-  transform: scale(1);
+  transform: scale(0.8);
 }
 
+/* --- Ripple Effect --- */
+.ripple-layer {
+    position: absolute;
+    border-radius: 50%;
+    z-index: 1;
+    transition-property: transform, background-color;
+    transition-timing-function: ease-in-out;
+}
+
+.phase-in .ripple-layer { background-color: #bee3f8; }
+.phase-hold .ripple-layer { background-color: #e9d8fd; }
+.phase-out .ripple-layer { background-color: #b2f5ea; }
+
+.layer-1 { width: 220px; height: 220px; opacity: 0.5; }
+.layer-2 { width: 280px; height: 280px; opacity: 0.3; }
+
+/* Animate Ripples - they follow the main circle but larger */
+.ripple-layer.grow { transform: scale(1.3); }
+.ripple-layer.shrink { transform: scale(0.8); }
+
+
+/* --- Text --- */
 .visualizer-text {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #1a202c;
-  font-size: 1.5rem;
-  font-weight: 600;
-  opacity: 0;
-  animation: fadeIn 0.5s forwards;
+  color: #fff;
+  text-align: center;
 }
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+.phase-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    opacity: 0.95;
 }
 
 .visualizer-countdown {
-  font-size: 3rem;
+  font-size: 4rem;
   font-weight: 700;
   line-height: 1;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* --- Control Button --- */
 .control-btn {
-  font-size: 1.2rem;
-  font-weight: 600;
-  padding: 12px 40px;
-  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 16px 48px;
+  border-radius: 50px;
   border: none;
-  background-color: #38a169; /* Green for Start */
+  background-color: #1a202c; /* Dark charcoal for contrast */
   color: white;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 10;
 }
 
 .control-btn:hover {
-  background-color: #2f855a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  background-color: #000;
+}
+
+.control-btn:active {
+    transform: translateY(0);
 }

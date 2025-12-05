@@ -1,3 +1,4 @@
+// src/components/guide/GuideSettings.jsx
 import React from 'react';
 
 const GuideSettings = () => (
@@ -22,7 +23,7 @@ const GuideSettings = () => (
 
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h4 className="font-bold text-blue-700 mb-1">4. Demo Mode</h4>
-                <p className="text-sm text-gray-600">Select a sample persona (like "Newcomer Ned") to populate the app with test data for demonstration purposes.</p>
+                <p className="text-sm text-gray-600">Browse through visual profile cards (like "Newcomer Ned" or "Steady Sarah") to preview their stories. Clicking "Load" populates the app with test data for demonstration purposes.</p>
             </div>
         </div>
     </>

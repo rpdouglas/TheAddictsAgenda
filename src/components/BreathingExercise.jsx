@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import './BreathingExercise.css';
 import { ArrowLeftIcon } from '../utils/icons.jsx';
 
-
 // --- Configuration for different breathing exercises ---
 const exercises = {
   box: {
@@ -114,7 +113,10 @@ const BreathingExercise = ({ onBack, onJournal }) => {
 
   const currentPattern = exercises[selectedExercise].pattern;
   const currentPhase = currentPattern[phaseIndex];
+  
+  // Animation classes
   const animationClass = currentPhase.phase === 'in' ? 'grow' : currentPhase.phase === 'out' ? 'shrink' : '';
+  const phaseClass = `phase-${currentPhase.phase}`; // 'phase-in', 'phase-hold', 'phase-out'
 
   // --- Render Logic ---
 
@@ -154,11 +156,12 @@ const BreathingExercise = ({ onBack, onJournal }) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
-        <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0">
+    <div className="bg-gray-50 h-full flex flex-col p-2 sm:p-4 overflow-y-auto">
+        <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 mb-6 font-semibold flex-shrink-0 w-fit">
             <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back to Coping Tools</span>
         </button>
-        <div className="breathing-container">
+        
+        <div className={`breathing-container ${phaseClass}`}>
           <h2 className="breathing-title">Breathing Exercise</h2>
           <p className="breathing-subtitle">{exercises[selectedExercise].name}</p>
 
@@ -176,19 +179,24 @@ const BreathingExercise = ({ onBack, onJournal }) => {
           </div>
 
           <div className="visualizer-wrapper">
+            {/* Background Ripple Layers */}
+            <div className={`ripple-layer layer-1 ${animationClass}`} style={{ transitionDuration: `${currentPhase.duration}s` }}></div>
+            <div className={`ripple-layer layer-2 ${animationClass}`} style={{ transitionDuration: `${currentPhase.duration}s` }}></div>
+
+            {/* Main Circle */}
             <div
               className={`visualizer-circle ${animationClass}`}
               style={{ transitionDuration: `${currentPhase.duration}s` }}
             >
               <div className="visualizer-text">
-                <span>{currentPhase.text}</span>
+                <span className="phase-label">{currentPhase.text}</span>
                 <span className="visualizer-countdown">{countdown}</span>
               </div>
             </div>
           </div>
 
           <button onClick={isRunning ? handleStop : handleStart} className="control-btn">
-            {isRunning ? 'Stop & Finish' : 'Start'}
+            {isRunning ? 'Stop & Finish' : 'Start Session'}
           </button>
         </div>
     </div>
