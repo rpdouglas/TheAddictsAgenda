@@ -300,9 +300,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         allTags={allTags}
                         showGeminiHelper={showGeminiHelper}
                         setShowGeminiHelper={setShowGeminiHelper}
-                        selectedTemplateId="" 
-                        setSelectedTemplateId={() => {}} 
-                        handleApplyTemplate={() => {}}
+                        // FIX: Removed the overriding props here so JournalForm uses internal state
                     />
                 )}
 
