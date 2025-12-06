@@ -302,7 +302,8 @@ const App = () => {
             <NinetyDayChallenge 
                 onBack={() => setActiveView('dashboard')} 
                 onNavigate={setActiveView} 
-                setJournalTemplate={setJournalTemplate} 
+                setJournalTemplate={setJournalTemplate}
+                setJournalTags={setJournalTags} // <-- ADDED HERE
             />
         ),
         'homegroup': (
