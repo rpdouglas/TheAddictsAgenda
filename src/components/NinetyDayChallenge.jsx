@@ -1,4 +1,4 @@
-// src/components/NinetyDayChallenge.jsx
+// src/components /NinetyDayChallenge.jsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { Spinner } from './common.jsx';
