@@ -21,6 +21,14 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        // --- ADDED: Workbox Configuration ---
+        workbox: {
+          // 1. Forces the new SW to take control of all clients immediately.
+          skipWaiting: true,
+          // 2. Tells the new SW to take control of the page immediately.
+          clientsClaim: true,
+        },
+        // ------------------------------------
         manifest: {
           name: "My Recovery Toolkit",
           short_name: "Recovery Toolkit",
