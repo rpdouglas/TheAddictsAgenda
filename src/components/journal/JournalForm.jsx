@@ -9,7 +9,8 @@ const JournalForm = ({
     newItemText, setNewItemText, currentMood, setCurrentMood,
     weather, setWeather, 
     selectedTemplateId: propTemplateId, setSelectedTemplateId: propSetSelectedTemplateId, handleApplyTemplate: propHandleApplyTemplate,
-    currentEntryTags, tagInput, setTagInput, handleTagInputKeyDown,
+    currentEntryTags, setJournalTags, 
+    tagInput, setTagInput, handleTagInputKeyDown,
     handleAddTag, handleRemoveTag, allTags, showGeminiHelper, setShowGeminiHelper
 }) => {
     // Local state for template if not passed from parent
@@ -26,7 +27,11 @@ const JournalForm = ({
     const onApplyTemplate = () => {
         const template = journalTemplates.find(t => t.id === selectedTemplateId);
         if (template) {
-            setNewItemText(prev => (prev ? prev + '\n\n' : '') + template.template);
+            // 1. CLEAR existing text and set new template text
+            setNewItemText(template.template);
+            
+            // 2. CLEAR existing tags and apply template tags
+            setJournalTags(template.tags || []);
         }
     };
 

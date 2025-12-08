@@ -14,22 +14,27 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const [newItemText, setNewItemText] = useState('');
     const [currentMood, setCurrentMood] = useState(0);
     const [weather, setWeather] = useState(''); 
+   
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
     const [activeTab, setActiveTab] = useState('write');
+   
     
     // Filtering & Search State
     const [filterTag, setFilterTag] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+   
     
     // Tag Management
     const [tagInput, setTagInput] = useState('');
     const [allTags, setAllTags] = useState([]);
+   
 
     // Modals
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+   
 
     // --- AI Analysis State ---
     const [showAnalysisConfig, setShowAnalysisConfig] = useState(false);
@@ -37,10 +42,12 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState('');
     const [suggestedActions, setSuggestedActions] = useState([]);
+   
 
     useEffect(() => {
         loadJournal();
     }, []);
+   
 
     // Handle Template Props (from external components like Coping Cards)
     useEffect(() => {
@@ -54,6 +61,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             setAllTags(prev => [...new Set([...prev, ...journalTags])]);
         }
     }, [journalTemplate, journalTags, setJournalTemplate]);
+   
 
 
     const loadJournal = async () => {
@@ -70,6 +78,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         });
         setAllTags(Array.from(tags));
     };
+   
 
     const handleSaveEntry = async (e) => {
         e.preventDefault();
@@ -122,6 +131,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         // Refresh tags
         loadJournal();
     };
+   
 
     const saveActionsToGoals = async (actions) => {
         const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
@@ -135,6 +145,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         await DataStore.save(DataStore.KEYS.GOALS, [...currentGoals, ...newGoals]);
         alert(`Saved ${actions.length} action items to your To-Do List!`);
     };
+   
 
     const handleEdit = (item) => {
         setNewItemText(item.text);
@@ -146,6 +157,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setActiveTab('write');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+   
 
     const confirmDelete = async () => {
         if (!itemToDelete) return;
@@ -156,6 +168,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setItemToDelete(null);
         loadJournal(); // Refresh tags
     };
+   
 
     const handleCancelEdit = () => {
         setIsEditing(false);
@@ -165,6 +178,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setWeather('');
         setJournalTags([]);
     };
+   
 
     // Tag Handlers
     const handleAddTag = () => {
@@ -173,10 +187,12 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             setTagInput('');
         }
     };
+   
 
     const handleRemoveTag = (tagToRemove) => {
         setJournalTags(journalTags.filter(t => t !== tagToRemove));
     };
+   
 
     const handleTagInputKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -184,12 +200,14 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             handleAddTag();
         }
     };
+   
 
     const handleWordClick = (word) => {
         setSearchQuery(word);
         setActiveTab('history');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+   
 
     // --- AI ANALYSIS HANDLERS ---
 
@@ -246,10 +264,12 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             setIsAnalyzing(false);
         }
     };
+   
 
     const handleSaveAnalysisActions = async (actionsToSave) => {
         await saveActionsToGoals(actionsToSave);
     };
+   
 
     return (
         <div className="h-full flex flex-col space-y-4">
@@ -292,6 +312,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         weather={weather}        
                         setWeather={setWeather}  
                         currentEntryTags={journalTags}
+                        setJournalTags={setJournalTags}
                         tagInput={tagInput}
                         setTagInput={setTagInput}
                         handleTagInputKeyDown={handleTagInputKeyDown}
@@ -303,6 +324,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         // FIX: Removed the overriding props here so JournalForm uses internal state
                     />
                 )}
+               
 
                 {activeTab === 'history' && (
                     <JournalList 
@@ -316,6 +338,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         allTags={allTags}
                     />
                 )}
+               
 
                 {activeTab === 'insights' && (
                     <div className="space-y-6">
@@ -350,6 +373,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         <WordCloudView items={items} onWordClick={handleWordClick} />
                     </div>
                 )}
+               
             </div>
 
             {/* --- MODALS --- */}
