@@ -3,7 +3,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
-import { model } from '../firebase.jsx';
+// FIX: Using the resilient AI function for model fallback
+import { generateContentWithFallback } from '../firebase.jsx';
 
 // Import Refactored Components
 import WorkbookMenu from './workbook/WorkbookMenu.jsx';
@@ -153,10 +154,14 @@ const RecoveryWorkbook = () => {
         - Practice daily self-compassion
         - Attend a new meeting`;
 
-        try {
-            const result = await model.generateContent(prompt);
-            const responseText = await result.response.text();
+       try {
+            // FIX: Ensure this line uses the imported function name directly
+            const result = await generateContentWithFallback(prompt); 
             
+            // This reads the text from the modern stable SDK structure
+           const responseText = result.text?.trim() ?? '';
+            
+            // 2. Parse Response (Using the successful string-splitting method)
             const parts = responseText.split('SUGGESTED_ACTIONS');
             const mainText = parts[0].trim();
             const actionText = parts.length > 1 ? parts[1].trim() : '';
