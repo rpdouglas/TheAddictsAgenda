@@ -132,15 +132,36 @@ export const RECOVERY_FACTS = [
 
 export const journalTemplates = [
     { id: '', name: 'Select a Template...' },
-    { id: 'gratitude', name: '3-Part Gratitude Check', template: 'Today I am grateful for:\n1. (Person/Relationship)\n2. (Experience/Event)\n3. (Small Detail)\n\nHow did this feeling of gratitude influence my day?' },
-    { id: 'halt', name: 'The H.A.L.T. Check', template: 'Before reacting or craving, I will check:\n\n**H**ungry? (Yes/No): \n**A**ngry? (Yes/No): \n**L**onely? (Yes/No): \n**T**ired? (Yes/No): \n\nWhat action did I take to meet my true need?' },
-    { id: 'resentment', name: 'Resentment Filter', template: 'Today I felt resentful toward: (Person/Situation)\n\nWhat did they do? \n\nWhat part of my self-esteem (pride, security, ambition) did this threaten? \n\nWhat is my part in this situation?' },
-    { id: 'step_10', name: 'Step 10 Spot Check', template: 'Where was I wrong today? (Small admissions of fault or mistake)\n\nWas I mindful of others?\n\nDid I practice honesty in a difficult situation?\n\nIf I was wrong, did I promptly admit it?' },
+    { 
+        id: 'gratitude', 
+        name: '3-Part Gratitude Check', 
+        template: 'Today I am grateful for:\n1. (Person/Relationship)\n2. (Experience/Event)\n3. (Small Detail)\n\nHow did this feeling of gratitude influence my day?',
+        tags: ['gratitude']
+    },
+    { 
+        id: 'halt', 
+        name: 'The H.A.L.T. Check', 
+        template: 'Before reacting or craving, I will check:\n\n**H**ungry? (Yes/No): \n**A**ngry? (Yes/No): \n**L**onely? (Yes/No): \n**T**ired? (Yes/No): \n\nWhat action did I take to meet my true need?',
+        tags: ['haltcheck'] 
+    },
+    { 
+        id: 'resentment', 
+        name: 'Resentments',
+        template: 'Today I felt resentful toward: (Person/Situation)\n\nWhat did they do? \n\nWhat part of my self-esteem (pride, security, ambition) did this threaten? \n\nWhat is my part in this situation?',
+        tags: ['resentments']
+    },
+    { 
+        id: 'step_10', 
+        name: 'Step 10 Spot Check', 
+        template: 'Where was I wrong today? (Small admissions of fault or mistake)\n\nWas I mindful of others?\n\nDid I practice honesty in a difficult situation?\n\nIf I was wrong, did I promptly admit it?',
+        tags: ['step10']
+    },
 // --- NEW TEMPLATE ADDED HERE ---
     {
         id: 'jesse_factor',
         name: 'The Jesse Factor',
-        template: "Was I selfless today?\n\nDid I show someone love today?\n\nDid I help someone today?"
+        template: "Was I selfless today?\n\nDid I show someone love today?\n\nDid I help someone today?",
+        tags: ['thejessefactor'] 
     }
   ];
 
@@ -182,7 +203,7 @@ export const MEETING_LINKS = {
 
 export const APP_VERSIONS = {
     DASHBOARD: '1.5.0',
-    JOURNAL: '1.11.0', 
+    JOURNAL: '1.11.1', 
     GOALS: '1.5.0', 
     COPING: '2.2.0', 
     WORKBOOK: '1.8.0',
@@ -192,5 +213,5 @@ export const APP_VERSIONS = {
     MEETINGFINDER: '1.1.0',
     DAILYREFLECTION: '1.1.0',
     USERGUIDE: '1.6.0',
-    SMARTTOOLS: '1.3.0', // Incremented
+    SMARTTOOLS: '1.3.0', 
 };
