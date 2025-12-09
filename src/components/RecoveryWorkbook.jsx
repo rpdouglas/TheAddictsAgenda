@@ -161,6 +161,16 @@ const RecoveryWorkbook = () => {
             // This reads the text from the modern stable SDK structure
            const responseText = result.text?.trim() ?? '';
             
+            // === START DEBUGGING LOGIC (NEW) ===
+            if (responseText.length === 0) {
+                 console.warn("AI Insights: Received empty content from API. Full Result Object:", result);
+                 setAiInsights("Sorry, the AI did not return any content. This is likely a temporary issue with the external service. Please wait a moment and try again.");
+                 setAiActions([]);
+                 setIsGeneratingInsights(false);
+                 return; 
+            }
+            // === END DEBUGGING LOGIC (NEW) ===
+
             // 2. Parse Response (Using the successful string-splitting method)
             const parts = responseText.split('SUGGESTED_ACTIONS');
             const mainText = parts[0].trim();
@@ -176,7 +186,7 @@ const RecoveryWorkbook = () => {
             setAiActions(extractedActions);
         } catch (error) {
             console.error("Error generating AI insights:", error);
-            setAiInsights("Sorry, I was unable to generate insights at this time.");
+            setAiInsights("Sorry, I was unable to generate insights at this time. (Check console for error details.)");
         } finally {
             setIsGeneratingInsights(false);
         }

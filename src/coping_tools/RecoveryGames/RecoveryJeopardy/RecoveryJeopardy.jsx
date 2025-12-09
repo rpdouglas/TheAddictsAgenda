@@ -4,9 +4,31 @@ import JeopardyBoard from './JeopardyBoard.jsx';
 import Scoreboard from './Scoreboard.jsx';
 import FinalJeopardy from './FinalJeopardy.jsx';
 import QuestionModal from './QuestionModal.jsx';
-import PlayerSetup from './PlayerSetup.jsx'; // Import the new setup component
+import PlayerSetup from './PlayerSetup.jsx'; 
 
-const TOTAL_QUESTIONS_PER_ROUND = 30; // 6 categories * 5 questions
+// Total questions per round: 6 categories * 5 questions = 30
+const TOTAL_QUESTIONS_PER_ROUND = 30; 
+
+/**
+ * Shuffles an array in place (Fisher-Yates algorithm).
+ * @param {Array} array - The array to shuffle.
+ * @returns {Array} The shuffled array.
+ */
+const shuffle = (array) => {
+    let currentIndex = array.length, randomIndex;
+    
+    // While there remain elements to shuffle.
+    while (currentIndex !== 0) {
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+    return array;
+};
 
 const RecoveryJeopardy = ({ onBack }) => {
     const [players, setPlayers] = useState([]);
@@ -16,10 +38,25 @@ const RecoveryJeopardy = ({ onBack }) => {
     const [totalAnswered, setTotalAnswered] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState(null); // { category, question }
 
+    // NEW STATE: Holds the distinct category objects for each round
+    const [jeopardyCategories, setJeopardyCategories] = useState([]);
+    const [doubleJeopardyCategories, setDoubleJeopardyCategories] = useState([]);
+
     const handleStartGame = (playerList) => {
         setPlayers(playerList);
         setCurrentPlayerIndex(0);
         setCurrentRound('jeopardy');
+
+        // Logic to select 12 unique categories and split them:
+        const allCategories = [...jeopardyData.categories];
+        const shuffledCategories = shuffle(allCategories);
+        
+        // Use the first 6 for Round 1 (Jeopardy)
+        setJeopardyCategories(shuffledCategories.slice(0, 6));
+        
+        // Use the next 6 for Round 2 (Double Jeopardy)
+        // Note: The total categories in jeopardyData is 24, so selecting 12 unique ones is safe.
+        setDoubleJeopardyCategories(shuffledCategories.slice(6, 12));
     };
 
     const handleSelectQuestion = (category, question) => {
@@ -28,6 +65,7 @@ const RecoveryJeopardy = ({ onBack }) => {
 
     const handleAnswerOutcome = (wasCorrect) => {
         const { question } = currentQuestion;
+        // The value calculation in double jeopardy remains correct based on question.value
         const amount = currentRound === 'double' ? question.value * 2 : question.value;
         const scoreChange = wasCorrect ? amount : -amount;
 
@@ -38,7 +76,9 @@ const RecoveryJeopardy = ({ onBack }) => {
 
         // Mark question as answered
         setAnsweredQuestions([...answeredQuestions, question.question]);
-        setTotalAnswered(totalAnswered + 1);
+        
+        const newTotalAnswered = totalAnswered + 1;
+        setTotalAnswered(newTotalAnswered);
 
         // Switch to next player ONLY if they get it wrong
         if (!wasCorrect) {
@@ -47,11 +87,11 @@ const RecoveryJeopardy = ({ onBack }) => {
         // If correct, the same player keeps control
 
         // Check for round change
-        if (totalAnswered + 1 === TOTAL_QUESTIONS_PER_ROUND && currentRound === 'jeopardy') {
+        if (newTotalAnswered === TOTAL_QUESTIONS_PER_ROUND && currentRound === 'jeopardy') {
             setCurrentRound('double');
             setTotalAnswered(0); // Reset for next round
             setAnsweredQuestions([]); // Reset for next round
-        } else if (totalAnswered + 1 === TOTAL_QUESTIONS_PER_ROUND && currentRound === 'double') {
+        } else if (newTotalAnswered === TOTAL_QUESTIONS_PER_ROUND && currentRound === 'double') {
             setCurrentRound('final');
         }
         
@@ -74,10 +114,17 @@ const RecoveryJeopardy = ({ onBack }) => {
         setAnsweredQuestions([]);
         setTotalAnswered(0);
         setCurrentQuestion(null);
+        // Reset category states
+        setJeopardyCategories([]);
+        setDoubleJeopardyCategories([]);
     };
 
     // Main render logic
     const renderGameContent = () => {
+        const currentCategories = currentRound === 'jeopardy' 
+            ? jeopardyCategories 
+            : doubleJeopardyCategories;
+
         switch (currentRound) {
             case 'setup':
                 return <PlayerSetup onStartGame={handleStartGame} />;
@@ -87,7 +134,7 @@ const RecoveryJeopardy = ({ onBack }) => {
                     <>
                         <Scoreboard players={players} currentPlayerIndex={currentPlayerIndex} />
                         <JeopardyBoard
-                            categories={jeopardyData.categories}
+                            categories={currentCategories} // PASSES THE CORRECT, UNIQUE CATEGORIES
                             round={currentRound}
                             onSelectQuestion={handleSelectQuestion}
                             answeredQuestions={answeredQuestions}
