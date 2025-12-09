@@ -206,7 +206,7 @@ export const APP_VERSIONS = {
     JOURNAL: '1.11.1', 
     GOALS: '1.5.0', 
     COPING: '2.2.0', 
-    WORKBOOK: '1.8.0',
+    WORKBOOK: '1.8.1',
     LITERATURE: '1.3.0',
     RESOURCES: '1.1.0',
     SETTINGS: '1.3.0',
