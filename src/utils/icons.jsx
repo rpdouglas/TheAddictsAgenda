@@ -62,3 +62,25 @@ export const FilterIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" wid
 export const ScaleIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" /></svg>;
 export const CloudIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>;
 export const TagIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>;
+export const RepeatIcon = (props) => (
+  <svg 
+    {...props} 
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    strokeWidth={1.5} 
+    stroke="currentColor" 
+    className="w-6 h-6" // Or whatever size/style you use
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      d="M16.023 9.348h4.992v-.001m-4.992 0L15.42 9h3.766M17.65 19.123L16.02 18h-4.992v.001m4.992 0L17.2 19h3.766M7.228 4.887L5.608 6h-4.992v-.001m4.992 0L7.5 4h3.766M9.112 14.232L7.492 15h-4.992v.001m4.992 0L9.222 14h3.766M12.9 2.05L12 3m-4.6 2.45L6 6m-1.7 4.55L3 11m-1 4.95L2 16m1 4.55L4 21m4.6 2.45L10 23m4.6-2.45L16 21m1.7-4.55L19 16m1 4.95L20 21m-1 4.55L18 23m-4.6 2.45L12 23m4.6-2.45L18 21m1.7-4.55L21 16m1 4.95L22 21m-1 4.55L20 23" 
+    />
+  </svg>
+);
+
+// --- NEW ICONS ADDED FOR RECURRENCE & HISTORY ---
+//export const RepeatIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 3l3 3-3 3"/><path d="M19 6H5a2 2 0 00-2 2v2"/><path d="M8 21l-3-3 3-3"/><path d="M5 18h14a2 2 0 002-2v-2"/></svg>;
+export const FireIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M8.5 14.5c.2-1.3-.2-3.1-1.3-4.2C5.5 8.3 4 8 4 8s.6 1.4 1.5 2.5c1.4 1.6 2 4 2 4s-1-2.4-1.5-3.5c-.3-.7-.2-1.6 0-2.3.8-1.4 2.8-2 4.2-1.2 1.3.7 2.1 2.3 2.1 4s-1.8 4.7-2 6.5c-1.5 1.7-1.5 1.7-1.5 1.7s-1-2.4-1.5-3.5z"/></svg>;
+export const ClockIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>;

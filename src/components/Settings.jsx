@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { SAMPLE_PROFILES } from '../data/sampleProfiles.js';
+import { useAuth } from '/src/AuthContext.jsx'; 
 import { 
     ArrowLeftIcon, 
     CalendarIcon, 
@@ -12,12 +13,20 @@ import {
     CloudIcon,
     UserIcon,
     ShieldIcon,
-    LogOutIcon
+    LogOutIcon,
+    SettingsIcon 
 } from '../utils/icons.jsx';
 import { auth } from '../firebase.jsx';
 import { signOut } from 'firebase/auth';
 
-const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout, currentHeaderText, onHeaderTextUpdate }) => {
+// UPDATED: Added onNavigate to the destructured props list (passed from App.jsx)
+const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout, currentHeaderText, onHeaderTextUpdate, onNavigate }) => { 
+    
+    // NEW: Get session information and define developer access
+    const { session } = useAuth();
+    const DEVELOPER_EMAIL = 'rpdouglas@gmail.com'; // CRITICAL: Placeholder for your email
+    const isDeveloper = session?.email === DEVELOPER_EMAIL;
+
     const [date, setDate] = useState(currentStartDate ? currentStartDate.toISOString().split('T')[0] : '');
     const [headerTextInput, setHeaderTextInput] = useState(currentHeaderText);
     const [showExportConfirm, setShowExportConfirm] = useState(false);
@@ -130,10 +139,12 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
     };
 
     return (
-        <div className="bg-gray-50 h-full flex flex-col">
+        // Removed height/flex properties to allow content to flow vertically
+        <div className="bg-gray-50"> 
             
             {/* Header */}
-            <div className="bg-white p-4 shadow-sm flex-shrink-0 flex items-center justify-between">
+            {/* FIX: Removed flex-shrink-0 to allow the header to flow naturally within the scrollable parent */}
+            <div className="bg-white p-4 shadow-sm flex items-center justify-between">
                 <button onClick={onBack} className="flex items-center text-teal-600 hover:text-teal-800 font-semibold">
                     <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Dashboard</span>
                 </button>
@@ -141,7 +152,8 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                 <div className="w-20"></div> {/* Spacer for alignment */}
             </div>
 
-            <div className="flex-grow overflow-y-auto p-4 space-y-6">
+            {/* Content Area - Relies on parent App.jsx scrolling */}
+            <div className="p-4 space-y-6">
 
                 {/* --- CARD 1: PERSONALIZATION --- */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -348,6 +360,26 @@ const Settings = ({ currentStartDate, handleSobrietyDateUpdate, onBack, onLogout
                         </button>
                     </div>
                 </div>
+                
+                {/* --- DEVELOPER TOOLS (NEW BLOCK) --- */}
+                {isDeveloper && (
+                    <div className="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden">
+                        <div className="bg-red-50 px-4 py-3 border-b border-red-100 flex items-center gap-2">
+                            <SettingsIcon className="w-5 h-5 text-red-600"/>
+                            <h3 className="font-bold text-red-800">Developer Tools</h3>
+                        </div>
+                        <div className="p-4">
+                            <button 
+                                onClick={() => onNavigate('ai-test')} 
+                                className="w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none transition-colors"
+                            >
+                                <SettingsIcon className="w-5 h-5 mr-2" /> 
+                                AI Test Component
+                            </button>
+                            <p className="text-xs text-gray-500 mt-2 text-center">Accessible only by {DEVELOPER_EMAIL}</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* --- LOG OUT --- */}
                 {onLogout && (

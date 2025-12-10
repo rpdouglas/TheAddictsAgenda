@@ -15,6 +15,8 @@ const getBase = (mode) => {
 }
 
 export default defineConfig(({ mode }) => {
+  const isProd = mode === 'production' || mode === 'host';
+
   return {
     plugins: [
       react(),
@@ -61,9 +63,16 @@ export default defineConfig(({ mode }) => {
       
     base: getBase(mode),
     
-    // --- BUILD OPTIMIZATION ---
+    // --- BUILD OPTIMIZATION (UPDATED) ---
     build: {
       chunkSizeWarningLimit: 1500, // Increased to 1.5MB to silence warnings for the main vendor chunk
+      minify: 'terser', // Ensure Terser is used for minification
+      terserOptions: {
+        compress: {
+          // CRITICAL FIX: DO NOT REMOVE console.log statements during build
+          drop_console: false, 
+        }
+      },
       rollupOptions: {
         output: {
           manualChunks(id) {
