@@ -28,6 +28,9 @@ const Homegroup = lazy(() => import('/src/components/Homegroup.jsx'));
 const MeetingTracker = lazy(() => import('/src/components/MeetingTracker.jsx'));
 const DailyReadings = lazy(() => import('/src/components/DailyReadings.jsx'));
 const JustForToday = lazy(() => import('/src/components/JustForToday.jsx'));
+// --- ADD NEW LAZY IMPORT HERE ---
+const AITestTool = lazy(() => import('/src/components/AITestTool.jsx'));
+
 
 // Components exported as named exports
 const Resources = lazy(() => import('/src/components/Resources.jsx').then(module => ({ default: module.Resources })));
@@ -205,6 +208,11 @@ const App = () => {
     if (!sobrietyStartDate) {
         return <SobrietyDataSetup onDateSet={handleSobrietyDateUpdate} />;
     }
+    
+    // --- DEVELOPER-ONLY ACCESS CHECK (using placeholder email for context) ---
+    const DEVELOPER_EMAIL = 'rpdouglas@gmail.com'; // **CRITICAL: Replace with your actual email**
+    const isDeveloper = session?.email === DEVELOPER_EMAIL;
+
 
     const routes = {
         'dashboard': (
@@ -267,6 +275,7 @@ const App = () => {
                     onLogout={logout}
                     currentHeaderText={headerText}
                     onHeaderTextUpdate={setHeaderText}
+                    onNavigate={setActiveView} // Pass navigation to Settings for developer link
                 />
                 {renderFooterVersion(APP_VERSIONS.SETTINGS, 'dashboard')}
             </>
@@ -338,6 +347,14 @@ const App = () => {
                 targetSection={targetGuideSection} 
             />
         ),
+        
+        // --- NEW AI TEST ROUTE (Developer Only) ---
+        'ai-test': isDeveloper ? (
+            <AITestTool onBack={() => setActiveView('settings')} />
+        ) : (
+            // If non-developer tries to navigate here, redirect to dashboard
+            setActiveView('dashboard'), null
+        ),
     };
 
     return (
@@ -345,6 +362,7 @@ const App = () => {
         <div className="bg-gray-100 h-[100dvh] w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4 overflow-hidden">
             <header className="flex-shrink-0 w-full max-w-2xl mx-auto flex items-center justify-between p-4">
                 {activeView === 'dashboard' ? (
+                    // REMOVED: Temporary AI Test button from the dashboard header
                     <button onClick={() => setActiveView('resources')} className="text-red-500 hover:text-red-700 p-1" title="Emergency Resources"><LifeBuoyIcon className="w-6 h-6" /></button>
                 ) : (
                     <button onClick={() => setActiveView('dashboard')} className="text-teal-600 hover:text-teal-800 p-2 -ml-2" title="Back to Dashboard"><ArrowLeftIcon className="w-6 h-6" /></button>

@@ -153,24 +153,18 @@ const RecoveryWorkbook = () => {
         - Discuss Step 1 with sponsor
         - Practice daily self-compassion
         - Attend a new meeting`;
+        
+        // Ensure some logging is happening
+        console.log("AI DEBUG (Input Data Length):", allResponsesText.length);
+        console.log("AI DEBUG (Final Prompt):", prompt.substring(0, 500) + '... (truncated)');
+
 
        try {
-            // FIX: Ensure this line uses the imported function name directly
             const result = await generateContentWithFallback(prompt); 
             
-            // This reads the text from the modern stable SDK structure
-           const responseText = result.text?.trim() ?? '';
+            // FIX: Correctly extract the nested text from the successful API result, matching the AITestTool logic.
+            const responseText = result.response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
             
-            // === START DEBUGGING LOGIC (NEW) ===
-            if (responseText.length === 0) {
-                 console.warn("AI Insights: Received empty content from API. Full Result Object:", result);
-                 setAiInsights("Sorry, the AI did not return any content. This is likely a temporary issue with the external service. Please wait a moment and try again.");
-                 setAiActions([]);
-                 setIsGeneratingInsights(false);
-                 return; 
-            }
-            // === END DEBUGGING LOGIC (NEW) ===
-
             // 2. Parse Response (Using the successful string-splitting method)
             const parts = responseText.split('SUGGESTED_ACTIONS');
             const mainText = parts[0].trim();
@@ -185,8 +179,13 @@ const RecoveryWorkbook = () => {
             setAiInsights(mainText);
             setAiActions(extractedActions);
         } catch (error) {
-            console.error("Error generating AI insights:", error);
-            setAiInsights("Sorry, I was unable to generate insights at this time. (Check console for error details.)");
+            // CRITICAL FIX: Use console.error and include 'debugger' to force visibility.
+            // When debugging, this will automatically pause execution.
+            debugger; 
+            console.error("!! AI CRITICAL FAILURE !! (Check Firebase logs for details) Error Object:", error);
+            
+            // Provide a neutral message to the user advising them to check the console.
+            setAiInsights("The AI service encountered a failure. Please open your Developer Console (F12) and look for the '!! AI CRITICAL FAILURE !!' error to find the technical details.");
         } finally {
             setIsGeneratingInsights(false);
         }
