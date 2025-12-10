@@ -28,7 +28,6 @@ const Homegroup = lazy(() => import('/src/components/Homegroup.jsx'));
 const MeetingTracker = lazy(() => import('/src/components/MeetingTracker.jsx'));
 const DailyReadings = lazy(() => import('/src/components/DailyReadings.jsx'));
 const JustForToday = lazy(() => import('/src/components/JustForToday.jsx'));
-// --- ADD NEW LAZY IMPORT HERE ---
 const AITestTool = lazy(() => import('/src/components/AITestTool.jsx'));
 
 
@@ -210,7 +209,7 @@ const App = () => {
     }
     
     // --- DEVELOPER-ONLY ACCESS CHECK (using placeholder email for context) ---
-    const DEVELOPER_EMAIL = 'rpdouglas@gmail.com'; // **CRITICAL: Replace with your actual email**
+    const DEVELOPER_EMAIL = 'rpdouglas@gmail.com'; 
     const isDeveloper = session?.email === DEVELOPER_EMAIL;
 
 
@@ -358,11 +357,12 @@ const App = () => {
     };
 
     return (
-        // UPDATED: Use h-[100dvh] for dynamic viewport height and overflow-hidden to prevent body scroll
-        <div className="bg-gray-100 h-[100dvh] w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4 overflow-hidden">
+        // Outer container sets full height and uses flex column layout
+        // FIX: Removed 'overflow-hidden' from the outer container to allow the main scrollbar 
+        // to correctly register when content overflows the fixed height.
+        <div className="bg-gray-100 h-[100dvh] w-full flex flex-col font-sans text-gray-800 p-2 sm:p-4">
             <header className="flex-shrink-0 w-full max-w-2xl mx-auto flex items-center justify-between p-4">
                 {activeView === 'dashboard' ? (
-                    // REMOVED: Temporary AI Test button from the dashboard header
                     <button onClick={() => setActiveView('resources')} className="text-red-500 hover:text-red-700 p-1" title="Emergency Resources"><LifeBuoyIcon className="w-6 h-6" /></button>
                 ) : (
                     <button onClick={() => setActiveView('dashboard')} className="text-teal-600 hover:text-teal-800 p-2 -ml-2" title="Back to Dashboard"><ArrowLeftIcon className="w-6 h-6" /></button>
@@ -371,7 +371,8 @@ const App = () => {
                 <button onClick={() => setActiveView('settings')} className="text-gray-500 hover:text-teal-600 p-1" title="Settings"><SettingsIcon className="w-6 h-6" /></button>
             </header>
 
-            <main className="flex-grow w-full max-w-2xl mx-auto overflow-y-auto pb-4">
+            {/* Main content area provides the scrollbar */}
+            <main className="flex-grow min-h-0 w-full max-w-2xl mx-auto overflow-y-auto pb-4">
                 <Suspense fallback={<Spinner />}>
                     {routes[activeView] || routes['dashboard']}
                 </Suspense>

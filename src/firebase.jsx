@@ -17,10 +17,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// --- Model Fallback Configuration ---
+// --- FINAL OPTIMIZED MODEL PRIORITY ---
+// Confirmed available models, prioritized by cost/speed/capability balance.
 const MODEL_PRIORITY = [
-    "gemini-2.5-flash", // Fast, low-cost primary choice
-    "gemini-2.0-pro",   // High-quality fallback for complex analysis
+    "gemini-2.5-flash", // Primary choice: Fast, cost-effective, most generous free tier quota.
+    "gemini-2.5-pro",   // Fallback: Best reasoning capability, used only if Flash fails.
 ];
 
 /**
@@ -58,7 +59,7 @@ export async function generateContentWithFallback(prompt) {
                 lastError = error;
                 continue;
             } else {
-                // Throw any other error (network, unauthorized model, etc.)
+                // Throw any other error (network, unauthorized model, model not found, etc.)
                 console.error(`!!!! AI CRITICAL ERROR (NON-QUOTA) in ${modelName} !!!!`, error);
                 throw error;
             }
@@ -71,6 +72,8 @@ export async function generateContentWithFallback(prompt) {
     
     throw new Error("CRITICAL: AI analysis failed: No models were available for analysis.");
 }
+
+// NOTE: listAvailableModels function has been removed as it was non-functional in the deployed environment.
 
 // Authentication & Database Exports
 export const auth = getAuth(app);
