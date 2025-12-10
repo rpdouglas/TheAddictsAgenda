@@ -3,16 +3,16 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DataStore from '../utils/dataStore.js';
 import { workbookData } from '../utils/data.js';
 import { Spinner } from './common.jsx';
-// FIX: Using the resilient AI function for model fallback
 import { generateContentWithFallback } from '../firebase.jsx';
 
-// Import Refactored Components
+// NEW: Use shared AI Logic
+import { parseAIResponse, createActionItemObject } from '../utils/aiService.js';
+
 import WorkbookMenu from './workbook/WorkbookMenu.jsx';
 import WorkbookCategoryDetail from './workbook/WorkbookCategoryDetail.jsx';
 import WorkbookTopicDetail from './workbook/WorkbookTopicDetail.jsx';
 import WorkbookSmartTool from './workbook/WorkbookSmartTool.jsx';
 import WorkbookInsightsModal from './workbook/WorkbookInsightsModal.jsx';
-
 
 const RecoveryWorkbook = () => {
     const [activeCategory, setActiveCategory] = useState(null); 
@@ -42,7 +42,6 @@ const RecoveryWorkbook = () => {
         }));
     };
 
-    // --- Navigation Logic ---
     const handleNextTopic = () => {
         if (!activeCategory || !selectedTopic) return;
         const currentIndex = activeCategory.topics.findIndex(t => t.id === selectedTopic.id);
@@ -72,8 +71,6 @@ const RecoveryWorkbook = () => {
     const hasNext = activeCategory && currentIndex < (activeCategory.topics.length - 1);
     const hasPrevious = activeCategory && currentIndex > 0;
 
-
-    // --- Completion Logic ---
     const completedTopicIds = useMemo(() => {
         const completed = new Set();
         Object.values(workbookData).forEach(category => {
@@ -123,7 +120,6 @@ const RecoveryWorkbook = () => {
         return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
     }, [completedTopicIds]);
 
-    // --- AI Generation ---
     const handleGenerateInsights = async () => {
         setIsGeneratingInsights(true);
         setShowInsightsModal(true);
@@ -153,39 +149,19 @@ const RecoveryWorkbook = () => {
         - Discuss Step 1 with sponsor
         - Practice daily self-compassion
         - Attend a new meeting`;
-        
-        // Ensure some logging is happening
-        console.log("AI DEBUG (Input Data Length):", allResponsesText.length);
-        console.log("AI DEBUG (Final Prompt):", prompt.substring(0, 500) + '... (truncated)');
-
 
        try {
             const result = await generateContentWithFallback(prompt); 
-            
-            // FIX: Correctly extract the nested text from the successful API result, matching the AITestTool logic.
             const responseText = result.text?.trim() ?? '';
             
-            // 2. Parse Response (Using the successful string-splitting method)
-            const parts = responseText.split('SUGGESTED_ACTIONS');
-            const mainText = parts[0].trim();
-            const actionText = parts.length > 1 ? parts[1].trim() : '';
-            
-            const extractedActions = actionText
-                .split('\n')
-                .map(line => line.replace(/^-/, '').trim())
-                .filter(line => line.length > 0)
-                .slice(0, 3);
+            // USE SHARED UTILITY to parse
+            const { insights, actions } = parseAIResponse(responseText);
 
-            setAiInsights(mainText);
-            setAiActions(extractedActions);
+            setAiInsights(insights);
+            setAiActions(actions);
         } catch (error) {
-            // CRITICAL FIX: Use console.error and include 'debugger' to force visibility.
-            // When debugging, this will automatically pause execution.
-            debugger; 
-            console.error("!! AI CRITICAL FAILURE !! (Check Firebase logs for details) Error Object:", error);
-            
-            // Provide a neutral message to the user advising them to check the console.
-            setAiInsights("The AI service encountered a failure. Please open your Developer Console (F12) and look for the '!! AI CRITICAL FAILURE !!' error to find the technical details.");
+            console.error("AI Error:", error);
+            setAiInsights("The AI service encountered a failure. Please check your connection.");
         } finally {
             setIsGeneratingInsights(false);
         }
@@ -195,12 +171,6 @@ const RecoveryWorkbook = () => {
         const currentJournal = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
         const allTags = await DataStore.load(DataStore.KEYS.JOURNAL_TAGS) || [];
         const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
-
-        // NEW LOGIC: Calculate default due date (7 days from now)
-        const today = new Date();
-        const sevenDaysFromNow = new Date(today);
-        sevenDaysFromNow.setDate(today.getDate() + 7);
-        const defaultDueDate = sevenDaysFromNow.toISOString().split('T')[0]; // YYYY-MM-DD
 
         const formattedList = actionsToSave.map(a => `- ${a}`).join('\n');
         const newEntry = {
@@ -220,39 +190,24 @@ const RecoveryWorkbook = () => {
         let updatedGoals = [...currentGoals];
         for (const actionText of actionsToSave) {
             
-            // NEW TASK OBJECT TEMPLATE for AI actions
-            // Includes default recurrence: 'none' and the calculated 7-day due date
-            const newGoalTemplate = {
-                id: DataStore.generateId(),
-                text: actionText,
-                completed: false,
-                createdAt: new Date().toISOString(),
-                recurrence: 'none', 
-                dueDate: defaultDueDate, 
-                streakCount: 0,
-                lastCompleted: null,
-                tags: ['actionitems'] // Explicitly tag as action item
-            };
-
             const existingGoalIndex = updatedGoals.findIndex(g => g.text.toLowerCase() === actionText.toLowerCase());
             
             if (existingGoalIndex !== -1) {
                 if (window.confirm(`"${actionText}" exists in To-Do list.\nClick OK to reset/reactivate it, or Cancel to duplicate.`)) {
+                    // Update existing
+                    const newTask = createActionItemObject(actionText, 'workbook');
                     updatedGoals[existingGoalIndex] = {
                         ...updatedGoals[existingGoalIndex],
-                        completed: false,
-                        // Reset properties upon reactivating existing goal
-                        recurrence: 'none', 
-                        dueDate: defaultDueDate,
-                        createdAt: new Date().toISOString()
+                        ...newTask, 
+                        id: updatedGoals[existingGoalIndex].id // keep ID
                     };
                 } else {
-                    // Duplication uses the new template
-                    updatedGoals.push(newGoalTemplate);
+                    // Duplicate
+                    updatedGoals.push(createActionItemObject(actionText, 'workbook'));
                 }
             } else {
-                // New goal uses the new template
-                updatedGoals.push(newGoalTemplate);
+                // New
+                updatedGoals.push(createActionItemObject(actionText, 'workbook'));
             }
         }
         await DataStore.save(DataStore.KEYS.GOALS, updatedGoals);
@@ -260,7 +215,6 @@ const RecoveryWorkbook = () => {
     
     if (isLoading) return <Spinner />;
     
-    // --- View Routing ---
     if (selectedTopic) {
         if (selectedTopic.customComponent) {
             return <WorkbookSmartTool 

@@ -7,7 +7,7 @@ import {
   ComposedChart, Bar, Line, Legend
 } from 'recharts';
 
-const MoodGraphView = ({ items, onBack, onPointClick }) => {
+const MoodGraph = ({ items = [], onBack, onPointClick }) => {
     const [timeRange, setTimeRange] = useState('30'); // '7', '30', 'all'
 
     // --- Helper: Simple Linear Regression for Trendline ---
@@ -46,7 +46,10 @@ const MoodGraphView = ({ items, onBack, onPointClick }) => {
 
     // 1. Prepare Data
     const chartData = useMemo(() => {
-        let filteredItems = items
+        // Safety check to ensure items is an array
+        const safeItems = Array.isArray(items) ? items : [];
+
+        let filteredItems = safeItems
             .filter(item => typeof item.mood === 'number' && item.mood > 0)
             .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
@@ -117,19 +120,24 @@ const MoodGraphView = ({ items, onBack, onPointClick }) => {
 
     // Helper to handle clicks safely
     const handleChartClick = (data) => {
-        if (data && data.activePayload && data.activePayload.length > 0) {
-            onPointClick(data.activePayload[0].payload.entry);
-        } else if (data && data.payload && data.payload.entry) {
-            onPointClick(data.payload.entry);
+        if (onPointClick) {
+            if (data && data.activePayload && data.activePayload.length > 0) {
+                onPointClick(data.activePayload[0].payload.entry);
+            } else if (data && data.payload && data.payload.entry) {
+                onPointClick(data.payload.entry);
+            }
         }
     };
 
     return (
         <div className="h-full flex flex-col">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <button onClick={onBack} className="flex items-center text-blue-600 hover:text-blue-700 font-semibold flex-shrink-0">
-                    <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back</span>
-                </button>
+                {onBack && (
+                    <button onClick={onBack} className="flex items-center text-blue-600 hover:text-blue-700 font-semibold flex-shrink-0">
+                        <ArrowLeftIcon className="w-5 h-5" /><span className="ml-2">Back</span>
+                    </button>
+                )}
+                {/* Time Range Selector */}
                 <div className="flex bg-gray-100 p-1 rounded-lg">
                     {['7', '30', 'all'].map((range) => (
                         <button
@@ -252,4 +260,4 @@ const MoodGraphView = ({ items, onBack, onPointClick }) => {
     );
 };
 
-export default MoodGraphView;
+export default MoodGraph;
