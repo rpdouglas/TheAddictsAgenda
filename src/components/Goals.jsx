@@ -1,9 +1,10 @@
 // src/components/Goals.jsx
 import React, { useState, useEffect } from 'react';
 import DataStore from '../utils/dataStore.js';
-import { PlusIcon, TrashIcon, CheckCircleIcon, ClockIcon } from '../utils/icons.jsx'; // ADDED ClockIcon
+import { PlusIcon, TrashIcon, CheckCircleIcon, ClockIcon, CalendarIcon, ArrowLeftIcon } from '../utils/icons.jsx'; 
 import { logDailyAction } from '../utils/journalLogger.js';
 import TaskItem from './TaskItem.jsx'; 
+import CollapsibleSection from './CollapsibleSection.jsx'; // Import Collapse Component
 
 // Helper function to check if the new completion is consecutive
 const isConsecutive = (lastCompletedISO) => {
@@ -21,8 +22,6 @@ const isConsecutive = (lastCompletedISO) => {
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     
     // Consecutive means 1 day difference (completed yesterday)
-    // We check against 1 because if they completed it today, the toggleTask logic handles the streak,
-    // and if they've completed it already, we don't increment the streak until tomorrow.
     return diffDays === 1;
 };
 
@@ -32,20 +31,34 @@ const Goals = ({ onBack }) => {
     const [newTask, setNewTask] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [recurrenceType, setRecurrenceType] = useState('none'); 
-    // NEW: State for history view toggle
     const [showHistory, setShowHistory] = useState(false); 
+    const [dueDate, setDueDate] = useState(''); 
 
 
     // Utility function to clone a recurring task for the next cycle
     const cloneTaskForRecurrence = (task, newStreak) => {
+        // NEW LOGIC: Calculate next due date for the cloned task
+        let nextDueDate = task.dueDate;
+        if (task.dueDate && task.recurrence === 'daily') {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            nextDueDate = tomorrow.toISOString().split('T')[0];
+        } else if (task.dueDate && task.recurrence === 'weekly') {
+             const today = new Date();
+            const nextWeek = new Date(today);
+            nextWeek.setDate(today.getDate() + 7);
+            nextDueDate = nextWeek.toISOString().split('T')[0];
+        }
+
         return {
             ...task,
             id: DataStore.generateId(), // New unique ID
             completed: false, // Ready for the next cycle
-            // Reset dates, keep new streak count
             createdAt: new Date().toISOString(), 
             lastCompleted: null, 
-            streakCount: newStreak, // Pass the calculated streak
+            streakCount: newStreak, 
+            dueDate: nextDueDate, // Apply the newly calculated due date
         };
     };
     
@@ -54,7 +67,17 @@ const Goals = ({ onBack }) => {
         const loadTasks = async () => {
             setIsLoading(true);
             const storedTasks = await DataStore.load(DataStore.KEYS.GOALS) || [];
-            setTasks(Array.isArray(storedTasks) ? storedTasks : []);
+            
+            // FIX: Ensure all loaded tasks have necessary properties initialized
+            const initializedTasks = storedTasks.map(t => ({
+                ...t,
+                recurrence: t.recurrence ?? 'none', 
+                streakCount: t.streakCount ?? 0,
+                lastCompleted: t.lastCompleted ?? null,
+                dueDate: t.dueDate ?? '' 
+            }));
+            
+            setTasks(Array.isArray(initializedTasks) ? initializedTasks : []);
             setIsLoading(false);
         };
         loadTasks();
@@ -70,22 +93,68 @@ const Goals = ({ onBack }) => {
         e.preventDefault();
         if (!newTask.trim()) return;
 
-        // NEW: Initialize streakCount and lastCompleted
         const task = {
             id: DataStore.generateId(),
             text: newTask.trim(),
             completed: false,
             createdAt: new Date().toISOString(),
             recurrence: recurrenceType, 
-            streakCount: 0, // Initialize streak
-            lastCompleted: null, // Initialize last completion date
+            dueDate: dueDate || '', 
+            streakCount: 0, 
+            lastCompleted: null, 
         };
 
         const updatedTasks = [task, ...tasks];
         await saveTasks(updatedTasks);
         setNewTask('');
         setRecurrenceType('none'); 
+        setDueDate(''); 
     };
+
+    // Handle In-Place Editing of Task Text
+    const handleEditTask = async (taskId, newText) => {
+        const updatedTasks = tasks.map(t => 
+            t.id === taskId ? { ...t, text: newText } : t
+        );
+        await saveTasks(updatedTasks);
+    };
+
+    // NEW: Handle Editing of Task Properties (Due Date, Recurrence)
+    const handleEditProperties = async (taskId, properties) => {
+        const updatedTasks = tasks.map(t => 
+            t.id === taskId ? { ...t, ...properties } : t
+        );
+        await saveTasks(updatedTasks);
+    };
+
+    // Handle marking a completed task as incomplete (from history)
+    const handleMarkIncomplete = async (taskId) => {
+        const taskToReactivate = tasks.find(t => t.id === taskId);
+        if (!taskToReactivate) return;
+
+        // 1. Reset the task's completion status and history properties
+        const reactivatedTask = {
+            ...taskToReactivate,
+            completed: false,
+            completedAt: null,
+            // Restore recurrence status from the original completed instance
+            recurrence: taskToReactivate.recurrence || 'none', 
+            // Reset streak/lastCompleted (new streak starts when they complete it again)
+            streakCount: 0,
+            lastCompleted: null,
+        };
+
+        // 2. Remove the old completed version and add the active version back to the list
+        const filteredTasks = tasks.filter(t => t.id !== taskId);
+        
+        // 3. Save the new list (active tasks should always come first)
+        await saveTasks([reactivatedTask, ...filteredTasks]);
+        
+        if (showHistory) {
+            setShowHistory(false);
+        }
+    };
+
 
     const toggleTask = async (taskId) => {
         const task = tasks.find(t => t.id === taskId);
@@ -98,25 +167,24 @@ const Goals = ({ onBack }) => {
         if (newCompletedStatus) {
             await logDailyAction(task.text, 'todolist'); // Log to Journal
             
-            // Handle Recurrence and Streak Logic (Currently only for 'daily')
-            if (task.recurrence === 'daily') {
+            // Handle Recurrence and Streak Logic (Only for 'daily' and 'weekly' tasks)
+            if (task.recurrence === 'daily' || task.recurrence === 'weekly') {
                 const nowISO = new Date().toISOString();
                 let newStreak = task.streakCount;
                 const completedToday = task.lastCompleted && new Date(task.lastCompleted).toDateString() === new Date().toDateString();
 
-                // 1. Calculate New Streak
-                if (isConsecutive(task.lastCompleted)) {
-                    // Completed yesterday, continue streak
-                    newStreak += 1;
-                } else if (!task.lastCompleted && !completedToday) {
-                    // First completion
-                    newStreak = 1;
-                } else if (!completedToday) {
-                    // Missed a day
-                    newStreak = 1; 
-                } else {
-                    // Already completed today, keep current streak (will be incremented tomorrow)
-                    newStreak = task.streakCount;
+                // 1. Calculate New Streak 
+                if (task.recurrence === 'daily') {
+                    if (isConsecutive(task.lastCompleted)) {
+                        newStreak += 1;
+                    } else if (!task.lastCompleted && !completedToday) {
+                        newStreak = 1;
+                    } else if (!completedToday) {
+                        newStreak = 1; 
+                    }
+                }
+                if (task.recurrence === 'weekly') {
+                    newStreak = (task.lastCompleted && !completedToday) ? (task.streakCount + 1) : 1; 
                 }
 
                 // 2. Clone for Next Recurrence
@@ -126,10 +194,12 @@ const Goals = ({ onBack }) => {
                 const completedTask = { 
                     ...task, 
                     completed: true, 
-                    recurrence: 'none', // Remove recurrence property from completed instance
-                    completedAt: nowISO, // Mark completion time
-                    streakCount: newStreak, // Final streak achieved for this instance
-                    lastCompleted: nowISO, // Last time it was completed (for history)
+                    // CRITICAL: We MUST save the original recurrence type here so it can be restored on Mark Incomplete.
+                    originalRecurrence: task.recurrence, 
+                    recurrence: 'none', 
+                    completedAt: nowISO, 
+                    streakCount: newStreak, 
+                    lastCompleted: nowISO, 
                 };
                 
                 // B. Replace the original task with the completed version in the list
@@ -139,7 +209,7 @@ const Goals = ({ onBack }) => {
                 updatedTasks = [clonedTask, ...updatedTasks];
 
             } else {
-                // Standard toggle (for non-recurring or weekly recurrence toggle)
+                // Standard toggle (for single-use tasks)
                 updatedTasks = tasks.map(t => 
                     t.id === taskId ? { ...t, completed: newCompletedStatus, completedAt: newCompletedStatus ? new Date().toISOString() : null } : t
                 );
@@ -159,12 +229,20 @@ const Goals = ({ onBack }) => {
         await saveTasks(updatedTasks);
     };
 
-    const activeTasks = tasks.filter(t => !t.completed);
+    const allActiveTasks = tasks.filter(t => !t.completed);
     
-    // NEW: Separate completed tasks logic for the History View
+    // GROUPING LOGIC
+    // 1. Recurring Tasks: Any task with a recurrence type other than 'none'
+    const recurringTasks = allActiveTasks.filter(t => t.recurrence !== 'none');
+    
+    // 2. Action Items & Tasks: All other active tasks (recurrence is 'none')
+    const actionItems = allActiveTasks.filter(t => t.recurrence === 'none');
+
+
+    // Separate completed tasks logic for the History View
     const completedTasks = tasks.filter(t => t.completed && t.completedAt).sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
 
-    // NEW: Group completed tasks by date for History View
+    // Group completed tasks by date for History View
     const groupedCompletedTasks = completedTasks.reduce((acc, task) => {
         const dateKey = new Date(task.completedAt).toDateString();
         if (!acc[dateKey]) {
@@ -188,12 +266,22 @@ const Goals = ({ onBack }) => {
                                         <CheckCircleIcon className="w-5 h-5 text-green-500" />
                                         <span className="text-gray-700 line-through">{task.text}</span>
                                     </div>
-                                    {/* Display streak in history view */}
-                                    {task.streakCount > 0 && (
-                                        <span className="text-sm font-bold text-orange-500 flex items-center">
-                                            🔥 {task.streakCount}
-                                        </span>
-                                    )}
+                                    <div className="flex space-x-3 items-center">
+                                        {/* Display streak in history view */}
+                                        {task.streakCount > 0 && (
+                                            <span className="text-sm font-bold text-orange-500 flex items-center">
+                                                🔥 {task.streakCount}
+                                            </span>
+                                        )}
+                                        {/* Mark Incomplete Button */}
+                                        <button 
+                                            onClick={() => handleMarkIncomplete(task.id)}
+                                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                            title="Mark as Incomplete / Reactivate"
+                                        >
+                                            <ArrowLeftIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
@@ -207,16 +295,21 @@ const Goals = ({ onBack }) => {
     return (
         <div className="bg-yellow-50 p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
             {/* --- Header --- */}
-            <div className="flex items-center justify-between mb-6 flex-shrink-0">
-                 <button 
+            <div className="flex flex-col items-center mb-6 flex-shrink-0"> 
+                
+                {/* Title first */}
+                <h2 className="text-2xl font-bold text-yellow-800 mb-2">
+                    {showHistory ? 'Completion History' : 'My To-Do List'}
+                </h2>
+                
+                {/* Button second, ensuring it is centered and has the icon */}
+                <button 
                     onClick={() => setShowHistory(!showHistory)} 
                     className="flex items-center text-yellow-700 hover:text-yellow-800 font-semibold transition-colors text-sm"
                 >
                     <ClockIcon className="w-5 h-5 mr-1" />
                     {showHistory ? 'Back to Active Tasks' : 'View Completion History'}
                 </button>
-                <h2 className="text-2xl font-bold text-yellow-800">{showHistory ? 'Completion History' : 'My To-Do List'}</h2>
-                <div className="w-44"></div> {/* Spacer for alignment */}
             </div>
             
             {/* Render history view if active */}
@@ -248,49 +341,93 @@ const Goals = ({ onBack }) => {
                             </button>
                         </div>
                         
-                        {/* Recurrence Selector */}
-                        <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-yellow-100 shadow-sm text-sm">
-                            <label htmlFor="recurrence" className="text-gray-700 font-medium mr-2">Recurrence Type:</label>
-                            <select
-                                id="recurrence"
-                                value={recurrenceType}
-                                onChange={(e) => setRecurrenceType(e.target.value)}
-                                className="p-1 border border-gray-300 rounded-md focus:ring-yellow-400 focus:border-yellow-400 bg-white"
-                            >
-                                <option value="none">None (Single Task)</option>
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly (No streak tracking)</option>
-                            </select>
+                        {/* Recurrence and Due Date Selector Group */}
+                        <div className="flex space-x-3">
+                            {/* Recurrence Selector */}
+                            <div className="flex-1 flex items-center bg-white p-2 rounded-lg border border-yellow-100 shadow-sm text-sm">
+                                <label htmlFor="recurrence" className="text-gray-700 font-medium mr-2 whitespace-nowrap">Recur:</label>
+                                <select
+                                    id="recurrence"
+                                    value={recurrenceType}
+                                    onChange={(e) => setRecurrenceType(e.target.value)}
+                                    className="p-1 border border-gray-300 rounded-md focus:ring-yellow-400 focus:border-yellow-400 bg-white w-full"
+                                >
+                                    <option value="none">None</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                </select>
+                            </div>
+                            
+                            {/* NEW: Due Date Selector */}
+                            <div className="flex-1 flex items-center bg-white p-2 rounded-lg border border-yellow-100 shadow-sm text-sm">
+                                <label htmlFor="dueDate" className="text-gray-700 font-medium mr-2 whitespace-nowrap">Due:</label>
+                                <input
+                                    type="date"
+                                    id="dueDate"
+                                    value={dueDate}
+                                    onChange={(e) => setDueDate(e.target.value)}
+                                    className="p-1 border border-gray-300 rounded-md focus:ring-yellow-400 focus:border-yellow-400 bg-white w-full"
+                                />
+                            </div>
                         </div>
                     </form>
                     
-                    {/* Active Task Lists */}
-                    <div className="flex-grow overflow-y-auto pr-2 space-y-6">
+                    {/* Task Lists Grouped and Collapsible */}
+                    <div className="flex-grow overflow-y-auto pr-2 space-y-4">
                         
-                        {/* Active Tasks */}
-                        {activeTasks.length > 0 && (
-                            <ul className="space-y-2">
-                                {/* Use memoized TaskItem component */}
-                                {activeTasks.map(task => (
-                                    <TaskItem 
-                                        key={task.id} 
-                                        task={task} 
-                                        onToggle={toggleTask} 
-                                        onDelete={deleteTask} 
-                                    />
-                                ))}
-                            </ul>
+                        {/* 1. RECURRING PRACTICES SECTION (Default Open) */}
+                        {recurringTasks.length > 0 && (
+                            <CollapsibleSection 
+                                title="Recurring Practices" 
+                                taskCount={recurringTasks.length} 
+                                defaultOpen={true}
+                                titleClass="text-teal-700" 
+                            >
+                                <ul className="space-y-2 mt-4">
+                                    {recurringTasks.map(task => (
+                                        <TaskItem 
+                                            key={task.id} 
+                                            task={task} 
+                                            onToggle={toggleTask} 
+                                            onDelete={deleteTask} 
+                                            onEdit={handleEditTask} 
+                                            onEditProperties={handleEditProperties} // Passed property handler
+                                        />
+                                    ))}
+                                </ul>
+                            </CollapsibleSection>
+                        )}
+                        
+                        {/* 2. ACTION ITEMS & ONE-TIME TASKS (Default Closed) */}
+                        {actionItems.length > 0 && (
+                            <CollapsibleSection 
+                                title="Action Items & Tasks" 
+                                taskCount={actionItems.length} 
+                                defaultOpen={false}
+                                titleClass="text-yellow-800"
+                            >
+                                <ul className="space-y-2 mt-4">
+                                    {actionItems.map(task => (
+                                        <TaskItem 
+                                            key={task.id} 
+                                            task={task} 
+                                            onToggle={toggleTask} 
+                                            onDelete={deleteTask} 
+                                            onEdit={handleEditTask} 
+                                            onEditProperties={handleEditProperties} // Passed property handler
+                                        />
+                                    ))}
+                                </ul>
+                            </CollapsibleSection>
                         )}
 
                         {/* Empty State */}
-                        {tasks.length === 0 && !isLoading && (
+                        {allActiveTasks.length === 0 && !isLoading && (
                             <div className="text-center py-10 text-yellow-700/60">
                                 <CheckCircleIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                                <p>No tasks yet. Stay organized!</p>
+                                <p>No active tasks yet. Get started!</p>
                             </div>
                         )}
-                        
-                        {/* Note: Completed tasks are no longer rendered in this view to encourage focus */}
                     </div>
                 </>
             )}

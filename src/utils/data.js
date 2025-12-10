@@ -204,9 +204,9 @@ export const MEETING_LINKS = {
 export const APP_VERSIONS = {
     DASHBOARD: '1.5.0',
     JOURNAL: '1.12.0', 
-    GOALS: '1.5.1', 
+    GOALS: '1.5.2', 
     COPING: '2.2.0', 
-    WORKBOOK: '1.12.0',
+    WORKBOOK: '1.12.1',
     LITERATURE: '1.3.0',
     RESOURCES: '1.1.0',
     SETTINGS: '1.4.0',

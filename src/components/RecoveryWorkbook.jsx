@@ -163,7 +163,7 @@ const RecoveryWorkbook = () => {
             const result = await generateContentWithFallback(prompt); 
             
             // FIX: Correctly extract the nested text from the successful API result, matching the AITestTool logic.
-            const responseText = result.response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+            const responseText = result.text?.trim() ?? '';
             
             // 2. Parse Response (Using the successful string-splitting method)
             const parts = responseText.split('SUGGESTED_ACTIONS');
@@ -196,6 +196,12 @@ const RecoveryWorkbook = () => {
         const allTags = await DataStore.load(DataStore.KEYS.JOURNAL_TAGS) || [];
         const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
 
+        // NEW LOGIC: Calculate default due date (7 days from now)
+        const today = new Date();
+        const sevenDaysFromNow = new Date(today);
+        sevenDaysFromNow.setDate(today.getDate() + 7);
+        const defaultDueDate = sevenDaysFromNow.toISOString().split('T')[0]; // YYYY-MM-DD
+
         const formattedList = actionsToSave.map(a => `- ${a}`).join('\n');
         const newEntry = {
             id: DataStore.generateId(),
@@ -213,6 +219,21 @@ const RecoveryWorkbook = () => {
 
         let updatedGoals = [...currentGoals];
         for (const actionText of actionsToSave) {
+            
+            // NEW TASK OBJECT TEMPLATE for AI actions
+            // Includes default recurrence: 'none' and the calculated 7-day due date
+            const newGoalTemplate = {
+                id: DataStore.generateId(),
+                text: actionText,
+                completed: false,
+                createdAt: new Date().toISOString(),
+                recurrence: 'none', 
+                dueDate: defaultDueDate, 
+                streakCount: 0,
+                lastCompleted: null,
+                tags: ['actionitems'] // Explicitly tag as action item
+            };
+
             const existingGoalIndex = updatedGoals.findIndex(g => g.text.toLowerCase() === actionText.toLowerCase());
             
             if (existingGoalIndex !== -1) {
@@ -220,23 +241,18 @@ const RecoveryWorkbook = () => {
                     updatedGoals[existingGoalIndex] = {
                         ...updatedGoals[existingGoalIndex],
                         completed: false,
+                        // Reset properties upon reactivating existing goal
+                        recurrence: 'none', 
+                        dueDate: defaultDueDate,
                         createdAt: new Date().toISOString()
                     };
                 } else {
-                    updatedGoals.push({
-                        id: DataStore.generateId(),
-                        text: actionText,
-                        completed: false,
-                        createdAt: new Date().toISOString()
-                    });
+                    // Duplication uses the new template
+                    updatedGoals.push(newGoalTemplate);
                 }
             } else {
-                updatedGoals.push({
-                    id: DataStore.generateId(),
-                    text: actionText,
-                    completed: false,
-                    createdAt: new Date().toISOString()
-                });
+                // New goal uses the new template
+                updatedGoals.push(newGoalTemplate);
             }
         }
         await DataStore.save(DataStore.KEYS.GOALS, updatedGoals);
