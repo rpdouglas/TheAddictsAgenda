@@ -5,51 +5,65 @@ import JournalForm from './journal/JournalForm.jsx';
 import JournalList from './journal/JournalList.jsx';
 import MoodGraph from './journal/MoodGraph.jsx';
 import WordCloudView from './journal/WordCloudView.jsx';
-import JournalModals, { InsightsModal, AnalysisConfigModal } from './journal/JournalModals.jsx';
+import JournalModals, { InsightsModal } from './journal/JournalModals.jsx';
 import { processAIActionPlan } from '../utils/journalLogger.js';
 import { SparklesIcon } from '../utils/icons.jsx';
+
+// Shared AI Logic
+import { generateContentWithFallback } from '../firebase.jsx';
+import { parseAIResponse, createActionItemObject } from '../utils/aiService.js';
 
 const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJournalTags }) => {
     const [items, setItems] = useState([]);
     const [newItemText, setNewItemText] = useState('');
     const [currentMood, setCurrentMood] = useState(0);
     const [weather, setWeather] = useState(''); 
-   
+    
     const [isEditing, setIsEditing] = useState(false);
     const [editItemId, setEditItemId] = useState(null);
     const [showGeminiHelper, setShowGeminiHelper] = useState(false);
     const [activeTab, setActiveTab] = useState('write');
-   
     
     // Filtering & Search State
     const [filterTag, setFilterTag] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
-   
+    
+    // Date Range State: Defaults to Last 30 Days (Local Time)
+    const [dateRange, setDateRange] = useState(() => {
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+
+        // Helper to format YYYY-MM-DD in local time
+        const formatLocal = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
+
+        return { start: formatLocal(thirtyDaysAgo), end: formatLocal(today) };
+    });
     
     // Tag Management
     const [tagInput, setTagInput] = useState('');
     const [allTags, setAllTags] = useState([]);
-   
 
     // Modals
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
-   
 
     // --- AI Analysis State ---
-    const [showAnalysisConfig, setShowAnalysisConfig] = useState(false);
     const [showInsightsResult, setShowInsightsResult] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState('');
     const [suggestedActions, setSuggestedActions] = useState([]);
-   
 
     useEffect(() => {
         loadJournal();
     }, []);
-   
 
-    // Handle Template Props (from external components like Coping Cards)
+    // Handle Template Props
     useEffect(() => {
         if (journalTemplate) {
             setNewItemText(journalTemplate);
@@ -57,16 +71,12 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             setActiveTab('write');
         }
         if (journalTags && journalTags.length > 0) {
-            // Merge unique tags
             setAllTags(prev => [...new Set([...prev, ...journalTags])]);
         }
     }, [journalTemplate, journalTags, setJournalTemplate]);
-   
-
 
     const loadJournal = async () => {
         const storedItems = await DataStore.load(DataStore.KEYS.JOURNAL) || [];
-        
         // Sort by timestamp desc
         storedItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setItems(storedItems);
@@ -78,7 +88,37 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         });
         setAllTags(Array.from(tags));
     };
-   
+
+    // --- COMPUTED: Filtered Items ---
+    const filteredItems = items.filter(item => {
+        // 1. Tag Filter
+        const matchesTag = filterTag === 'All' || (item.tags && item.tags.includes(filterTag));
+        
+        // 2. Search Filter (Text or Tags)
+        const matchesSearch = item.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              (item.tags && item.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())));
+        
+        // 3. Date Range Filter
+        let matchesDate = true;
+        if (dateRange.start || dateRange.end) {
+            const itemDate = new Date(item.timestamp);
+            itemDate.setHours(0, 0, 0, 0);
+
+            if (dateRange.start) {
+                const [sy, sm, sd] = dateRange.start.split('-').map(Number);
+                const startDate = new Date(sy, sm - 1, sd);
+                if (itemDate < startDate) matchesDate = false;
+            }
+            if (dateRange.end) {
+                const [ey, em, ed] = dateRange.end.split('-').map(Number);
+                const endDate = new Date(ey, em - 1, ed);
+                endDate.setHours(23, 59, 59, 999);
+                if (itemDate > endDate) matchesDate = false;
+            }
+        }
+
+        return matchesTag && matchesSearch && matchesDate;
+    });
 
     const handleSaveEntry = async (e) => {
         e.preventDefault();
@@ -86,10 +126,8 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
 
         let updatedItems;
         
-        // 1. Process AI Action Items (if any checkboxes [ ] were used)
         const { cleanText, pendingActions } = processAIActionPlan(newItemText);
 
-        // 2. Construct Entry Object
         const entryData = {
             text: cleanText,
             mood: currentMood,
@@ -112,15 +150,16 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             updatedItems = [newItem, ...items];
         }
 
-        // 3. Handle Action Plan items (Save to Goals)
         if (pendingActions.length > 0) {
-            await saveActionsToGoals(pendingActions);
+            const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
+            const newGoals = pendingActions.map(actionText => createActionItemObject(actionText, 'journal'));
+            await DataStore.save(DataStore.KEYS.GOALS, [...currentGoals, ...newGoals]);
+            alert(`Saved ${pendingActions.length} action items to your To-Do List!`);
         }
 
         await DataStore.save(DataStore.KEYS.JOURNAL, updatedItems);
         setItems(updatedItems);
         
-        // Reset Form
         setNewItemText('');
         setCurrentMood(0);
         setWeather(''); 
@@ -128,24 +167,8 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setShowGeminiHelper(false);
         setActiveTab('history');
         
-        // Refresh tags
         loadJournal();
     };
-   
-
-    const saveActionsToGoals = async (actions) => {
-        const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
-        const newGoals = actions.map(actionText => ({
-            id: DataStore.generateId(),
-            text: actionText,
-            completed: false,
-            createdAt: new Date().toISOString(),
-            source: 'journal_ai'
-        }));
-        await DataStore.save(DataStore.KEYS.GOALS, [...currentGoals, ...newGoals]);
-        alert(`Saved ${actions.length} action items to your To-Do List!`);
-    };
-   
 
     const handleEdit = (item) => {
         setNewItemText(item.text);
@@ -157,7 +180,6 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setActiveTab('write');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-   
 
     const confirmDelete = async () => {
         if (!itemToDelete) return;
@@ -166,9 +188,8 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setItems(updatedItems);
         setShowDeleteModal(false);
         setItemToDelete(null);
-        loadJournal(); // Refresh tags
+        loadJournal(); 
     };
-   
 
     const handleCancelEdit = () => {
         setIsEditing(false);
@@ -178,21 +199,17 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         setWeather('');
         setJournalTags([]);
     };
-   
 
-    // Tag Handlers
     const handleAddTag = () => {
         if (tagInput.trim() && !journalTags.includes(tagInput.trim())) {
             setJournalTags([...journalTags, tagInput.trim()]);
             setTagInput('');
         }
     };
-   
 
     const handleRemoveTag = (tagToRemove) => {
         setJournalTags(journalTags.filter(t => t !== tagToRemove));
     };
-   
 
     const handleTagInputKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -200,80 +217,72 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
             handleAddTag();
         }
     };
-   
 
     const handleWordClick = (word) => {
         setSearchQuery(word);
         setActiveTab('history');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-   
 
-    // --- AI ANALYSIS HANDLERS ---
-
-    const handleRunAnalysis = async (startDate, endDate, selectedTags) => {
-        setShowAnalysisConfig(false);
-        setIsAnalyzing(true);
-        setShowInsightsResult(true);
-
-        // 1. Filter Items
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59); // Include full end day
-
-        const analysisItems = items.filter(item => {
-            const itemDate = new Date(item.timestamp);
-            const inDateRange = itemDate >= start && itemDate <= end;
-            const hasTag = selectedTags.length === 0 || (item.tags && item.tags.some(t => selectedTags.includes(t)));
-            return inDateRange && hasTag;
-        });
-
-        if (analysisItems.length === 0) {
-            setAnalysisResult("No journal entries found for this period/filter. Try adjusting your range.");
-            setSuggestedActions([]);
-            setIsAnalyzing(false);
+    // --- AI ANALYSIS HANDLER ---
+    const handleQuickAnalysis = async () => {
+        if (filteredItems.length === 0) {
+            alert("No entries visible to analyze. Please adjust your filters.");
             return;
         }
 
-        // 2. Prepare Context
-        const contextText = analysisItems.map(i => 
+        setIsAnalyzing(true);
+        setShowInsightsResult(true);
+        setAnalysisResult('');
+        setSuggestedActions([]);
+
+        const contextText = filteredItems.map(i => 
             `Date: ${new Date(i.timestamp).toDateString()}\nMood: ${i.mood}/10\nTags: ${i.tags?.join(', ')}\nContent: ${i.text}`
         ).join('\n---\n');
 
-        // 3. Call AI (MOCK FOR NOW - Replace with real API call)
-        try {
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Mock Response
-            const mockInsights = `Based on your ${analysisItems.length} entries from ${startDate} to ${endDate}, here are some patterns:\n\n1. **Mood Trends**: Your mood seems to correlate with your "Meeting" tags. Days you attend meetings show a mood lift of about 2 points.\n\n2. **Key Themes**: "Anxiety" and "Work" appear frequently together. You often mention feeling overwhelmed on Tuesdays.\n\n3. **Victory**: You have consistently practiced gratitude this week. Keep it up!`;
-            
-            const mockActions = [
-                "Schedule a meeting for next Tuesday",
-                "Practice box breathing when work gets stressful",
-                "Call a friend to discuss work anxiety"
-            ];
+        const prompt = `You are a recovery companion AI. Analyze these specific journal entries provided below.
+        
+        Entries:
+        ${contextText}
 
-            setAnalysisResult(mockInsights);
-            setSuggestedActions(mockActions);
+        Identify emotional patterns, triggers, and victories within this specific set of entries.
+        IMPORTANT: At the very end, provide a section titled "SUGGESTED_ACTIONS" followed by exactly 3 short, concrete, actionable bullet points for their recovery.`;
+
+        try {
+            const result = await generateContentWithFallback(prompt);
+            const rawText = result.response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+            
+            const { insights, actions } = parseAIResponse(rawText);
+
+            setAnalysisResult(insights || "I couldn't generate insights this time.");
+            setSuggestedActions(actions);
 
         } catch (error) {
             console.error("Analysis failed", error);
-            setAnalysisResult("Sorry, I couldn't complete the analysis. Please try again.");
+            setAnalysisResult("Sorry, I couldn't complete the analysis. Please check your connection.");
         } finally {
             setIsAnalyzing(false);
         }
     };
-   
 
     const handleSaveAnalysisActions = async (actionsToSave) => {
-        await saveActionsToGoals(actionsToSave);
+        const currentGoals = await DataStore.load(DataStore.KEYS.GOALS) || [];
+        let updatedGoals = [...currentGoals];
+        
+        for (const actionText of actionsToSave) {
+            const existing = updatedGoals.find(g => g.text.toLowerCase() === actionText.toLowerCase());
+            
+            if (!existing || window.confirm(`"${actionText}" is already on your list. Add it again?`)) {
+                const newTask = createActionItemObject(actionText, 'journal');
+                updatedGoals.push(newTask);
+            }
+        }
+        
+        await DataStore.save(DataStore.KEYS.GOALS, updatedGoals);
     };
-   
 
     return (
         <div className="h-full flex flex-col space-y-4">
-            
             {/* Tab Navigation */}
             <div className="flex p-1 bg-gray-200 rounded-xl">
                 <button 
@@ -321,73 +330,39 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                         allTags={allTags}
                         showGeminiHelper={showGeminiHelper}
                         setShowGeminiHelper={setShowGeminiHelper}
-                        // FIX: Removed the overriding props here so JournalForm uses internal state
                     />
                 )}
-               
 
                 {activeTab === 'history' && (
                     <JournalList 
-                        items={items}
+                        items={filteredItems} 
                         onEdit={handleEdit}
                         onDelete={(id) => { setItemToDelete(id); setShowDeleteModal(true); }}
                         filterTag={filterTag}
                         setFilterTag={setFilterTag}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
+                        dateRange={dateRange}
+                        setDateRange={setDateRange}
+                        onAnalyze={handleQuickAnalysis}
                         allTags={allTags}
                     />
                 )}
-               
 
                 {activeTab === 'insights' && (
                     <div className="space-y-6">
-                        
-                        {/* --- NEW: AI Analysis Trigger Card --- */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
-                            <div className="relative z-10">
-                                <h3 className="text-lg font-bold flex items-center gap-2 mb-2">
-                                    <SparklesIcon className="w-5 h-5 text-yellow-300"/> 
-                                    AI Recovery Analysis
-                                </h3>
-                                <p className="text-blue-100 text-sm mb-4 max-w-sm">
-                                    Analyze your journal history to find emotional patterns, triggers, and suggested actions.
-                                </p>
-                                <button 
-                                    onClick={() => setShowAnalysisConfig(true)}
-                                    className="bg-white text-blue-600 font-bold py-2 px-4 rounded-lg text-sm hover:bg-blue-50 transition-colors shadow-sm"
-                                >
-                                    Generate Report
-                                </button>
-                            </div>
-                            {/* Decorative background element */}
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                        </div>
-
-                        {/* 1. Mood Graph */}
                         <div className="h-[400px]">
                             <MoodGraph items={items} />
                         </div>
-                        
-                        {/* 2. Word Cloud */}
                         <WordCloudView items={items} onWordClick={handleWordClick} />
                     </div>
                 )}
-               
             </div>
 
-            {/* --- MODALS --- */}
             <JournalModals 
                 showDeleteModal={showDeleteModal}
                 setShowDeleteModal={setShowDeleteModal}
                 confirmDelete={confirmDelete}
-            />
-
-            <AnalysisConfigModal 
-                isOpen={showAnalysisConfig}
-                onClose={() => setShowAnalysisConfig(false)}
-                onAnalyze={handleRunAnalysis}
-                allTags={allTags}
             />
 
             {showInsightsResult && (
