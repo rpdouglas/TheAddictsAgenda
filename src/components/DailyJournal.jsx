@@ -6,6 +6,7 @@ import JournalList from './journal/JournalList.jsx';
 import MoodGraph from './journal/MoodGraph.jsx';
 import WordCloudView from './journal/WordCloudView.jsx';
 import JournalModals, { InsightsModal } from './journal/JournalModals.jsx';
+import InsightHistoryLog from './journal/InsightHistoryLog.jsx'; 
 import { processAIActionPlan } from '../utils/journalLogger.js';
 import { SparklesIcon } from '../utils/icons.jsx';
 
@@ -58,6 +59,9 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState('');
     const [suggestedActions, setSuggestedActions] = useState([]);
+    
+    // --- Insight Log State ---
+    const [logRefreshTrigger, setLogRefreshTrigger] = useState(0); // Triggers re-render of HistoryLog
 
     useEffect(() => {
         loadJournal();
@@ -281,6 +285,33 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
         await DataStore.save(DataStore.KEYS.GOALS, updatedGoals);
     };
 
+    // --- NEW: Handle Saving Insight Log (with Actions Appended) ---
+    const handleSaveInsightLog = async () => {
+        if (!analysisResult) return;
+        
+        let combinedText = analysisResult;
+        
+        // Append Suggested Actions if they exist
+        if (suggestedActions && suggestedActions.length > 0) {
+            combinedText += "\n\n---\nSUGGESTED ACTIONS:\n" + suggestedActions.map(action => `• ${action}`).join('\n');
+        }
+        
+        const currentLogs = await DataStore.load(DataStore.KEYS.INSIGHTS) || [];
+        
+        const newLog = {
+            id: DataStore.generateId(),
+            text: combinedText,
+            timestamp: new Date().toISOString(),
+            source: 'Journal Sparkle',
+            relatedTags: filterTag !== 'All' ? [filterTag] : []
+        };
+        
+        await DataStore.save(DataStore.KEYS.INSIGHTS, [newLog, ...currentLogs]);
+        
+        // Trigger a refresh of the log component
+        setLogRefreshTrigger(prev => prev + 1);
+    };
+
     return (
         <div className="h-full flex flex-col space-y-4">
             {/* Tab Navigation */}
@@ -355,6 +386,11 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                             <MoodGraph items={items} />
                         </div>
                         <WordCloudView items={items} onWordClick={handleWordClick} />
+                        
+                        {/* NEW: Insight History Log */}
+                        <div className="pt-6 border-t border-gray-200">
+                             <InsightHistoryLog refreshTrigger={logRefreshTrigger} />
+                        </div>
                     </div>
                 )}
             </div>
@@ -371,6 +407,7 @@ const DailyJournal = ({ journalTemplate, setJournalTemplate, journalTags, setJou
                     insights={analysisResult}
                     actions={suggestedActions}
                     onSaveActions={handleSaveAnalysisActions}
+                    onSaveLog={handleSaveInsightLog}
                     onClose={() => setShowInsightsResult(false)}
                 />
             )}

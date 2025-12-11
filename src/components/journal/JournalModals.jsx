@@ -1,6 +1,6 @@
 // src/components/journal/JournalModals.jsx
 import React, { useState } from 'react';
-import { SparklesIcon, FilterIcon, PlusIcon, CheckIcon, CheckCircleIcon, TrashIcon } from '../../utils/icons.jsx';
+import { SparklesIcon, FilterIcon, PlusIcon, CheckIcon, CheckCircleIcon, TrashIcon, BookOpenIcon } from '../../utils/icons.jsx';
 import { Spinner } from '../common.jsx';
 
 // --- 1. DEFAULT EXPORT: Delete Confirmation Modal ---
@@ -47,9 +47,10 @@ export default JournalModals;
 
 
 // --- 2. NAMED EXPORT: Results Modal (Action Plan / Shopping Cart) ---
-export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSaveActions }) => {
+export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSaveActions, onSaveLog }) => {
     const [selectedIndices, setSelectedIndices] = useState([]);
-    const [isSaved, setIsSaved] = useState(false);
+    const [isActionsSaved, setIsActionsSaved] = useState(false);
+    const [isLogSaved, setIsLogSaved] = useState(false);
 
     const toggleAction = (index) => {
         if (selectedIndices.includes(index)) {
@@ -59,10 +60,15 @@ export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSa
         }
     };
 
-    const handleSave = () => {
+    const handleSaveActions = () => {
         const actionsToSave = selectedIndices.map(i => actions[i]);
         onSaveActions(actionsToSave);
-        setIsSaved(true);
+        setIsActionsSaved(true);
+    };
+
+    const handleSaveLog = () => {
+        onSaveLog();
+        setIsLogSaved(true);
     };
 
     return (
@@ -83,8 +89,25 @@ export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSa
                     ) : (
                         <div className="space-y-6">
                             {/* Main Analysis Text */}
-                            <div className="text-deep-charcoal/80 space-y-4 whitespace-pre-wrap text-sm leading-relaxed">
-                                {insights.split('\n\n').map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <div className="text-deep-charcoal/80 space-y-4 whitespace-pre-wrap text-sm leading-relaxed">
+                                    {insights.split('\n\n').map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+                                </div>
+                                {/* Save to Log Button */}
+                                <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end">
+                                    {!isLogSaved ? (
+                                        <button 
+                                            onClick={handleSaveLog}
+                                            className="text-purple-600 hover:text-purple-800 text-xs font-bold flex items-center gap-1 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
+                                        >
+                                            <BookOpenIcon className="w-4 h-4" /> Save to Insights Log
+                                        </button>
+                                    ) : (
+                                        <span className="text-green-600 text-xs font-bold flex items-center gap-1 px-3 py-1.5 bg-green-50 rounded-lg">
+                                            <CheckIcon className="w-4 h-4" /> Saved to Log
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Action Items Section (Shopping Cart Style) */}
@@ -94,7 +117,7 @@ export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSa
                                         <CheckCircleIcon className="w-4 h-4" /> Suggested Actions
                                     </h4>
                                     
-                                    {!isSaved ? (
+                                    {!isActionsSaved ? (
                                         <>
                                             <ul className="space-y-2 mb-4">
                                                 {actions.map((action, idx) => (
@@ -112,7 +135,7 @@ export const InsightsModal = ({ onClose, isLoading, insights, actions = [], onSa
                                                 ))}
                                             </ul>
                                             <button
-                                                onClick={handleSave}
+                                                onClick={handleSaveActions}
                                                 disabled={selectedIndices.length === 0}
                                                 className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                                             >
