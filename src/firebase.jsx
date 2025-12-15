@@ -17,15 +17,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-// --- FINAL OPTIMIZED MODEL PRIORITY ---
-// Confirmed available models, prioritized by cost/speed/capability balance.
+// --- MODEL PRIORITY ---
+// Cycles from Fast/Cheap -> Powerful -> Legacy Stable -> Auto-Resolve
 const MODEL_PRIORITY = [
-    "gemini-2.5-flash", // Primary choice: Fast, cost-effective, most generous free tier quota.
-    "gemini-2.5-pro",   // Fallback: Best reasoning capability, used only if Flash fails.
+    "gemini-2.5-flash",       // Primary: Verified Available (Preview)
+    "gemini-2.5-pro",         // Secondary: High Reasoning (Preview)
+    "gemini-2.0-flash",       // Fallback: Previous Stable
+    "gemini-flash-latest"     // Safety Net: Auto-resolves to latest stable
 ];
 
 /**
- * Attempts to generate content, cycling through available models if a Quota Exceeded error occurs.
+ * Attempts to generate content, cycling through available models if a Quota, Overload, or Model error occurs.
  * Explicitly checks for blocked responses by checking for the presence of candidates.
  * @param {string} prompt The analysis prompt string.
  * @returns {Promise<any>} The successful response object from the API.
@@ -35,7 +37,7 @@ export async function generateContentWithFallback(prompt) {
 
     for (const modelName of MODEL_PRIORITY) {
         try {
-            console.warn(`[AI Fallback] Attempting analysis with model: ${modelName}`);
+            // console.log(`[AI Fallback] Attempting analysis with model: ${modelName}`);
             
             const model = genAI.getGenerativeModel({ model: modelName });
             const result = await model.generateContent(prompt);
@@ -53,27 +55,34 @@ export async function generateContentWithFallback(prompt) {
             return result;
 
         } catch (error) {
-            // Check if the error is specifically a Quota Exceeded (429) error
-            if (error.message && error.message.includes('[429 ]')) {
-                console.error(`[AI Fallback] ${modelName} failed due to Quota Exceeded (429). Trying next model.`);
+            // UPDATED LOGIC: Catch 503 (Overloaded), 429 (Quota), and 404/400 (Model Error)
+            const isOverloaded = error.message && error.message.includes('503');
+            const isQuota = error.message && error.message.includes('429');
+            const isModelError = error.message && (error.message.includes('404') || error.message.includes('400'));
+
+            if (isOverloaded || isQuota || isModelError) {
+                let reason = 'Unknown';
+                if (isOverloaded) reason = 'Model Overloaded (503)';
+                else if (isQuota) reason = 'Quota Limit (429)';
+                else if (isModelError) reason = 'Model Unavailable (404/400)';
+
+                console.warn(`[AI Fallback] ${modelName} failed (${reason}). Switching to next model...`);
                 lastError = error;
                 continue;
             } else {
-                // Throw any other error (network, unauthorized model, model not found, etc.)
-                console.error(`!!!! AI CRITICAL ERROR (NON-QUOTA) in ${modelName} !!!!`, error);
+                // Throw any other error (network, unauthorized, etc.) immediately
+                console.error(`!!!! AI CRITICAL ERROR (NON-RECOVERABLE) in ${modelName} !!!!`, error);
                 throw error;
             }
         }
     }
 
     if (lastError) {
-        throw new Error(`CRITICAL: All models failed due to Quota Exceeded. Last error: ${lastError.message}`);
+        throw new Error(`CRITICAL: All models failed. Last error: ${lastError.message}`);
     }
     
     throw new Error("CRITICAL: AI analysis failed: No models were available for analysis.");
 }
-
-// NOTE: listAvailableModels function has been removed as it was non-functional in the deployed environment.
 
 // Authentication & Database Exports
 export const auth = getAuth(app);

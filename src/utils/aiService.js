@@ -3,23 +3,29 @@ import DataStore from './dataStore.js';
 
 /**
  * Parses the raw text response from Gemini into Insights and Action Items.
- * Expects the AI to include a "SUGGESTED_ACTIONS" section.
+ * Updated to handle Markdown (**Bold**), Case Variations (Suggested Actions), and Spacing.
  * * @param {string} responseText - The raw string from the AI model.
  * @returns {object} { insights: string, actions: string[] }
  */
 export const parseAIResponse = (responseText) => {
     if (!responseText) return { insights: '', actions: [] };
 
-    // Split based on the keyword we prompt the AI to use
-    const parts = responseText.split('SUGGESTED_ACTIONS');
+    // UPDATED: Robust Regex Splitting
+    // Matches variations like:
+    // "SUGGESTED_ACTIONS", "**SUGGESTED ACTIONS**", "Suggested Actions", "_SUGGESTED ACTIONS_"
+    const splitRegex = /\*?_?SUGGESTED[ _]ACTIONS_?\*?/i;
     
+    const parts = responseText.split(splitRegex);
+    
+    // If the split found nothing (length 1), the whole text is 'insights'
     const insights = parts[0].trim();
     const actionBlock = parts.length > 1 ? parts[1].trim() : '';
 
     // Clean up the bullet points
     const actions = actionBlock
         .split('\n')
-        .map(line => line.replace(/^-/, '').trim()) // Remove leading dashes
+        // UPDATED: Regex to remove various bullet types (-, *, •) and leading whitespace
+        .map(line => line.replace(/^[-*•]\s*/, '').trim()) 
         .filter(line => line.length > 0)
         .slice(0, 3); // Enforce max 3 items
 
