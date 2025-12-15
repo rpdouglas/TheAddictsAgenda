@@ -152,9 +152,11 @@ const RecoveryWorkbook = () => {
 
        try {
             const result = await generateContentWithFallback(prompt); 
-            const responseText = result.text?.trim() ?? '';
             
-            // USE SHARED UTILITY to parse
+            // --- UPDATED: Correctly extract text from Gemini 2.5 structure ---
+            const responseText = result.response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+            
+            // USE SHARED UTILITY to parse (now handles fuzzy regex)
             const { insights, actions } = parseAIResponse(responseText);
 
             setAiInsights(insights);
