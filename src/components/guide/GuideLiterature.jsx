@@ -1,47 +1,65 @@
+// src/components/guide/GuideLiterature.jsx
 import React from 'react';
+import { BookOpenIcon, DownloadIcon, SparklesIcon } from '../../utils/icons.jsx';
 
-const GuideLiterature = () => (
-    <>
-        <p className="mb-6">Read the foundational texts of Alcoholics Anonymous, Narcotics Anonymous, and Recovery Dharma directly in the app. The reader is designed for study and reflection.</p>
-        
-        <h3 className="text-xl font-bold text-gray-800 mb-3">How to Use the Reader</h3>
-        <div className="space-y-6">
-            
-            <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-bold text-teal-600 mb-2">📚 Browsing Books & Chapters</h4>
-                <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                    <li>On the main Literature screen, tap <strong>"Read in App"</strong> below any book title (e.g., "The Big Book").</li>
-                    <li>You will see a Table of Contents. For larger books like the Big Book, chapters are grouped into sections like <strong>"The Chapters"</strong> and <strong>"Personal Stories"</strong>.</li>
-                    <li>Tap a section to expand it, then tap any chapter title to start reading.</li>
-                </ol>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-bold text-teal-600 mb-2">📖 Reading Mode</h4>
-                <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
-                    <li><strong>Pagination:</strong> Long chapters are split into pages. Use the <strong>"Next"</strong> and <strong>"Previous"</strong> buttons at the bottom to navigate.</li>
-                    <li><strong>Progress:</strong> The page indicator (e.g., "Page 3 of 12") helps you keep your place.</li>
-                </ul>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-bold text-teal-600 mb-2">🖊️ Highlighting & Journaling</h4>
-                <p className="text-sm text-gray-600 mb-2">Found a passage that speaks to you? You can save it instantly.</p>
-                <ol className="list-decimal pl-5 space-y-2 text-gray-700 text-sm">
-                    <li><strong>Highlight Text:</strong> Long-press (on mobile) or click and drag (on desktop) to select any text on the page.</li>
-                    <li><strong>Save to Journal:</strong> A customized button labeled <strong>"Journal Highlight"</strong> will appear. Tap it to automatically create a new journal entry containing your selected quote.</li>
-                    <li><strong>Reflect on Page:</strong> Even without selecting text, you can tap <strong>"Journal about this page"</strong> to start a blank entry tagged with the current book and chapter title.</li>
-                </ol>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-bold text-teal-600 mb-2">⬇️ PDF Downloads</h4>
-                <p className="text-sm text-gray-600">
-                    Need a copy for offline sharing? Tap the green <strong>"PDF"</strong> button next to any book title on the main list to open the official PDF version in your browser.
+const GuideLiterature = () => {
+    return (
+        <div className="space-y-8 text-gray-700">
+            {/* Intro */}
+            <section>
+                <h3 className="text-xl font-bold text-teal-700 mb-3 flex items-center gap-2">
+                    <BookOpenIcon className="w-6 h-6" />
+                    The Library
+                </h3>
+                <p className="mb-4">
+                    Access foundational texts like the Big Book, 12 & 12, and Recovery Dharma directly in the app. 
+                    The library supports an in-app E-Reader, PDF downloads, and interactive learning tools.
                 </p>
-            </div>
+            </section>
+
+            {/* Feature 1: The Reader */}
+            <section className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                <h4 className="font-bold text-gray-800 mb-2">📖 The E-Reader</h4>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-gray-600">
+                    <li><strong>Navigation:</strong> Tap "Read in App" to open a book. Use the <strong>Next/Previous</strong> buttons to turn pages.</li>
+                    <li><strong>Table of Contents:</strong> The Big Book is organized into "Prefaces," "Chapters," and "Personal Stories" for easy browsing.</li>
+                    <li><strong>Journaling:</strong> Found a powerful quote? Tap <strong>"Journal about this page"</strong> to instantly create a new journal entry referenced to that specific chapter.</li>
+                    <li><strong>Highlighting:</strong> Select any text with your cursor (or finger) and tap <strong>"Journal Highlight"</strong> to quote it directly in your entry.</li>
+                </ul>
+            </section>
+
+            {/* NEW SECTION: Interactive Tools */}
+            <section className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                <h4 className="font-bold text-indigo-800 mb-2 flex items-center gap-2">
+                    <SparklesIcon className="w-4 h-4" />
+                    Interactive Learning
+                </h4>
+                <p className="text-sm text-gray-700 mb-2">
+                    Some items in the library are more than just books. They are interactive experiences designed to deepen your understanding.
+                </p>
+                <div className="bg-white p-3 rounded-lg border border-indigo-200">
+                    <strong className="text-indigo-700 text-sm">Example: Seven Grandfather Teachings</strong>
+                    <ul className="list-disc pl-5 mt-2 space-y-1 text-xs text-gray-600">
+                        <li>Look for the <strong>"Launch Interactive Tool"</strong> button on the card.</li>
+                        <li>This opens a visual grid of the seven teachings (e.g., Wisdom, Love, Respect).</li>
+                        <li>Tap any card to reveal the Anishinaabe language translation, the associated animal, and a deep-dive description of the principle.</li>
+                    </ul>
+                </div>
+            </section>
+
+            {/* Feature 3: PDFs */}
+            <section className="bg-teal-50 p-4 rounded-lg border border-teal-100">
+                <h4 className="font-bold text-teal-800 mb-2 flex items-center gap-2">
+                    <DownloadIcon className="w-4 h-4" />
+                    PDF Downloads
+                </h4>
+                <p className="text-sm text-gray-700">
+                    Prefer the original formatting? Tap the <strong>PDF button</strong> next to any title to open the official document in a new tab. 
+                    You can then save it to your device for offline reading outside the app.
+                </p>
+            </section>
         </div>
-    </>
-);
+    );
+};
 
 export default GuideLiterature;

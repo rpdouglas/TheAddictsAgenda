@@ -213,15 +213,15 @@ export const MEETING_LINKS = {
 
 export const APP_VERSIONS = {
     DASHBOARD: '1.5.0',
-    JOURNAL: '1.12.2', 
+    JOURNAL: '1.13.0', 
     GOALS: '1.7.0', 
     COPING: '2.2.0', 
     WORKBOOK: '1.13.1',
-    LITERATURE: '1.3.1',
+    LITERATURE: '1.4.1',
     RESOURCES: '1.1.0',
     SETTINGS: '1.4.0',
     MEETINGFINDER: '1.1.0',
     DAILYREFLECTION: '1.1.0',
-    USERGUIDE: '1.7.1',
+    USERGUIDE: '1.8.1',
     SMARTTOOLS: '1.3.0', 
 };
