@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { literatureManifest, getLiteratureBook } from '../utils/data.js';
-import { ArrowLeftIcon, ArrowRightIcon, DownloadIcon, PenIcon, HighlighterIcon } from '../utils/icons.jsx';
+import { ArrowLeftIcon, ArrowRightIcon, DownloadIcon, PenIcon, HighlighterIcon, SparklesIcon } from '../utils/icons.jsx';
 import { Spinner } from './common.jsx';
+import SevenGrandfatherTeachings from './SevenGrandfatherTeachings.jsx';
 
 // --- SUB-COMPONENT: BOOK READER (The Text View) ---
 const BookReader = ({ chapter, bookTitle, onBack, onJournal }) => {
@@ -126,10 +127,59 @@ const ChapterSection = ({ title, chapters, onSelect }) => (
     </details>
 );
 
+// --- HELPER: LITERATURE CARD (Supports Books & Interactive Tools) ---
+const LiteratureCard = ({ book, onRead, onLaunch }) => {
+    return (
+        <div className="p-4 bg-pure-white/60 rounded-lg shadow-sm">
+            <div className="flex justify-between items-start">
+                <div><h3 className="font-semibold text-deep-charcoal text-lg">{book.title}</h3></div>
+                
+                {/* PDF Download Button (Only if pdfLink exists) */}
+                {book.pdfLink && book.pdfLink !== '#' && (
+                    <a 
+                        href={book.pdfLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className={`flex-shrink-0 ml-4 flex items-center gap-2 bg-healing-green text-white font-semibold py-2 px-3 rounded-lg hover:brightness-95 text-sm ${book.pdfLink === "#" ? "opacity-50 cursor-not-allowed" : ""}`} 
+                        aria-disabled={book.pdfLink === "#"} 
+                        onClick={(e) => book.pdfLink === "#" && e.preventDefault()}
+                    >
+                        <DownloadIcon />PDF
+                    </a>
+                )}
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="space-y-2 mt-4">
+                {/* 1. Standard Read Button (If it's a readable book) */}
+                {(!book.type || book.type === 'reader' || book.chapters) && (
+                    <button 
+                        onClick={() => onRead(book.key)} 
+                        className="w-full bg-serene-teal/10 text-serene-teal font-semibold py-2 px-4 rounded-lg hover:bg-serene-teal/20 transition-colors"
+                    >
+                        Read in App
+                    </button>
+                )}
+
+                {/* 2. Interactive Tool Button (If it's an interactive tool) */}
+                {book.interactive && (
+                    <button 
+                        onClick={() => onLaunch(book.component || book.title)} 
+                        className="w-full bg-indigo-100 text-indigo-700 font-bold py-2 px-4 rounded-lg hover:bg-indigo-200 border border-indigo-200 flex items-center justify-center gap-2 transition-colors"
+                    >
+                        <SparklesIcon className="w-4 h-4" /> Launch Interactive Tool
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
+
 // --- MAIN COMPONENT ---
 const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
     const [selectedBook, setSelectedBook] = useState(null); 
     const [selectedChapter, setSelectedChapter] = useState(null);
+    const [activeTool, setActiveTool] = useState(null); // New state for interactive tools
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSelectBook = async (bookKey) => {
@@ -144,6 +194,10 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
         }
     };
 
+    const handleLaunchTool = (toolName) => {
+        setActiveTool(toolName);
+    };
+
     const handleJournal = (bookTitle, chapterTitle, pageNumber, highlightedText = '') => {
         let template = `Reflection on "${bookTitle}"\nChapter: ${chapterTitle}, Page ${pageNumber}\n\n`;
         if (highlightedText) {
@@ -156,6 +210,28 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
 
     const formatContent = (content) => content.split('\n\n').map((paragraph, index) => <p key={index} className="mb-4 whitespace-pre-wrap">{paragraph.trim()}</p>);
     
+    // --- RENDER: INTERACTIVE TOOL VIEW ---
+    if (activeTool) {
+        if (activeTool === 'SevenGrandfatherTeachings') {
+            return <SevenGrandfatherTeachings onBack={() => setActiveTool(null)} />;
+        }
+
+        return (
+            <div className="bg-white p-6 rounded-xl shadow-lg animate-fade-in h-full flex flex-col">
+                <button onClick={() => setActiveTool(null)} className="flex items-center text-indigo-600 hover:text-indigo-800 mb-6 font-semibold flex-shrink-0">
+                    <ArrowLeftIcon /><span className="ml-2">Back to Library</span>
+                </button>
+                
+                <div className="flex-grow flex flex-col items-center justify-center text-center p-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                    <SparklesIcon className="w-16 h-16 text-indigo-300 mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{activeTool}</h2>
+                    <p className="text-gray-500">This interactive tool is currently under development.</p>
+                    <p className="text-sm text-gray-400 mt-2">(Placeholder View)</p>
+                </div>
+            </div>
+        );
+    }
+
     // --- RENDER: CHAPTER READER VIEW ---
     if (selectedChapter) {
         if (selectedChapter.pages) {
@@ -249,15 +325,11 @@ const RecoveryLiterature = ({ onNavigate, setJournalTemplate }) => {
                 <ul className="space-y-4">
                     {Object.values(literatureManifest).map(book => ( 
                         <li key={book.key}> 
-                            <div className="p-4 bg-pure-white/60 rounded-lg shadow-sm"> 
-                                <div className="flex justify-between items-start"> 
-                                    <div><h3 className="font-semibold text-deep-charcoal text-lg">{book.title}</h3></div> 
-                                    <a href={book.pdfLink} target="_blank" rel="noopener noreferrer" className={`flex-shrink-0 ml-4 flex items-center gap-2 bg-healing-green text-white font-semibold py-2 px-3 rounded-lg hover:brightness-95 text-sm ${book.pdfLink === "#" ? "opacity-50 cursor-not-allowed" : ""}`} aria-disabled={book.pdfLink === "#"} onClick={(e) => book.pdfLink === "#" && e.preventDefault()}>
-                                        <DownloadIcon />PDF
-                                    </a>
-                                </div> 
-                                <button onClick={() => handleSelectBook(book.key)} className="mt-4 w-full bg-serene-teal/10 text-serene-teal font-semibold py-2 px-4 rounded-lg hover:bg-serene-teal/20">Read in App</button>
-                            </div> 
+                            <LiteratureCard 
+                                book={book}
+                                onRead={handleSelectBook}
+                                onLaunch={handleLaunchTool}
+                            />
                         </li> 
                     ))}
                 </ul>

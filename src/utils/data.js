@@ -97,6 +97,14 @@ export const literatureManifest = {
     key: 'recovery_dharma_guidebook',
     title: 'The Four Noble Truths: A Recovery Dharma Guidebook',
     pdfLink: '#',
+  },
+  seven_grandfather_teachings: {
+      key: 'seven_grandfather_teachings',
+      title: 'Seven Grandfather Teachings',
+      type: 'interactive',
+      component: 'SevenGrandfatherTeachings',
+      interactive: true,
+      pdfLink: '#' 
   }
 };
 
@@ -110,6 +118,8 @@ export const getLiteratureBook = (bookKey) => {
       return import('../data/twelve_and_twelve.json');
     case 'recovery_dharma_guidebook':
       return import('../data/recovery_dharma_guidebook.json');
+    case 'seven_grandfather_teachings':
+      return Promise.resolve({ default: { title: 'Seven Grandfather Teachings', key: 'seven_grandfather_teachings' } });
     default:
       return Promise.reject(new Error('Book not found'));
   }
@@ -203,15 +213,15 @@ export const MEETING_LINKS = {
 
 export const APP_VERSIONS = {
     DASHBOARD: '1.5.0',
-    JOURNAL: '1.12.1', 
+    JOURNAL: '1.13.0', 
     GOALS: '1.7.0', 
     COPING: '2.2.0', 
     WORKBOOK: '1.13.1',
-    LITERATURE: '1.3.0',
+    LITERATURE: '1.4.1',
     RESOURCES: '1.1.0',
     SETTINGS: '1.4.0',
     MEETINGFINDER: '1.1.0',
     DAILYREFLECTION: '1.1.0',
-    USERGUIDE: '1.7.0',
+    USERGUIDE: '1.8.1',
     SMARTTOOLS: '1.3.0', 
 };

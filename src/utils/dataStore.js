@@ -21,6 +21,8 @@ const DataStore = {
             ...(baseKeys || {}),
             // Add new key for custom header text
             HEADER_TEXT: 'soberHeaderText',
+            // --- NEW: Centralized Insights Log ---
+            INSIGHTS: 'userInsights',
         };
     },
     loadAll: (...args) => activeStore.loadAll(...args),

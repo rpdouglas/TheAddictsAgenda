@@ -21,11 +21,12 @@ const COMPONENT_MAP = {
         'src/components/journal/JournalForm.jsx',
         'src/components/journal/JournalList.jsx',
         'src/components/journal/MoodGraph.jsx',
-        'src/components/journal/JournalModals.jsx'
+        'src/components/journal/JournalModals.jsx',
+        'src/components/journal/InsightHistoryLog.jsx'
     ],
     'GOALS': [
         'src/components/Goals.jsx',
-        'src/utils/journalLogger.js' // ADDED
+        'src/utils/journalLogger.js' 
     ],
     'COPING': 'src/components/CopingTools.jsx',
     'WORKBOOK': [
@@ -37,7 +38,10 @@ const COMPONENT_MAP = {
         'src/components/workbook/WorkbookSmartTool.jsx',
         'src/components/workbook/WorkbookInsightsModal.jsx'
     ],
-    'LITERATURE': 'src/components/RecoveryLiterature.jsx',
+    'LITERATURE': [
+        'src/components/RecoveryLiterature.jsx',
+        'src/components/SevenGrandfatherTeachings.jsx' // ADDED
+    ],
     'RESOURCES': 'src/components/Resources.jsx',
     'SETTINGS': 'src/components/Settings.jsx',
     'MEETINGFINDER': 'src/components/MeetingTracker.jsx',
